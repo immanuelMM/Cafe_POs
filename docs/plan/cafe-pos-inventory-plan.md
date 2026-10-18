@@ -330,6 +330,14 @@ Goal: the same system now serves multiple branches under one business.
 3. Catalog stays global by default; add the optional `ItemVariationLocationOverride` table for per-location price/tracking/threshold overrides (build now even if unused immediately — cheaper than retrofitting later).
 4. Location-aware UI: a location switcher for Owner/Admin, a location-locked view for Cashier/Manager, a location column/filter on reports.
 
+**Phase 2 status: shipped.** Contract: `docs/api/phase2-api.md`.
+- Shipped: `Location` entity with `LocationId` on orders and stock; per-location staff assignments (Cashier/Manager/Admin) plus an Owner flag; query filters from the `location_id` claim; Owner cross-location session and `locationId` filters; login location picker and `POST /auth/switch-location`; locations and staff endpoints (`/locations`, `/locations/{id}/staff`, `/users`); `ItemVariationLocationOverride` (price and inventory tracking applied); frontend switcher, Staff, Locations and Location prices screens; Phase2MultiLocation migration.
+- Deferred:
+  - `/reports/*` endpoints are not built (they never existed in Phase 1); use `GET /orders`, low-stock and stock movements meanwhile.
+  - `lowStockThresholdOverride` is stored and returned but not enforced (ingredient low-stock thresholds remain global).
+  - No refund endpoint yet.
+  - Access tokens are not revalidated against the database during their lifetime; deactivation or assignment removal takes effect at the next login/refresh/switch (accepted 30-minute window).
+
 ### Phase 3 — Stripe Terminal integration
 Goal: real card payment at the counter, still online-only, still single-payment-method-per-order (no split-tender).
 1. Backend: `Stripe.net` integration — connection-token endpoint, PaymentIntent creation on `POST /orders/{id}/payment-intent`, webhook endpoint (signature-verified) as the source of truth for payment state.
