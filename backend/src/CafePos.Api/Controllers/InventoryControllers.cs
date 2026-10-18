@@ -19,8 +19,8 @@ public class InventoryController : ControllerBase
     private readonly ILocationAccess _access;
     public InventoryController(CafeDbContext db, StockService stock, ILocationAccess access) { _db = db; _stock = stock; _access = access; }
 
-    private static IngredientDto Map(Ingredient i, decimal onHand) =>
-        new(i.Id, i.Name, i.Unit, i.LowStockThreshold, i.Active, onHand, onHand <= i.LowStockThreshold);
+    private static IngredientDto Map(Ingredient i, decimal? onHand) =>
+        new(i.Id, i.Name, i.Unit, i.LowStockThreshold, i.Active, onHand, onHand is null ? null : onHand <= i.LowStockThreshold);
 
     private static StockMovementDto Map(StockMovement m) =>
         new(m.Id, m.IngredientId, m.LocationId, m.QuantityDelta, m.Reason.ToString(), m.SourceDocumentRef, m.Note, m.Supplier, m.UnitCost, m.CreatedAt, m.UserId);
@@ -29,6 +29,12 @@ public class InventoryController : ControllerBase
     {
         // Left join onto the per-location stock rows. Active location: the global query filter applies. Another location
         // (Owner only, resolved by ILocationAccess): explicit IgnoreQueryFilters restricted to that one location.
+        if (!lowOnly && locationId is null && User.ActiveLocationId() is null && User.IsOwner())
+        {
+            // Owner cross-location session: ingredients are global, so list the catalog without stock levels.
+            var catalog = await _db.Ingredients.AsNoTracking().Where(i => includeInactive || i.Active).OrderBy(i => i.Name).ToListAsync(ct);
+            return catalog.Select(i => Map(i, null)).ToList();
+        }
         var target = await _access.ResolveAsync(User, locationId, ct);
         var stocks = target.CrossLocation
             ? _db.IngredientStocks.IgnoreQueryFilters().AsNoTracking().Where(s => s.LocationId == target.LocationId)
@@ -39,7 +45,7 @@ public class InventoryController : ControllerBase
                           from s in ss.DefaultIfEmpty()
                           orderby i.Name
                           select new { Ingredient = i, OnHand = s == null ? 0m : s.QuantityOnHand }).ToListAsync(ct);
-        return rows.Select(r => Map(r.Ingredient, r.OnHand)).Where(d => !lowOnly || d.IsLowStock).ToList();
+        return rows.Select(r => Map(r.Ingredient, r.OnHand)).Where(d => !lowOnly || d.IsLowStock == true).ToList();
     }
 
     [HttpGet("ingredients")]
@@ -64,7 +70,7 @@ public class InventoryController : ControllerBase
         if (hasLocation) await _stock.EnsureStockRowAsync(ing.Id, ct);
         if (req.InitialQuantity > 0)
             await _stock.ApplyManualAsync(ing.Id, req.InitialQuantity, StockMovementReason.Adjustment, User.RequireUserId(), "Opening balance", null, null, ct);
-        var onHand = await _db.IngredientStocks.Where(s => s.IngredientId == ing.Id).Select(s => s.QuantityOnHand).FirstOrDefaultAsync(ct);
+        decimal? onHand = hasLocation ? await _db.IngredientStocks.Where(s => s.IngredientId == ing.Id).Select(s => s.QuantityOnHand).FirstOrDefaultAsync(ct) : null;
         return Created($"/api/v1/ingredients/{ing.Id}", Map(ing, onHand));
     }
 
@@ -79,7 +85,7 @@ public class InventoryController : ControllerBase
         ing.LowStockThreshold = req.LowStockThreshold;
         ing.Active = req.Active;
         await _db.SaveChangesAsync(ct);
-        var onHand = await _db.IngredientStocks.Where(s => s.IngredientId == id).Select(s => s.QuantityOnHand).FirstOrDefaultAsync(ct);
+        decimal? onHand = User.ActiveLocationId() is null ? null : await _db.IngredientStocks.Where(s => s.IngredientId == id).Select(s => s.QuantityOnHand).FirstOrDefaultAsync(ct);
         return Map(ing, onHand);
     }
 

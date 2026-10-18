@@ -129,7 +129,7 @@ public class OrderFlowTests
     }
 
     private async Task<Dictionary<string, decimal>> StockAsync(HttpClient c) =>
-        (await c.GetFromJsonAsync<List<IngredientDto>>("/api/v1/ingredients", ApiFactory.Json))!.ToDictionary(i => i.Name, i => i.QuantityOnHand);
+        (await c.GetFromJsonAsync<List<IngredientDto>>("/api/v1/ingredients", ApiFactory.Json))!.ToDictionary(i => i.Name, i => i.QuantityOnHand!.Value);
 
     [Fact]
     public async Task Cash_sale_completes_decrements_stock_via_ledger_and_extracts_vat()
@@ -391,7 +391,7 @@ public class InventoryTests
     {
         var c = await _f.CashierAsync();
         var low = await c.GetFromJsonAsync<List<IngredientDto>>("/api/v1/ingredients/low-stock", ApiFactory.Json);
-        Assert.Contains(low!, i => i.Name == "Tea Bags" && i.IsLowStock);
+        Assert.Contains(low!, i => i.Name == "Tea Bags" && i.IsLowStock == true);
     }
 
     [Fact]

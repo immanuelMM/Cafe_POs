@@ -51,6 +51,13 @@ public record UpdateLocationRequest
     [MaxLength(100)] public string? StripeTerminalLocationId { get; init; }
 }
 
+public record AssignStaffByEmailRequest
+{
+    [Required, EmailAddress, MaxLength(256)] public string Email { get; init; } = "";
+    /// <summary>Cashier, Manager or Admin.</summary>
+    [Required] public string Role { get; init; } = Roles.Cashier;
+}
+
 public record StaffMemberDto(Guid UserId, string Email, string DisplayName, string Role, bool Active);
 
 // ---- Users ----
@@ -148,7 +155,8 @@ public record UpsertModifierListRequest
 }
 
 // ---- Inventory ----
-public record IngredientDto(Guid Id, string Name, string Unit, decimal LowStockThreshold, bool Active, decimal QuantityOnHand, bool IsLowStock);
+/// <summary>QuantityOnHand/IsLowStock are null only for the global catalog view of an Owner cross-location session (no location, no stock).</summary>
+public record IngredientDto(Guid Id, string Name, string Unit, decimal LowStockThreshold, bool Active, decimal? QuantityOnHand, bool? IsLowStock);
 
 public record CreateIngredientRequest
 {

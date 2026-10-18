@@ -3,6 +3,7 @@ using CafePos.Api.Domain;
 using CafePos.Api.Dtos;
 using CafePos.Api.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,8 +16,10 @@ public class LocationsController : ControllerBase
 {
     private readonly CafeDbContext _db;
     private readonly ILocationAccess _access;
+    private readonly UserManager<ApplicationUser> _users;
     private readonly ILogger<LocationsController> _logger;
-    public LocationsController(CafeDbContext db, ILocationAccess access, ILogger<LocationsController> logger) { _db = db; _access = access; _logger = logger; }
+    public LocationsController(CafeDbContext db, ILocationAccess access, UserManager<ApplicationUser> users, ILogger<LocationsController> logger)
+    { _db = db; _access = access; _users = users; _logger = logger; }
 
     private static LocationDto Map(Location l) =>
         new(l.Id, l.Name, l.Address, l.TimeZone, l.ContactPhone, l.VatRatePercent, l.Active, l.StripeTerminalLocationId);
@@ -96,5 +99,29 @@ public class LocationsController : ControllerBase
         return await _db.StaffAssignments.IgnoreQueryFilters().AsNoTracking().Where(a => a.LocationId == id)
             .OrderBy(a => a.User!.DisplayName)
             .Select(a => new StaffMemberDto(a.UserId, a.User!.Email ?? "", a.User.DisplayName, a.Role, a.User.Active)).ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Add an existing user (found by exact email) to this location with a role, or change their role here. This is how an Admin
+    /// brings in a user from another branch without ever seeing that user's other assignments. Owner: any location; Admin: own location.
+    /// </summary>
+    [HttpPost("{id:guid}/staff"), Authorize(Policy = Policies.AdminUp)]
+    [ProducesResponseType(typeof(StaffMemberDto), 200)]
+    public async Task<ActionResult<StaffMemberDto>> AssignStaff(Guid id, AssignStaffByEmailRequest req, CancellationToken ct)
+    {
+        await _access.EnsureAsync(User, id);
+        if (!Roles.Assignable.Contains(req.Role)) throw ApiException.Unprocessable("Invalid role", "Role must be Cashier, Manager or Admin.");
+        if (!await _db.Locations.AnyAsync(l => l.Id == id && l.Active, ct)) throw ApiException.NotFound("Location");
+        var user = await _users.FindByEmailAsync(req.Email.Trim()) ?? throw ApiException.NotFound("User");
+        if (user.IsOwner) throw ApiException.Unprocessable("Owner needs no assignment", "Owners have access to every location.");
+        if (!user.Active) throw ApiException.Unprocessable("User inactive", "Reactivate the user first.");
+        if (user.Id == User.RequireUserId()) throw ApiException.Unprocessable("Invalid change", "You cannot change your own assignment.");
+
+        var row = await _db.StaffAssignments.IgnoreQueryFilters().FirstOrDefaultAsync(a => a.UserId == user.Id && a.LocationId == id, ct);
+        if (row is null) _db.StaffAssignments.Add(new StaffAssignment { UserId = user.Id, LocationId = id, Role = req.Role });
+        else row.Role = req.Role;
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("User {TargetId} assigned to {LocationId} as {Role} by {UserId}", user.Id, id, req.Role, User.RequireUserId());
+        return new StaffMemberDto(user.Id, user.Email ?? "", user.DisplayName, req.Role, user.Active);
     }
 }

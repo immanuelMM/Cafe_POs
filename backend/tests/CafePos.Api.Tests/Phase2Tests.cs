@@ -30,7 +30,7 @@ internal static class Phase2Helpers
     }
 
     public static async Task<Dictionary<string, decimal>> StockAsync(HttpClient c, string query = "") =>
-        (await c.GetFromJsonAsync<List<IngredientDto>>("/api/v1/ingredients" + query, ApiFactory.Json))!.ToDictionary(i => i.Name, i => i.QuantityOnHand);
+        (await c.GetFromJsonAsync<List<IngredientDto>>("/api/v1/ingredients" + query, ApiFactory.Json))!.ToDictionary(i => i.Name, i => i.QuantityOnHand!.Value);
 
     public static async Task<Guid> IngredientIdAsync(HttpClient c, string name) =>
         (await c.GetFromJsonAsync<List<IngredientDto>>($"/api/v1/ingredients?locationId={Main}", ApiFactory.Json))!.First(i => i.Name == name).Id;
@@ -217,8 +217,8 @@ public class LocationIsolationApiTests
 
         Assert.Equal(HttpStatusCode.OK, (await owner.GetAsync($"/api/v1/orders/{mainOrder.Id}")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await owner.GetAsync($"/api/v1/orders/{uptownOrder.Id}/receipt")).StatusCode);
-        // ...but mutation stays inside an active location.
-        Assert.Equal(HttpStatusCode.NotFound, (await owner.PostAsync($"/api/v1/orders/{mainOrder.Id}/cancel", null)).StatusCode);
+        // ...but mutation needs an active location.
+        Assert.Equal(HttpStatusCode.BadRequest, (await owner.PostAsync($"/api/v1/orders/{mainOrder.Id}/cancel", null)).StatusCode);
 
         var uptownLow = await owner.GetFromJsonAsync<List<IngredientDto>>($"/api/v1/ingredients/low-stock?locationId={Phase2Helpers.Uptown}", ApiFactory.Json);
         Assert.DoesNotContain(uptownLow!, i => i.Name == "Tea Bags"); // Tea Bags is low at Main only
@@ -390,7 +390,7 @@ public class LocationAndUserManagementTests
         Assert.Equal(HttpStatusCode.NoContent, (await owner.DeleteAsync($"/api/v1/users/{user.Id}/locations/{Phase2Helpers.Uptown}")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await _f.CreateClient().PostAsJsonAsync("/api/v1/auth/login", new { email, password = "NewHire#12345" })).StatusCode);
 
-        var dup = await owner.PostAsJsonAsync("/api/v1/users", new { email, displayName = "Dup", password = "NewHire#12345" });
+        var dup = await owner.PostAsJsonAsync("/api/v1/users", new { email, displayName = "Dup", password = "NewHire#12345", assignments = new[] { new { locationId = Phase2Helpers.Main, role = "Cashier" } } });
         Assert.Equal(HttpStatusCode.Conflict, dup.StatusCode);
         var weak = await owner.PostAsJsonAsync("/api/v1/users", new { email = $"w-{Guid.NewGuid():N}@cafe.local", displayName = "Weak", password = "short" });
         Assert.Equal(HttpStatusCode.BadRequest, weak.StatusCode);

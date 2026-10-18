@@ -2,6 +2,18 @@
 
 Additive to `phase1-api.md`; everything there still applies unless changed below. Base path `/api/v1`, JSON `camelCase`, enums as strings, GUIDs as strings, errors are ProblemDetails.
 
+## Changes (fix batch, after the first Phase 2 release)
+
+Frontend: please adapt to these contract changes.
+
+1. **`IngredientDto.quantityOnHand` and `isLowStock` are now nullable.** They are `null` only for the global catalog view: `GET /ingredients` in an Owner cross-location session **without** `locationId` now returns the ingredient catalog (HTTP 200) with no stock fields instead of `400`. With `locationId`, or in any session with an active location, they are always numbers/booleans. `GET /ingredients/low-stock` still needs a location (400 otherwise). `POST /ingredients` and `PUT /ingredients/{id}` return `null` stock fields in a cross-location session.
+2. **`POST /orders` in an Owner cross-location session is `400 Location required`** (it was a 500). Add-item / edit-item / remove-item / cancel / complete on an existing order in that session are also `400 Location required` (they were `404`). Reads (`GET /orders/{id}`, receipt, list) still work across locations for an Owner.
+3. **Admin deactivation is location-scoped.** For an Admin (not Owner), `DELETE /users/{id}` and `PUT /users/{id}` with `active: false` remove that user's assignment at the Admin's active location and revoke sessions bound to it; the account stays active globally. Only if the user has no assignment anywhere else is the account also deactivated globally. Owners still deactivate globally. An Admin sending `active: true` for a user who is assigned to other locations gets `403`.
+4. **Admin visibility is location-scoped.** `GET /users` and `GET /users/{id}` for an Admin return `locations` containing only the assignment at the Admin's own location (no other-branch names or roles). Owners see everything.
+5. **New endpoint `POST /locations/{id}/staff`** (Owner any location, Admin own location) assigns an existing user found by **exact email** to the location, or changes their role there. This replaces assigning by user GUID for Admins: `POST /users/{id}/locations` only works for Admins on users already visible at their location (otherwise `404`; another `locationId` is `403`).
+6. **A non-Owner user must have at least one assignment**: `POST /users` without `assignments` (and `isOwner` false) is now `400` (it was `422` for Admins and allowed for Owners). `PUT /users/{id}` with `isOwner: false` on an Owner who has no assignments is `400`.
+7. **Access token window (documented behavior, unchanged):** deactivating a user or removing an assignment does not invalidate access tokens already issued. Those keep working until they expire (30 min). Lockout is enforced at `login`, `refresh`, `switch-location` and `GET /auth/me`; deactivation also revokes the user's refresh tokens (for an Admin's location-scoped removal: the tokens bound to that location).
+
 ## Concepts
 
 - **Location**: a cafe branch. Orders, stock levels, the stock ledger, staff assignments and receipt numbers are per location. Catalog (categories, items, variations, modifiers, recipes, ingredients) is global.
@@ -72,10 +84,11 @@ Locations: Main `11111111-1111-1111-1111-111111111111`, Uptown `22222222-2222-22
 | POST | `/locations` | Owner | Body `{ name, address?, timeZone, contactPhone?, vatRatePercent, stripeTerminalLocationId? }` -> 201 `LocationDto`. `422` for an unknown IANA time zone |
 | PUT | `/locations/{id}` | Owner (any), Admin (own active location only, else 403) | Body `{ name, address, timeZone, contactPhone, vatRatePercent, active?, stripeTerminalLocationId? }`. `active` and `stripeTerminalLocationId` are Owner only (`403` if an Admin sends them). Omit = unchanged; empty string clears the Stripe id |
 | GET | `/locations/{id}/staff` | Owner (any), Admin (own location) | `[ { userId, email, displayName, role, active } ]`. `403` for another location |
+| POST | `/locations/{id}/staff` | Owner (any), Admin (own location, else 403) | Body `{ email, role }` (`role` Cashier/Manager/Admin). Finds an existing user by exact email and adds the assignment at this location (or changes the role). 200 `{ userId, email, displayName, role, active }`. `404` unknown email or location, `422` for an Owner, inactive user, own account, or invalid role |
 
 ## Users (Admin or Owner)
 
-Admins are confined to their active location: they see only non-owner users assigned there, may only create/assign at that location, cannot create or edit Owners (`403`), and users outside their location are `404`.
+Admins are confined to their active location: they see only non-owner users assigned there and **only the assignments at that location** (other branches' names/roles are never returned), may only create/assign at that location (`403` otherwise), cannot create or edit Owners (`403`), and users outside their location are `404`. To bring an existing user from another branch in, an Admin uses `POST /locations/{id}/staff` with the user's exact email.
 
 `UserDto`: `{ id, email, displayName, active, isOwner, locations: [ { locationId, locationName, role } ] }`
 
@@ -83,11 +96,11 @@ Admins are confined to their active location: they see only non-owner users assi
 |---|---|---|
 | GET | `/users?locationId=&search=&page=&pageSize=` | Paged `UserDto`. Owner: all (optionally filtered by `locationId`). Admin: own location only (other `locationId` -> 403) |
 | GET | `/users/{id}` | `UserDto` |
-| POST | `/users` | Body `{ email, displayName, password (min 8, Identity rules), isOwner?, assignments: [ { locationId, role } ] }`. `role` is `Cashier`/`Manager`/`Admin`. Admin callers must include at least one assignment, all at their location. 201 `UserDto`; `409` duplicate email; `400` weak password |
-| PUT | `/users/{id}` | Body `{ displayName, active?, isOwner? }` (`isOwner` Owner only). Cannot deactivate/demote yourself (422). Deactivating revokes refresh tokens |
-| DELETE | `/users/{id}` | Deactivate (not a hard delete) -> 204 |
-| POST | `/users/{id}/locations` | Body `{ locationId, role }`. Adds the assignment or changes its role. Returns `UserDto`. Owners cannot be assigned (422) |
-| DELETE | `/users/{id}/locations/{locationId}` | -> 204. `404` if no such assignment |
+| POST | `/users` | Body `{ email, displayName, password (min 8, Identity rules), isOwner?, assignments: [ { locationId, role } ] }`. `role` is `Cashier`/`Manager`/`Admin`. Every non-Owner needs at least one assignment (`400` otherwise). Admin callers: all assignments at their location. 201 `UserDto`; `409` duplicate email; `400` weak password |
+| PUT | `/users/{id}` | Body `{ displayName, active?, isOwner? }` (`isOwner` Owner only). Cannot deactivate/demote yourself (422). `active: false`: Owner = global deactivation; Admin = removes the assignment at their location (global only if none remain elsewhere). `active: true` by an Admin is `403` if the user has assignments elsewhere. Returns `UserDto` (for an Admin after removal, `locations` is empty) |
+| DELETE | `/users/{id}` | Same semantics as `active: false` above (never a hard delete) -> 204 |
+| POST | `/users/{id}/locations` | Body `{ locationId, role }`. Adds the assignment or changes its role. Returns `UserDto`. Owners cannot be assigned (422). Admin: `locationId` must be their location (403) and the user must already be visible to them (404) |
+| DELETE | `/users/{id}/locations/{locationId}` | -> 204. `403` for another location (Admin), `404` if no such assignment |
 
 ## Variation location overrides
 
@@ -119,19 +132,26 @@ By default everything is scoped to the token's active location. Owners (only) ca
 |---|---|
 | `GET /orders?...&locationId=` | Owner: `locationId` = that location; with no `locationId` and an active location = that location; with **no active location and no `locationId` = all locations** (use `locationId` on each `OrderDto` to group). Others: own location |
 | `GET /orders/{id}`, `GET /orders/{id}/receipt` | Owners can read orders of any location. Others: `404` for another location. Every mutation (items, complete, cancel) only works inside the active location (`404` otherwise) |
-| `GET /ingredients?locationId=`, `GET /ingredients/low-stock?locationId=` | Stock levels / low-stock computed for that location. Owner without active location **must** pass `locationId` (else 400) |
+| `GET /ingredients?locationId=` | Stock levels for that location. Owner without active location and without `locationId`: the global catalog, `quantityOnHand`/`isLowStock` = `null` |
+| `GET /ingredients/low-stock?locationId=` | Low-stock for that location. Owner without active location **must** pass `locationId` (else 400) |
 | `GET /ingredients/{id}/movements?locationId=&page=&pageSize=` | Ledger of that location (Manager+) |
 | `POST /restocks`, `POST /ingredients/{id}/adjustments`, `POST /ingredients` (initialQuantity > 0) | Always the **active** location. No active location -> `400` |
 
 `StockMovementDto` gains `locationId`: `{ id, ingredientId, locationId, quantityDelta, reason, sourceDocumentRef, note, supplier, unitCost, createdAt, userId }`. `OrderDto` already carried `locationId`.
 
+`IngredientDto`: `{ id, name, unit, lowStockThreshold, active, quantityOnHand: number | null, isLowStock: boolean | null }` (null only in the catalog view described above).
+
 Note: `GET /ingredients` for a location with no stock row yet reports `quantityOnHand: 0`. A new ingredient is created globally and gets a stock row (and opening balance) only at the active location.
+
+## Access token lifetime and revocation
+
+Access tokens are not re-checked against the database on each request. After a user is deactivated or an assignment is removed, an already-issued access token keeps working until it expires (up to 30 minutes). The lockout is effective at the next `login`, `refresh`, `switch-location` and `GET /auth/me`; deactivation (and a location-scoped removal by an Admin) revokes the matching refresh tokens, so the session cannot be renewed. Owners accept this window.
 
 ## Status codes added/clarified
 
 | Status | When |
 |---|---|
-| 400 `Location required` | Location-scoped action in an Owner cross-location session; non-owner switch with `null`; multi-location login without `locationId` (extension `locations`) |
+| 400 `Location required` | Location-scoped action in an Owner cross-location session (including create/edit/cancel/complete of orders); non-owner switch with `null`; multi-location login without `locationId` (extension `locations`) |
 | 403 | Role too low, or another location's id from a non-Owner, or a login/switch to an unassigned location, or Admin touching Owner-only fields |
 | 404 | Row of another location (orders, users for Admins), unknown ids |
 

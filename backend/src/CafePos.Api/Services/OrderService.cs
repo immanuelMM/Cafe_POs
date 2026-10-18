@@ -78,6 +78,8 @@ public class OrderService
     public async Task<Order> GetEntityAsync(Guid id, Guid userId, bool managerUp, bool track, CancellationToken ct)
     {
         // Read-only lookups by an Owner may cross locations (explicit IgnoreQueryFilters); anything that mutates stays in the active location.
+        // Mutating paths need an active location (an Owner cross-location session gets a clear 400, not a misleading 404).
+        if (track && _current.LocationId is null) throw ApiException.LocationRequired();
         var crossRead = !track && _current.IsOwner;
         var q = (crossRead ? _db.Orders.IgnoreQueryFilters() : _db.Orders)
             .Include(o => o.Items).ThenInclude(i => i.Modifiers).Include(o => o.Payments).AsSplitQuery();
@@ -113,17 +115,18 @@ public class OrderService
     public async Task<(OrderDto order, bool created)> CreateAsync(CreateOrderRequest req, Guid userId, string userName, CancellationToken ct)
     {
         if (req.Id == Guid.Empty) throw ApiException.BadRequest("Order id required", "Send a client-generated UUID as id.");
+        var locationId = LocationId; // read once, outside any EF expression: throws 400 for a session without an active location
         var existing = await _db.Orders.IgnoreQueryFilters().AsNoTracking().Where(o => o.Id == req.Id)
             .Select(o => new { o.LocationId, o.CashierId }).FirstOrDefaultAsync(ct);
         if (existing is not null)
         {
-            if (existing.LocationId != LocationId || existing.CashierId != userId)
+            if (existing.LocationId != locationId || existing.CashierId != userId)
                 throw ApiException.Conflict("Order id already in use", "An order with this id already exists.");
             return (await GetAsync(req.Id, userId, true, ct), false);
         }
         if (req.Items.Count == 0) throw ApiException.Unprocessable("Empty order", "An order needs at least one item.");
 
-        var loc = await _db.Locations.AsNoTracking().FirstAsync(l => l.Id == LocationId, ct);
+        var loc = await _db.Locations.AsNoTracking().FirstAsync(l => l.Id == locationId, ct);
         var order = new Order
         {
             Id = req.Id,

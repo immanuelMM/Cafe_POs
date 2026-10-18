@@ -10,8 +10,9 @@ using Microsoft.EntityFrameworkCore;
 namespace CafePos.Api.Controllers;
 
 /// <summary>
-/// User management. Owner: all users and locations. Admin: only users assigned to the Admin's active location, and only
-/// assignments at that location; cannot create or edit Owners.
+/// User management. Owner: all users and locations. Admin: only users assigned to the Admin's active location, who see only
+/// the assignments at that location; cannot create or edit Owners; deactivating removes the assignment at their location
+/// (global deactivation is Owner only, unless the user has no assignment anywhere else).
 /// </summary>
 [ApiController]
 [Route("api/v1/users")]
@@ -34,9 +35,11 @@ public class UsersController : ControllerBase
     // Owner/Admin-gated controller; every action checks the target location or user explicitly.
     private IQueryable<StaffAssignment> Assignments() => _db.StaffAssignments.IgnoreQueryFilters();
 
+    /// <summary>Owners see every assignment; Admins only the ones at their own active location (no other-branch names or roles).</summary>
     private async Task<UserDto> ToDtoAsync(ApplicationUser u, CancellationToken ct)
     {
-        var locs = await Assignments().AsNoTracking().Where(a => a.UserId == u.Id)
+        var scope = User.IsOwner() ? null : User.ActiveLocationId();
+        var locs = await Assignments().AsNoTracking().Where(a => a.UserId == u.Id && (scope == null || a.LocationId == scope))
             .OrderBy(a => a.Location!.Name).Select(a => new LocationRoleDto(a.LocationId, a.Location!.Name, a.Role)).ToListAsync(ct);
         return new UserDto(u.Id, u.Email ?? "", u.DisplayName, u.Active, u.IsOwner, locs);
     }
@@ -93,10 +96,11 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(UserDto), 201)]
     public async Task<ActionResult<UserDto>> Create(CreateUserRequest req, CancellationToken ct)
     {
+        if (!User.IsOwner() && req.IsOwner) throw ApiException.Forbidden("Only an Owner can create an Owner.");
+        if (!req.IsOwner && req.Assignments.Count == 0)
+            throw ApiException.BadRequest("Assignment required", "A non-Owner user needs at least one location assignment, otherwise they can never log in.");
         if (!User.IsOwner())
         {
-            if (req.IsOwner) throw ApiException.Forbidden("Only an Owner can create an Owner.");
-            if (req.Assignments.Count == 0) throw ApiException.Unprocessable("Assignment required", "Assign the new user to your location.");
             if (req.Assignments.Any(a => a.LocationId != User.RequireLocationId())) throw ApiException.Forbidden("Admins can only assign users to their active location.");
         }
         if (req.Assignments.Select(a => a.LocationId).Distinct().Count() != req.Assignments.Count)
@@ -125,25 +129,35 @@ public class UsersController : ControllerBase
         if (!User.IsOwner() && req.IsOwner is not null) throw ApiException.Forbidden("Only an Owner can change the Owner flag.");
         if (id == User.RequireUserId() && (req.Active == false || req.IsOwner == false))
             throw ApiException.Unprocessable("Invalid change", "You cannot deactivate or demote yourself.");
+        if (req.IsOwner == false && user.IsOwner && !await Assignments().AnyAsync(a => a.UserId == id, ct))
+            throw ApiException.BadRequest("Assignment required", "Assign the user to a location first; a non-Owner without assignments can never log in.");
+
         user.DisplayName = req.DisplayName.Trim();
-        if (req.Active is not null) user.Active = req.Active.Value;
         if (req.IsOwner is not null) user.IsOwner = req.IsOwner.Value;
-        await _users.UpdateAsync(user);
-        if (!user.Active) await RevokeSessionsAsync(user.Id, ct);
+        if (req.Active == false)
+            await DeactivateScopedAsync(user, ct); // also persists DisplayName/IsOwner
+        else
+        {
+            if (req.Active == true && !User.IsOwner() && await Assignments().AnyAsync(a => a.UserId == id && a.LocationId != User.RequireLocationId(), ct))
+                throw ApiException.Forbidden("Only an Owner can reactivate a user who is assigned to other locations.");
+            if (req.Active is not null) user.Active = req.Active.Value;
+            await _users.UpdateAsync(user);
+        }
         _logger.LogInformation("User {TargetId} updated by {UserId}", id, User.RequireUserId());
         return await ToDtoAsync(user, ct);
     }
 
-    /// <summary>Deactivates (never hard deletes) the user and revokes their refresh tokens.</summary>
+    /// <summary>
+    /// Owner: deactivates the user globally and revokes all their refresh tokens. Admin: removes the user's assignment at the Admin's
+    /// location (and revokes sessions bound to it); the account is deactivated globally only if no assignment elsewhere remains.
+    /// </summary>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var user = await GetManageableAsync(id, ct);
         if (id == User.RequireUserId()) throw ApiException.Unprocessable("Invalid change", "You cannot deactivate yourself.");
-        user.Active = false;
-        await _users.UpdateAsync(user);
-        await RevokeSessionsAsync(id, ct);
-        _logger.LogInformation("User {TargetId} deactivated by {UserId}", id, User.RequireUserId());
+        await DeactivateScopedAsync(user, ct);
+        _logger.LogInformation("User {TargetId} deactivated/unassigned by {UserId}", id, User.RequireUserId());
         return NoContent();
     }
 
@@ -151,10 +165,11 @@ public class UsersController : ControllerBase
     [HttpPost("{id:guid}/locations")]
     public async Task<ActionResult<UserDto>> Assign(Guid id, AssignmentRequest req, CancellationToken ct)
     {
-        // An Admin may add a user from another location to their own location, so the user is looked up without the location scope.
-        var user = await _users.FindByIdAsync(id.ToString()) ?? throw ApiException.NotFound("User");
-        if (user.IsOwner) throw ApiException.Unprocessable("Owner needs no assignment", "Owners have access to every location.");
+        // Location rule first (403 for another location), then visibility (404). An Admin reaches users from other locations
+        // only through POST /locations/{id}/staff (by exact email); here they can only change the role of users already at their location.
         await ValidateAssignmentAsync(req, ct);
+        var user = await GetManageableAsync(id, ct);
+        if (user.IsOwner) throw ApiException.Unprocessable("Owner needs no assignment", "Owners have access to every location.");
         var existing = await Assignments().FirstOrDefaultAsync(a => a.UserId == id && a.LocationId == req.LocationId, ct);
         if (existing is null) _db.StaffAssignments.Add(new StaffAssignment { UserId = id, LocationId = req.LocationId, Role = req.Role });
         else existing.Role = req.Role;
@@ -173,6 +188,29 @@ public class UsersController : ControllerBase
         await _db.SaveChangesAsync(ct);
         _logger.LogInformation("User {TargetId} unassigned from {LocationId} by {UserId}", id, locationId, User.RequireUserId());
         return NoContent();
+    }
+
+    private async Task DeactivateScopedAsync(ApplicationUser user, CancellationToken ct)
+    {
+        if (User.IsOwner())
+        {
+            user.Active = false;
+            await _users.UpdateAsync(user);
+            await RevokeSessionsAsync(user.Id, ct);
+            return;
+        }
+        var active = User.RequireLocationId();
+        var mine = await Assignments().Where(a => a.UserId == user.Id && a.LocationId == active).ToListAsync(ct);
+        _db.StaffAssignments.RemoveRange(mine);
+        await _db.SaveChangesAsync(ct);
+        await _db.RefreshTokens.Where(t => t.UserId == user.Id && t.LocationId == active && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, DateTime.UtcNow), ct);
+        if (!await Assignments().AnyAsync(a => a.UserId == user.Id, ct))
+        {
+            user.Active = false; // nothing left anywhere: safe for an Admin to deactivate globally
+            await RevokeSessionsAsync(user.Id, ct);
+        }
+        await _users.UpdateAsync(user);
     }
 
     private Task RevokeSessionsAsync(Guid userId, CancellationToken ct) =>
