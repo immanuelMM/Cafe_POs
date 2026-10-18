@@ -18,12 +18,28 @@ Not built yet: `/reports/*` endpoints, a refund endpoint, enforcement of `lowSto
 
 ## Quick start
 
+### Everything in Docker
+
+Prerequisite: Docker (running). From the repo root:
+
+```bash
+docker compose up -d --build   # frontend http://localhost:5173, API http://localhost:5080 (Swagger at /swagger), PostgreSQL localhost:5433
+docker compose logs -f         # follow logs
+docker compose down            # stop (data kept); `docker compose down -v` also wipes the database
+```
+
+The frontend container serves a production build, so re-run `docker compose up -d --build` after code changes.
+
+### Local dev (hot reload)
+
 Prerequisites: .NET SDK 8.0.x, Docker (running), Node 20+.
 
 ```bash
+# Database (from the repo root)
+docker compose up -d --wait db
+
 # Backend (http://localhost:5080, Swagger at /swagger)
 cd backend
-docker compose up -d --wait db
 dotnet run --project src/CafePos.Api
 
 # Frontend (http://localhost:5173)
@@ -35,7 +51,7 @@ npm run dev
 
 In Development the backend migrates and seeds an empty database on startup. Dev logins are listed in [`backend/README.md`](backend/README.md#seeded-dev-accounts).
 
-Tests: `cd backend && docker compose up -d --wait db && dotnet test` (see the backend README).
+Tests: `docker compose up -d --wait db`, then `cd backend && dotnet test` (see the backend README).
 
 ## Roles and locations
 

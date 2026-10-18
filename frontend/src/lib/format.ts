@@ -11,3 +11,13 @@ export function formatDateTime(iso: string | null | undefined, timeZone = 'Asia/
 
 /** Round to 2dp, half away from zero, matching the backend. */
 export const round2 = (n: number) => (Math.sign(n) * Math.round(Math.abs(n) * 100 + Number.EPSILON)) / 100
+
+export function formatTime(iso: string | null | undefined, timeZone?: string) {
+  if (!iso) return ''
+  return new Intl.DateTimeFormat('en-PH', { hour: 'numeric', minute: '2-digit', timeZone }).format(new Date(iso))
+}
+
+export function formatDate(iso: string | null | undefined, timeZone?: string) {
+  if (!iso) return ''
+  return new Intl.DateTimeFormat('en-PH', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone }).format(new Date(iso))
+}

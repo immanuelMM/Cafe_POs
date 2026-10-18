@@ -2,6 +2,8 @@ import { NavLink, Outlet, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { isAdmin, isManager, useAuthStore } from '../features/auth/authStore'
 import { logout } from '../features/auth/authApi'
+import { useBrandName } from '../features/branding/brandingApi'
+import { BrandLogo } from '../features/branding/BrandLogo'
 import { LocationSwitcher } from './LocationSwitcher'
 
 export function AppShell() {
@@ -10,6 +12,7 @@ export function AppShell() {
   const qc = useQueryClient()
   const manager = isManager(user)
   const admin = isAdmin(user)
+  const brandName = useBrandName()
 
   const onLogout = async () => {
     try {
@@ -24,11 +27,13 @@ export function AppShell() {
     <div className="shell">
       <header className="topbar">
         <div className="brand">
-          <span aria-hidden="true">☕</span> <span className="brand-name">Brew &amp; Bean</span>
+          <BrandLogo /> <span className="brand-name">{brandName}</span>
         </div>
         <nav className="nav" aria-label="Main">
           <NavLink to="/pos">POS</NavLink>
           <NavLink to="/orders">Orders</NavLink>
+          <NavLink to="/timeclock">Time clock</NavLink>
+          {manager && <NavLink to="/menu-banner">Menu banner</NavLink>}
           {manager && <NavLink to="/admin/catalog">Catalog</NavLink>}
           {manager && <NavLink to="/admin/inventory">Inventory</NavLink>}
           {admin && <NavLink to="/admin/users">Staff</NavLink>}

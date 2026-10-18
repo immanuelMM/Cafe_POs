@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { login } from './authApi'
 import { useAuthStore } from './authStore'
+import { useBrandName } from '../branding/brandingApi'
+import { BrandLogo } from '../branding/BrandLogo'
 import { ApiError, errorMessage } from '../../lib/api'
 import { Field } from '../../components/ui'
 
@@ -14,7 +16,8 @@ const schema = z.object({
 })
 type Values = z.infer<typeof schema>
 
-interface LocChoice { locationId: string; locationName: string; role: string }
+/** Shape of the `locations` extension on the 400 "Location required" login response. */
+interface LocChoice { id: string; name: string }
 
 export function LoginPage() {
   const user = useAuthStore((s) => s.user)
@@ -23,6 +26,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [choices, setChoices] = useState<LocChoice[] | null>(null)
   const [locationId, setLocationId] = useState('')
+  const brandName = useBrandName()
   const {
     register,
     handleSubmit,
@@ -57,8 +61,10 @@ export function LoginPage() {
   return (
     <div className="login-wrap">
       <form className="login-card" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="login-logo" aria-hidden="true">☕</div>
-        <h1>Brew &amp; Bean POS</h1>
+        <div className="login-logo">
+          <BrandLogo className="login-logo-img" />
+        </div>
+        <h1>{brandName} POS</h1>
         <p className="muted">Sign in to start taking orders.</p>
         {error && (
           <div className="alert alert-error" role="alert">
@@ -76,8 +82,8 @@ export function LoginPage() {
             <select value={locationId} onChange={(e) => setLocationId(e.target.value)} required>
               <option value="">Select…</option>
               {choices.map((c) => (
-                <option key={c.locationId} value={c.locationId}>
-                  {c.locationName} ({c.role})
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>

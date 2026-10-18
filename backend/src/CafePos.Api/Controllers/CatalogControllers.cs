@@ -83,7 +83,8 @@ public class ItemsController : ControllerBase
 
     private static ItemDto Map(Item i, bool includeInactiveVariations, IReadOnlyDictionary<Guid, decimal> prices) => new(i.Id, i.CategoryId, i.Name, i.Description, i.SortOrder, i.Active,
         i.Variations.Where(v => includeInactiveVariations || v.Active).OrderBy(v => v.Price).Select(v => Map(v, prices)).ToList(),
-        i.ModifierLists.Select(m => m.ModifierListId).ToList());
+        i.ModifierLists.Select(m => m.ModifierListId).ToList(),
+        i.ImageUpdatedAt is null ? null : $"/api/v1/items/{i.Id}/image?v={i.ImageUpdatedAt.Value.Ticks}");
 
     private IQueryable<Item> Query() => _db.Items.Include(i => i.Variations).Include(i => i.ModifierLists);
 
@@ -169,6 +170,47 @@ public class ItemsController : ControllerBase
         item.Active = false;
         await _db.SaveChangesAsync(ct);
         return NoContent();
+    }
+
+    // ---- photo ----
+    private const int ImageMaxBytes = 2 * 1024 * 1024;
+    // Headroom above the file limit so an oversize file is answered with a 400, not a transport-level 413.
+    private const long ImageRequestLimit = 4L * 1024 * 1024;
+
+    /// <summary>Item photo bytes. Anonymous like the brand logo; the URL is versioned so it is cached immutably.</summary>
+    [HttpGet("items/{id:guid}/image"), AllowAnonymous]
+    public async Task<IActionResult> GetImage(Guid id, CancellationToken ct)
+    {
+        var img = await _db.ItemImages.AsNoTracking().FirstOrDefaultAsync(x => x.ItemId == id, ct);
+        return Uploads.Serve(this, img?.Data, img?.ContentType);
+    }
+
+    [HttpPut("items/{id:guid}/image"), Authorize(Roles = Roles.ManagerUp)]
+    [RequestSizeLimit(ImageRequestLimit)]
+    [RequestFormLimits(MultipartBodyLengthLimit = ImageRequestLimit)]
+    public async Task<ActionResult<ItemDto>> PutImage(Guid id, [FromForm] UploadFileRequest req, CancellationToken ct)
+    {
+        var item = await Query().FirstOrDefaultAsync(i => i.Id == id, ct) ?? throw ApiException.NotFound("Item");
+        var (data, type) = await Uploads.ReadAsync(req.File, Uploads.ImageTypes, ImageMaxBytes, "Item photo", ct);
+        var img = await _db.ItemImages.FirstOrDefaultAsync(x => x.ItemId == id, ct);
+        if (img is null) _db.ItemImages.Add(img = new ItemImage { ItemId = id });
+        img.Data = data;
+        img.ContentType = type;
+        item.ImageUpdatedAt = Uploads.VersionStamp();
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("Item {ItemId} photo uploaded by {UserId} ({Type}, {Bytes} bytes)", id, User.RequireUserId(), type, data.Length);
+        return Map(item, true, await PriceOverridesAsync(ct));
+    }
+
+    [HttpDelete("items/{id:guid}/image"), Authorize(Roles = Roles.ManagerUp)]
+    public async Task<ActionResult<ItemDto>> DeleteImage(Guid id, CancellationToken ct)
+    {
+        var item = await Query().FirstOrDefaultAsync(i => i.Id == id, ct) ?? throw ApiException.NotFound("Item");
+        await _db.ItemImages.Where(x => x.ItemId == id).ExecuteDeleteAsync(ct);
+        item.ImageUpdatedAt = null;
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("Item {ItemId} photo removed by {UserId}", id, User.RequireUserId());
+        return Map(item, true, await PriceOverridesAsync(ct));
     }
 
     // ---- variations ----

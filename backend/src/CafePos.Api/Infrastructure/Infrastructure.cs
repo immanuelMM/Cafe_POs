@@ -26,6 +26,7 @@ public class ApiException : Exception
     public static ApiException Forbidden(string detail) => new(403, "Forbidden", detail);
     public static ApiException LocationRequired() =>
         new(400, "Location required", "This request needs an active location. Owners: call POST /api/v1/auth/switch-location or pass locationId.");
+    public static ApiException Locked(string title, string? detail = null) => new(423, title, detail);
     public static ApiException Unprocessable(string title, string? detail = null) => new(422, title, detail);
 }
 
@@ -49,6 +50,10 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             pd = new ProblemDetails { Status = api.StatusCode, Title = api.Title, Detail = api.Message };
             if (api.Extensions is not null)
                 foreach (var kv in api.Extensions) pd.Extensions[kv.Key] = kv.Value;
+        }
+        else if (ex is BadHttpRequestException bad && bad.StatusCode is >= 400 and < 500)
+        {
+            pd = new ProblemDetails { Status = bad.StatusCode, Title = bad.StatusCode == 413 ? "Request too large" : "Bad request", Detail = bad.Message };
         }
         else
         {

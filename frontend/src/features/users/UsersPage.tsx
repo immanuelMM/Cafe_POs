@@ -253,6 +253,67 @@ function Assignments({ u }: { u: UserDto }) {
   )
 }
 
+/** Kiosk clock PIN (Owner/Admin only). The PIN is write-only: the API never returns it. */
+function ClockPin({ u }: { u: UserDto }) {
+  const viewerOwner = useAuthStore((s) => !!s.user?.isOwner)
+  const [pin, setPin] = useState('')
+  const [msg, setMsg] = useState<string | null>(null)
+  const set = useMutation({ mutationFn: userCalls.setPin })
+  const clear = useMutation({ mutationFn: userCalls.clearPin })
+  const error = set.error ?? clear.error
+  if (u.isOwner && !viewerOwner) return <p className="muted">Only an Owner can set an Owner's clock PIN.</p>
+  const valid = /^\d{4,6}$/.test(pin)
+  return (
+    <form
+      className="form"
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (!valid) return
+        setMsg(null)
+        set.mutate(
+          { id: u.id, pin },
+          {
+            onSuccess: () => {
+              setPin('')
+              setMsg('Clock PIN set.')
+            },
+          },
+        )
+      }}
+    >
+      {error && <div className="alert alert-error" role="alert">{errorMessage(error)}</div>}
+      {msg && <div className="alert alert-ok" role="status">{msg}</div>}
+      <Field label="Clock PIN" hint="4 to 6 digits. Staff use it on the time clock kiosk.">
+        <input
+          type="password"
+          inputMode="numeric"
+          autoComplete="new-password"
+          maxLength={6}
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+        />
+      </Field>
+      <div className="row-actions">
+        <button className="btn btn-primary" disabled={!valid || set.isPending}>
+          {set.isPending ? 'Savingâ€¦' : 'Set clock PIN'}
+        </button>
+        <button
+          type="button"
+          className="btn btn-danger-ghost"
+          disabled={clear.isPending}
+          onClick={() => {
+            setMsg(null)
+            clear.mutate(u.id, { onSuccess: () => setMsg('Clock PIN cleared.') })
+          }}
+        >
+          Clear PIN
+        </button>
+      </div>
+    </form>
+  )
+}
+
 function EditUserModal({ id, onClose }: { id: string; onClose: () => void }) {
   const meId = useAuthStore((s) => s.user?.id)
   const q = useUser(id)
@@ -265,6 +326,8 @@ function EditUserModal({ id, onClose }: { id: string; onClose: () => void }) {
           <EditDetails key={`${q.data.id}-${q.data.displayName}-${q.data.active}-${q.data.isOwner}`} u={q.data} isSelf={q.data.id === meId} />
           <h3 className="section-title">Locations and roles</h3>
           <Assignments u={q.data} />
+          <h3 className="section-title">Time clock PIN</h3>
+          <ClockPin u={q.data} />
         </>
       )}
     </Modal>
@@ -307,7 +370,7 @@ function AddExistingModal({ onClose }: { onClose: () => void }) {
         <div className="grid-2">
           <Field label="Location" error={errors.locationId?.message}>
             <select {...register('locationId')}>
-              <option value="">Select…</option>
+              <option value="">Selectâ€¦</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
@@ -324,7 +387,7 @@ function AddExistingModal({ onClose }: { onClose: () => void }) {
           </Field>
         </div>
         <button className="btn btn-primary" disabled={add.isPending}>
-          {add.isPending ? 'Adding…' : 'Add to location'}
+          {add.isPending ? 'Addingâ€¦' : 'Add to location'}
         </button>
       </form>
     </Modal>

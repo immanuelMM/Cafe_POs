@@ -5,6 +5,7 @@ import { useAuthStore } from '../auth/authStore'
 import { useSwitchLocation } from '../locations/locationsApi'
 import { formatMoney } from '../../lib/format'
 import type { Item } from '../../lib/types'
+import { assetUrl } from '../branding/brandingApi'
 import { useCategories, useItems, useModifierLists } from '../catalog/catalogApi'
 import { CartPanel } from './CartPanel'
 import { ModifierSheet } from './ModifierSheet'
@@ -104,9 +105,12 @@ function PosScreen() {
           {items.data?.data.map((item) => {
             const unavailable = item.variations.every((v) => !v.active)
             return (
-              <button key={item.id} className="tile" disabled={unavailable} onClick={() => onTile(item)}>
-                <span className="tile-name">{item.name}</span>
-                <span className="tile-price">{priceLabel(item)}</span>
+              <button key={item.id} className={`tile${item.imageUrl ? ' tile-photo' : ''}`} disabled={unavailable} onClick={() => onTile(item)}>
+                {item.imageUrl && <img className="tile-img" src={assetUrl(item.imageUrl) ?? ''} alt={item.name} loading="lazy" />}
+                <span className="tile-text">
+                  <span className="tile-name">{item.name}</span>
+                  <span className="tile-price">{priceLabel(item)}</span>
+                </span>
               </button>
             )
           })}

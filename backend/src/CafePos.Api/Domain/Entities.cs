@@ -41,12 +41,60 @@ public class Location
     public int LastOrderNumber { get; set; }
 }
 
+/// <summary>Business-wide branding shown in the app header and login screen. A single row (Id = SingletonId).</summary>
+public class BrandSettings
+{
+    public const int SingletonId = 1;
+    public const string DefaultBrandName = "Brew & Bean";
+    public int Id { get; set; } = SingletonId;
+    public const string DefaultPrimaryColor = "#3b2417";
+    public string BrandName { get; set; } = DefaultBrandName;
+    public string? Tagline { get; set; }
+    public string PrimaryColor { get; set; } = DefaultPrimaryColor;
+    /// <summary>Optional 2nd and 3rd brand colors (#rrggbb). Tertiary requires secondary.</summary>
+    public string? SecondaryColor { get; set; }
+    public string? TertiaryColor { get; set; }
+    /// <summary>When true, brand surfaces use a linear gradient of the colors at GradientAngle degrees; otherwise solid colors.</summary>
+    public bool Gradient { get; set; }
+    public const int DefaultGradientAngle = 135;
+    public int GradientAngle { get; set; } = DefaultGradientAngle;
+    public byte[]? LogoData { get; set; }
+    public string? LogoContentType { get; set; }
+    public byte[]? TarpaulinData { get; set; }
+    public string? TarpaulinContentType { get; set; }
+    /// <summary>Bumped on every image upload or removal; its ticks are the `v` cache-busting value on the image URLs.</summary>
+    public DateTime UpdatedAt { get; set; }
+}
+
+/// <summary>An editable design-studio document (JSON) for the logo or the banner, so it can be reopened and changed later.</summary>
+public class BrandDesign
+{
+    public static readonly string[] Kinds = { "logo", "banner" };
+    public string Kind { get; set; } = "";
+    public string Document { get; set; } = "{}";
+    public DateTime UpdatedAt { get; set; }
+}
+
 public class ApplicationUser : IdentityUser<Guid>
 {
     public string DisplayName { get; set; } = "";
     public bool Active { get; set; } = true;
     /// <summary>Unrestricted: sees/acts on every location, no StaffAssignment rows needed.</summary>
     public bool IsOwner { get; set; }
+    /// <summary>Time clock PIN, hashed with IPasswordHasher. Never returned by the API.</summary>
+    public string? ClockPinHash { get; set; }
+    public int ClockPinFailedCount { get; set; }
+    public DateTime? ClockPinLockedUntil { get; set; }
+}
+
+/// <summary>A shift on the staff time clock. ClockOutAt is null while the shift is open (at most one open entry per user and location).</summary>
+public class TimeEntry : ILocationScoped
+{
+    public Guid Id { get; set; }
+    public Guid LocationId { get; set; }
+    public Guid UserId { get; set; }
+    public DateTime ClockInAt { get; set; }
+    public DateTime? ClockOutAt { get; set; }
 }
 
 /// <summary>A user role at a location (plan 4.8). One role per (user, location).</summary>
@@ -88,9 +136,19 @@ public class Item
     public string? Description { get; set; }
     public int SortOrder { get; set; }
     public bool Active { get; set; } = true;
+    /// <summary>Set when a photo is stored (in ItemImage); versions the image URL. Null = no photo.</summary>
+    public DateTime? ImageUpdatedAt { get; set; }
     public Category? Category { get; set; }
     public List<ItemVariation> Variations { get; set; } = new();
     public List<ItemModifierList> ModifierLists { get; set; } = new();
+}
+
+/// <summary>Photo bytes for an Item, kept in their own table so catalog queries never load them.</summary>
+public class ItemImage
+{
+    public Guid ItemId { get; set; }
+    public byte[] Data { get; set; } = Array.Empty<byte>();
+    public string ContentType { get; set; } = "";
 }
 
 public class ItemVariation

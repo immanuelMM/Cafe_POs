@@ -30,5 +30,7 @@ export const userCalls = {
     api<UserDto>(`/users/${v.id}/locations`, { method: 'POST', body: { locationId: v.locationId, role: v.role } }),
   addByEmail: (v: { email: string; locationId: string; role: AssignableRole }) =>
     api<StaffMember>(`/locations/${v.locationId}/staff`, { method: 'POST', body: { email: v.email, role: v.role } }),
+  setPin: (v: { id: string; pin: string }) => api<void>(`/users/${v.id}/pin`, { method: 'PUT', body: { pin: v.pin } }),
+  clearPin: (id: string) => api<void>(`/users/${id}/pin`, { method: 'DELETE' }),
   unassign: (v: { id: string; locationId: string }) => api<void>(`/users/${v.id}/locations/${v.locationId}`, { method: 'DELETE' }),
 }

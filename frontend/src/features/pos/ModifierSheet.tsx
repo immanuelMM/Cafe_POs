@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Modal } from '../../components/Modal'
 import { formatMoney, round2 } from '../../lib/format'
 import type { Item, ModifierList } from '../../lib/types'
+import { assetUrl } from '../branding/brandingApi'
 import { MAX_QTY, type CartLine } from './cartStore'
 
 interface Props {
@@ -78,6 +79,7 @@ export function ModifierSheet({ item, lists, onAdd, onClose }: Props) {
         </>
       }
     >
+      {item.imageUrl && <img className="sheet-photo" src={assetUrl(item.imageUrl) ?? ''} alt={item.name} />}
       {item.description && <p className="muted">{item.description}</p>}
 
       <fieldset className="opt-group">

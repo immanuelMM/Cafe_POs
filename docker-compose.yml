@@ -1,0 +1,53 @@
+# Whole stack, run from the repo root:
+#   docker compose up -d --build        # db + API (http://localhost:5080) + frontend (http://localhost:5173)
+#   docker compose up -d --wait db      # just PostgreSQL, to run the API/frontend from the CLI/IDE (and for `dotnet test`)
+#   docker compose down                 # stop (data kept);  `down -v` also wipes the database
+name: cafepos
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cafepos-db
+    environment:
+      POSTGRES_USER: cafepos
+      POSTGRES_PASSWORD: cafepos_dev_pw   # local dev only
+      POSTGRES_DB: cafepos
+    ports:
+      - "5433:5432"
+    volumes:
+      - cafepos-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cafepos -d cafepos"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/CafePos.Api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=db;Port=5432;Database=cafepos;Username=cafepos;Password=cafepos_dev_pw
+    ports:
+      - "5080:8080"
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the bundle; the browser calls the API directly, so this is a host URL.
+        VITE_API_BASE_URL: http://localhost:5080/api/v1
+    depends_on:
+      - api
+    ports:
+      - "5173:80"   # matches the API's Cors:Origins
+
+volumes:
+  cafepos-pgdata:
+    # Keeps the volume created when this file lived in backend/ (project "backend"), so existing dev data survives.
+    name: backend_cafepos-pgdata

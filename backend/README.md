@@ -9,8 +9,8 @@ API contract for the frontend: [`../docs/api/phase1-api.md`](../docs/api/phase1-
 
 ## Run
 ```bash
+docker compose up -d --wait db          # from the repo root: PostgreSQL 16 on localhost:5433 (user/db: cafepos)
 cd backend
-docker compose up -d --wait db          # PostgreSQL 16 on localhost:5433 (user/db: cafepos)
 dotnet run --project src/CafePos.Api    # http://localhost:5080  (Development)
 ```
 In Development the app applies migrations and seeds dev data on startup (empty DB only). Swagger: http://localhost:5080/swagger
@@ -18,7 +18,7 @@ In Development the app applies migrations and seeds dev data on startup (empty D
 ### Seeded dev accounts
 Created by `Data/DevDataSeeder.cs` on an empty database. Passwords are dev-only seed values.
 
-> A database first seeded in Phase 1 is **not** re-seeded (the seeder skips when any location exists), so it won't get the Uptown branch or the Phase 2 accounts. Either drop and recreate the dev database (`docker compose down -v && docker compose up -d`), or create them as the Owner via `POST /locations` and `POST /users`.
+> A database first seeded in Phase 1 is **not** re-seeded (the seeder skips when any location exists), so it won't get the Uptown branch or the Phase 2 accounts. Either drop and recreate the dev database (from the repo root: `docker compose down -v && docker compose up -d`), or create them as the Owner via `POST /locations` and `POST /users`.
 
 | Email | Password | Access |
 |---|---|---|
@@ -29,8 +29,8 @@ Created by `Data/DevDataSeeder.cs` on an empty database. Passwords are dev-only 
 
 Seeded locations: `Brew & Bean - Main Branch` (`11111111-1111-1111-1111-111111111111`) and `Brew & Bean - Uptown Branch` (`22222222-2222-2222-2222-222222222222`). Each has independent stock levels; Tea Bags is below its threshold at Main and healthy at Uptown.
 
-Run everything in containers instead: `docker compose --profile full up --build` (API on http://localhost:5080).
-Reset the database: `docker compose down -v`.
+Run everything (db, API, frontend) in containers instead, from the repo root: `docker compose up -d --build` (API on http://localhost:5080, frontend on http://localhost:5173).
+Reset the database (repo root): `docker compose down -v`.
 
 ## Configuration
 | Key | Notes |
@@ -42,8 +42,8 @@ Reset the database: `docker compose down -v`.
 
 ## Tests
 ```bash
+docker compose up -d --wait db          # from the repo root
 cd backend
-docker compose up -d --wait db
 dotnet build
 dotnet test
 ```
@@ -53,6 +53,8 @@ Integration tests boot the real API against a throwaway PostgreSQL database (cre
 EF tool is a local tool (`dotnet tool restore`).
 
 Phase 2 added the `Phase2MultiLocation` migration (`Data/Migrations/20261018040804_Phase2MultiLocation`): the `IsOwner` flag on users, `StripeTerminalLocationId` on locations, the `ItemVariationLocationOverrides` table (per-location price/tracking/threshold overrides), and a nullable `RefreshTokens.LocationId` (for Owner cross-location sessions). Its data step promotes the sole Admin, if there is exactly one, to Owner. Orders, stock and the ledger already carried `LocationId` from Phase 1, so no backfill is needed. It applies automatically in Development; elsewhere run `dotnet ef database update`.
+
+The `BrandingAssetsAndTimeClock` migration (`Data/Migrations/*_BrandingAssetsAndTimeClock`) adds tagline, primary color and logo/tarpaulin image columns (`bytea`) to `BrandSettings`, the clock PIN columns on users, and the `TimeEntries` table (with a partial unique index allowing one open entry per user and location). See `docs/api/branding-timeclock-api.md`.
 ```bash
 dotnet ef migrations add <Name> --project src/CafePos.Api --output-dir Data/Migrations
 dotnet ef database update --project src/CafePos.Api     # or just run the app in Development

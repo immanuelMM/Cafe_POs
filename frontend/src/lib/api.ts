@@ -99,14 +99,16 @@ export async function apiFetch(path: string, opts: RequestOptions = {}): Promise
 
   const send = () => {
     const headers: Record<string, string> = { Accept: 'application/json', ...opts.headers }
-    if (opts.body !== undefined) headers['Content-Type'] = 'application/json'
+    const isForm = opts.body instanceof FormData
+    // FormData: let the browser set the multipart Content-Type (with boundary).
+    if (opts.body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
     const token = useAuthStore.getState().accessToken
     if (!opts.anonymous && token) headers.Authorization = `Bearer ${token}`
     return fetch(url, {
       method: opts.method ?? 'GET',
       headers,
       credentials: 'include',
-      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      body: opts.body === undefined ? undefined : isForm ? (opts.body as FormData) : JSON.stringify(opts.body),
     })
   }
 

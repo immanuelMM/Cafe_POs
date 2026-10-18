@@ -8,6 +8,7 @@ import { errorMessage } from '../../lib/api'
 import { formatMoney } from '../../lib/format'
 import type { Item, Variation } from '../../lib/types'
 import { catalogCalls, useCatalogMutation, useCategories, useItems, useModifierLists } from './catalogApi'
+import { ItemPhotoSection, ItemThumb } from './ItemPhotoSection'
 import { OverridesEditor } from './OverridesEditor'
 import { RecipeEditor } from './RecipeEditor'
 
@@ -239,6 +240,9 @@ function ItemForm({ initial, onClose }: { initial: Item | null; onClose: () => v
           </button>
         </form>
 
+        {itemId && item && <ItemPhotoSection item={item} />}
+        {!itemId && <p className="field-hint">Save the item first to add a photo.</p>}
+
         {itemId && item && (
           <fieldset className="opt-group">
             <legend>Variations</legend>
@@ -286,6 +290,7 @@ export function ItemsTab() {
       <ul className="rows">
         {items.data?.data.map((it: Item) => (
           <li key={it.id} className="row">
+            <ItemThumb item={it} />
             <div className="grow">
               <strong>{it.name}</strong> <span className="muted">{catName(it.categoryId)}</span>
               <div className="muted">

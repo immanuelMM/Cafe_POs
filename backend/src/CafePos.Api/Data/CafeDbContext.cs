@@ -28,11 +28,15 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
     public Guid CurrentLocationId => _current?.LocationId ?? Guid.Empty;
 
     public DbSet<Location> Locations => Set<Location>();
+    public DbSet<BrandSettings> BrandSettings => Set<BrandSettings>();
+    public DbSet<BrandDesign> BrandDesigns => Set<BrandDesign>();
+    public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
     public DbSet<StaffAssignment> StaffAssignments => Set<StaffAssignment>();
     public DbSet<ItemVariationLocationOverride> ItemVariationLocationOverrides => Set<ItemVariationLocationOverride>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Item> Items => Set<Item>();
+    public DbSet<ItemImage> ItemImages => Set<ItemImage>();
     public DbSet<ItemVariation> ItemVariations => Set<ItemVariation>();
     public DbSet<ModifierList> ModifierLists => Set<ModifierList>();
     public DbSet<Modifier> Modifiers => Set<Modifier>();
@@ -69,6 +73,35 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
             e.Property(x => x.StripeTerminalLocationId).HasMaxLength(100);
         });
 
+        b.Entity<BrandSettings>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.Property(x => x.BrandName).HasMaxLength(100);
+            e.Property(x => x.Tagline).HasMaxLength(200);
+            e.Property(x => x.PrimaryColor).HasMaxLength(7);
+            e.Property(x => x.SecondaryColor).HasMaxLength(7);
+            e.Property(x => x.TertiaryColor).HasMaxLength(7);            e.Property(x => x.LogoContentType).HasMaxLength(50);
+            e.Property(x => x.TarpaulinContentType).HasMaxLength(50);
+            e.HasData(new BrandSettings());
+        });
+
+        b.Entity<TimeEntry>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.LocationId, x.UserId, x.ClockInAt });
+            e.HasIndex(x => new { x.UserId, x.LocationId }).IsUnique().HasFilter("\"ClockOutAt\" IS NULL").HasDatabaseName("IX_TimeEntries_OneOpenPerUserLocation");
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Location>().WithMany().HasForeignKey(x => x.LocationId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<BrandDesign>(e =>
+        {
+            e.HasKey(x => x.Kind);
+            e.Property(x => x.Kind).HasMaxLength(20);
+            e.Property(x => x.Document).HasColumnType("jsonb").Metadata.SetMaxLength(null); // undo the 500-char string convention
+        });
+
         b.Entity<StaffAssignment>(e =>
         {
             e.HasKey(x => new { x.UserId, x.LocationId });
@@ -103,6 +136,14 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
             e.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
             e.HasMany(x => x.Variations).WithOne(v => v.Item).HasForeignKey(v => v.ItemId).OnDelete(DeleteBehavior.Cascade);
             e.HasMany(x => x.ModifierLists).WithOne().HasForeignKey(x => x.ItemId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<ItemImage>(e =>
+        {
+            e.HasKey(x => x.ItemId);
+            e.Property(x => x.ItemId).ValueGeneratedNever();
+            e.Property(x => x.ContentType).HasMaxLength(50);
+            e.HasOne<Item>().WithOne().HasForeignKey<ItemImage>(x => x.ItemId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<ItemVariation>(e =>
@@ -213,6 +254,7 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
         b.Entity<StaffAssignment>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<IngredientStock>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<StockMovement>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        b.Entity<TimeEntry>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<Order>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<OrderItem>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<OrderItemModifier>().HasQueryFilter(x => x.LocationId == CurrentLocationId);

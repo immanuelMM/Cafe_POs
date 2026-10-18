@@ -60,6 +60,7 @@ export interface Item {
   active: boolean
   variations: Variation[]
   modifierListIds: string[]
+  imageUrl: string | null
 }
 export interface Modifier { id: string; name: string; priceDelta: number; active: boolean }
 export interface ModifierList {
@@ -160,3 +161,23 @@ export interface Receipt {
   changeGiven: number | null
   currency: string
 }
+
+export interface TimeClockStaff {
+  userId: string
+  displayName: string
+  role: Role
+  hasPin: boolean
+  clockedIn: boolean
+  openSince: string | null
+}
+export interface TimeEntry {
+  id: string
+  userId: string
+  displayName: string
+  locationId: string
+  clockInAt: string
+  clockOutAt: string | null
+  /** worked hours (2dp); null while the shift is open */
+  hours: number | null
+}
+export interface PunchResult { action: 'In' | 'Out'; entry: TimeEntry }

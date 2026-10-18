@@ -81,6 +81,12 @@ export const catalogCalls = {
   deleteCategory: (id: string) => api<void>(`/categories/${id}`, { method: 'DELETE' }),
   saveItem: (v: { id?: string; body: ItemInput }) =>
     v.id ? api<Item>(`/items/${v.id}`, { method: 'PUT', body: v.body }) : api<Item>('/items', { method: 'POST', body: v.body }),
+  uploadItemImage: (v: { id: string; file: Blob }) => {
+    const fd = new FormData()
+    fd.append('file', v.file, 'photo.jpg')
+    return api<Item>(`/items/${v.id}/image`, { method: 'PUT', body: fd })
+  },
+  deleteItemImage: (id: string) => api<Item>(`/items/${id}/image`, { method: 'DELETE' }),
   deleteItem: (id: string) => api<void>(`/items/${id}`, { method: 'DELETE' }),
   saveVariation: (v: { id?: string; itemId: string; body: VariationInput }) =>
     v.id

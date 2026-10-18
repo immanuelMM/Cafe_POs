@@ -22,13 +22,15 @@ public class UsersController : ControllerBase
     private readonly UserManager<ApplicationUser> _users;
     private readonly CafeDbContext _db;
     private readonly ILocationAccess _access;
+    private readonly IPasswordHasher<ApplicationUser> _hasher;
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserManager<ApplicationUser> users, CafeDbContext db, ILocationAccess access, ILogger<UsersController> logger)
+    public UsersController(UserManager<ApplicationUser> users, CafeDbContext db, ILocationAccess access, IPasswordHasher<ApplicationUser> hasher, ILogger<UsersController> logger)
     {
         _users = users;
         _db = db;
         _access = access;
+        _hasher = hasher;
         _logger = logger;
     }
 
@@ -159,6 +161,41 @@ public class UsersController : ControllerBase
         await DeactivateScopedAsync(user, ct);
         _logger.LogInformation("User {TargetId} deactivated/unassigned by {UserId}", id, User.RequireUserId());
         return NoContent();
+    }
+
+    /// <summary>Owner/Admin sets a user's time clock PIN. Same visibility as PUT /users/{id}; an Admin cannot touch an Owner (403).</summary>
+    [HttpPut("{id:guid}/pin")]
+    public async Task<IActionResult> SetPin(Guid id, SetPinRequest req, CancellationToken ct)
+    {
+        var user = await GetPinTargetAsync(id, ct);
+        user.ClockPinHash = _hasher.HashPassword(user, req.Pin);
+        user.ClockPinFailedCount = 0;
+        user.ClockPinLockedUntil = null;
+        await _users.UpdateAsync(user);
+        _logger.LogInformation("Time clock PIN set for {TargetId} by {UserId}", id, User.RequireUserId());
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}/pin")]
+    public async Task<IActionResult> ClearPin(Guid id, CancellationToken ct)
+    {
+        var user = await GetPinTargetAsync(id, ct);
+        user.ClockPinHash = null;
+        user.ClockPinFailedCount = 0;
+        user.ClockPinLockedUntil = null;
+        await _users.UpdateAsync(user);
+        _logger.LogInformation("Time clock PIN cleared for {TargetId} by {UserId}", id, User.RequireUserId());
+        return NoContent();
+    }
+
+    private async Task<ApplicationUser> GetPinTargetAsync(Guid id, CancellationToken ct)
+    {
+        if (!User.IsOwner())
+        {
+            var target = await _users.FindByIdAsync(id.ToString()) ?? throw ApiException.NotFound("User");
+            if (target.IsOwner) throw ApiException.Forbidden("Only an Owner can change an Owner's PIN.");
+        }
+        return await GetManageableAsync(id, ct);
     }
 
     /// <summary>Assign the user to a location with a role (or change the role if already assigned).</summary>

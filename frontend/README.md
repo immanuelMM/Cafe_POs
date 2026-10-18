@@ -9,8 +9,8 @@ Prerequisites: Node 20+, the backend running at http://localhost:5080.
 
 ```bash
 # 1. Backend (from repo root)
-cd backend
 docker compose up -d --wait db
+cd backend
 dotnet run --project src/CafePos.Api
 
 # 2. Frontend

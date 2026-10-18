@@ -24,6 +24,45 @@ public record SwitchLocationRequest
     public Guid? LocationId { get; init; }
 }
 
+// ---- Branding ----
+public record BrandingDto(string BrandName, string? Tagline, string PrimaryColor, string? LogoUrl, string? TarpaulinUrl, string? TarpaulinContentType,
+    string? SecondaryColor, string? TertiaryColor, bool Gradient, int GradientAngle);
+
+public record UpdateBrandingRequest
+{
+    [Required, MaxLength(100)] public string BrandName { get; init; } = "";
+    [MaxLength(200)] public string? Tagline { get; init; }
+    [Required, RegularExpression("^#[0-9a-fA-F]{6}$", ErrorMessage = "Primary color must look like #RRGGBB.")] public string PrimaryColor { get; init; } = "";
+    /// <summary>Optional; null or empty clears. Empty strings are allowed by the pattern so the client can clear.</summary>
+    [RegularExpression("^(#[0-9a-fA-F]{6})?$", ErrorMessage = "Secondary color must look like #RRGGBB.")] public string? SecondaryColor { get; init; }
+    [RegularExpression("^(#[0-9a-fA-F]{6})?$", ErrorMessage = "Tertiary color must look like #RRGGBB.")] public string? TertiaryColor { get; init; }
+    public bool Gradient { get; init; }
+    [Range(0, 360)] public int GradientAngle { get; init; } = BrandSettings.DefaultGradientAngle;
+}
+
+// ---- Time clock ----
+public record TimeClockStaffDto(Guid UserId, string DisplayName, string Role, bool HasPin, bool ClockedIn, DateTime? OpenSince);
+public record TimeEntryDto(Guid Id, Guid UserId, string DisplayName, Guid LocationId, DateTime ClockInAt, DateTime? ClockOutAt, decimal? Hours);
+public record PunchResultDto(string Action, TimeEntryDto Entry);
+
+public record PunchRequest
+{
+    [Required] public Guid? UserId { get; init; }
+    [Required] public string Pin { get; init; } = "";
+}
+
+public record SetPinRequest
+{
+    [Required, RegularExpression(@"^[0-9]{4,6}$", ErrorMessage = "PIN must be 4 to 6 digits.")] public string Pin { get; init; } = "";
+}
+
+/// <summary>Design-studio document. Document is opaque JSON owned by the frontend editor.</summary>
+public record BrandDesignDto(string Kind, System.Text.Json.JsonElement Document, DateTime UpdatedAt);
+public record SaveBrandDesignRequest
+{
+    [Required] public System.Text.Json.JsonElement Document { get; init; }
+}
+
 // ---- Locations ----
 public record LocationDto(Guid Id, string Name, string? Address, string TimeZone, string? ContactPhone, decimal VatRatePercent, bool Active,
     string? StripeTerminalLocationId);
@@ -112,8 +151,9 @@ public record UpsertCategoryRequest
 /// <summary>Price is the global price; EffectivePrice is what the caller's active location charges (override when present).</summary>
 public record VariationDto(Guid Id, Guid ItemId, string Name, string Sku, decimal Price, bool Active, decimal EffectivePrice);
 
+/// <summary>ImageUrl: versioned path relative to the API origin, or null when the item has no photo.</summary>
 public record ItemDto(Guid Id, Guid CategoryId, string Name, string? Description, int SortOrder, bool Active,
-    IReadOnlyList<VariationDto> Variations, IReadOnlyList<Guid> ModifierListIds);
+    IReadOnlyList<VariationDto> Variations, IReadOnlyList<Guid> ModifierListIds, string? ImageUrl);
 
 public record UpsertVariationRequest
 {

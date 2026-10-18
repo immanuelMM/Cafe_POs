@@ -9,6 +9,8 @@ import type { LocationDto } from '../../lib/types'
 import { useAuthStore } from '../auth/authStore'
 import { StaffList } from '../locations/StaffList'
 import { useCurrentLocation } from '../locations/locationsApi'
+import { useBranding } from '../branding/brandingApi'
+import { BrandSettings } from '../branding/BrandSettings'
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -90,9 +92,14 @@ function LocationForm({ loc }: { loc: LocationDto }) {
 export function SettingsPage() {
   const hasLocation = useAuthStore((s) => !!s.user?.location)
   const q = useCurrentLocation()
+  const brand = useBranding()
   return (
     <section className="page narrow">
-      <PageHeader title="Location settings" />
+      <PageHeader title="Brand" />
+      {brand.isLoading && <Spinner />}
+      {brand.error && <ErrorBox error={brand.error} onRetry={() => void brand.refetch()} />}
+      {brand.data && <BrandSettings brand={brand.data} />}
+      <h2 className="section-title">Location settings</h2>
       {!hasLocation && (
         <p className="muted">
           You are in the All locations view. Pick a location in the header to edit its settings, or manage every location under Locations.

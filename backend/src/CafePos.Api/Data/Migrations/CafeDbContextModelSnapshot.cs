@@ -34,6 +34,16 @@ namespace CafePos.Api.Data.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("ClockPinFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ClockPinHash")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ClockPinLockedUntil")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasMaxLength(500)
@@ -100,6 +110,90 @@ namespace CafePos.Api.Data.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("CafePos.Api.Domain.BrandDesign", b =>
+                {
+                    b.Property<string>("Kind")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Kind");
+
+                    b.ToTable("BrandDesigns");
+                });
+
+            modelBuilder.Entity("CafePos.Api.Domain.BrandSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("BrandName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("Gradient")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("GradientAngle")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LogoContentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("LogoData")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("PrimaryColor")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("SecondaryColor")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("Tagline")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TarpaulinContentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("TarpaulinData")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("TertiaryColor")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BrandSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BrandName = "Brew & Bean",
+                            Gradient = false,
+                            GradientAngle = 135,
+                            PrimaryColor = "#3b2417",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("CafePos.Api.Domain.Category", b =>
@@ -222,6 +316,9 @@ namespace CafePos.Api.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<DateTime?>("ImageUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -235,6 +332,25 @@ namespace CafePos.Api.Data.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("CafePos.Api.Domain.ItemImage", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("ItemId");
+
+                    b.ToTable("ItemImages");
                 });
 
             modelBuilder.Entity("CafePos.Api.Domain.ItemModifierList", b =>
@@ -728,6 +844,35 @@ namespace CafePos.Api.Data.Migrations
                     b.ToTable("StockMovements");
                 });
 
+            modelBuilder.Entity("CafePos.Api.Domain.TimeEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ClockInAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ClockOutAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "LocationId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TimeEntries_OneOpenPerUserLocation")
+                        .HasFilter("\"ClockOutAt\" IS NULL");
+
+                    b.HasIndex("LocationId", "UserId", "ClockInAt");
+
+                    b.ToTable("TimeEntries");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
@@ -826,6 +971,15 @@ namespace CafePos.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("CafePos.Api.Domain.ItemImage", b =>
+                {
+                    b.HasOne("CafePos.Api.Domain.Item", null)
+                        .WithOne()
+                        .HasForeignKey("CafePos.Api.Domain.ItemImage", "ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CafePos.Api.Domain.ItemModifierList", b =>
@@ -963,6 +1117,21 @@ namespace CafePos.Api.Data.Migrations
                     b.HasOne("CafePos.Api.Domain.Location", null)
                         .WithMany()
                         .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CafePos.Api.Domain.TimeEntry", b =>
+                {
+                    b.HasOne("CafePos.Api.Domain.Location", null)
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CafePos.Api.Domain.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
