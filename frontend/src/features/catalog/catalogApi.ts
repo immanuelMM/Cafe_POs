@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
-import type { Category, Item, ModifierList, Paged, Recipe, Variation } from '../../lib/types'
+import type { Category, Item, LocationOverride, ModifierList, Paged, Recipe, Variation } from '../../lib/types'
 
 export const useCategories = (includeInactive = false) =>
   useQuery({
@@ -37,6 +37,22 @@ export function useCatalogMutation<TVars, TRes = unknown>(fn: (v: TVars) => Prom
     },
   })
 }
+
+export interface OverrideInput {
+  priceOverride: number | null
+  trackInventoryOverride: boolean | null
+  lowStockThresholdOverride: number | null
+}
+
+export const useLocationOverrides = (variationId: string) =>
+  useQuery({
+    queryKey: ['location-overrides', variationId],
+    queryFn: () => api<LocationOverride[]>(`/variations/${variationId}/location-overrides`),
+  })
+
+/** PUT with all three fields null removes the override (204, no body). */
+export const saveOverride = (v: { variationId: string; locationId: string; body: OverrideInput }) =>
+  api<LocationOverride | undefined>(`/variations/${v.variationId}/location-overrides/${v.locationId}`, { method: 'PUT', body: v.body })
 
 export interface CategoryInput { name: string; sortOrder: number; active: boolean }
 export interface VariationInput { name: string; sku: string; price: number; active?: boolean }

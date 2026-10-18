@@ -43,7 +43,7 @@ export function ModifierSheet({ item, lists, onAdd, onClose }: Props) {
   const chosen = lists.flatMap((l) =>
     l.modifiers.filter((m) => m.active && (selected[l.id] ?? []).includes(m.id)).map((m) => ({ id: m.id, name: m.name, priceDelta: m.priceDelta })),
   )
-  const unit = round2((variation?.price ?? 0) + chosen.reduce((s, m) => s + m.priceDelta, 0))
+  const unit = round2((variation ? (variation.effectivePrice ?? variation.price) : 0) + chosen.reduce((s, m) => s + m.priceDelta, 0))
 
   const submit = () => {
     if (!variation || problems.length) return
@@ -51,7 +51,7 @@ export function ModifierSheet({ item, lists, onAdd, onClose }: Props) {
       itemName: item.name,
       variationId: variation.id,
       variationName: variation.name,
-      basePrice: variation.price,
+      basePrice: variation.effectivePrice ?? variation.price,
       modifiers: chosen,
       quantity: qty,
     })
@@ -87,7 +87,7 @@ export function ModifierSheet({ item, lists, onAdd, onClose }: Props) {
             <label key={v.id} className={`chip${v.id === variationId ? ' chip-on' : ''}`}>
               <input type="radio" name="variation" checked={v.id === variationId} onChange={() => setVariationId(v.id)} />
               <span>{v.name}</span>
-              <small>{formatMoney(v.price)}</small>
+              <small>{formatMoney(v.effectivePrice ?? v.price)}</small>
             </label>
           ))}
         </div>

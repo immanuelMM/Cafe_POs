@@ -8,6 +8,7 @@ import { errorMessage } from '../../lib/api'
 import { formatMoney } from '../../lib/format'
 import type { Item, Variation } from '../../lib/types'
 import { catalogCalls, useCatalogMutation, useCategories, useItems, useModifierLists } from './catalogApi'
+import { OverridesEditor } from './OverridesEditor'
 import { RecipeEditor } from './RecipeEditor'
 
 const num = (msg = 'Enter a number') => z.number({ invalid_type_error: msg })
@@ -30,7 +31,7 @@ const itemSchema = z.object({
 type ItemValues = z.infer<typeof itemSchema>
 
 /** Edit one existing variation (PUT/DELETE /variations/{id}) and open its recipe. */
-function VariationRow({ v, onRecipe }: { v: Variation; onRecipe: (v: Variation) => void }) {
+function VariationRow({ v, onRecipe, onOverrides }: { v: Variation; onRecipe: (v: Variation) => void; onOverrides: (v: Variation) => void }) {
   const save = useCatalogMutation(catalogCalls.saveVariation)
   const del = useCatalogMutation(catalogCalls.deleteVariation)
   const {
@@ -61,6 +62,9 @@ function VariationRow({ v, onRecipe }: { v: Variation; onRecipe: (v: Variation) 
         </button>
         <button type="button" className="btn btn-sm" onClick={() => onRecipe(v)}>
           Recipe
+        </button>
+        <button type="button" className="btn btn-sm" onClick={() => onOverrides(v)}>
+          Location prices
         </button>
         <button
           type="button"
@@ -119,6 +123,7 @@ function ItemForm({ initial, onClose }: { initial: Item | null; onClose: () => v
   const item = (itemId ? items.data?.data.find((i) => i.id === itemId) : undefined) ?? initial ?? undefined
   const save = useCatalogMutation(catalogCalls.saveItem)
   const [recipeFor, setRecipeFor] = useState<Variation | null>(null)
+  const [overridesFor, setOverridesFor] = useState<Variation | null>(null)
 
   const {
     register,
@@ -238,13 +243,14 @@ function ItemForm({ initial, onClose }: { initial: Item | null; onClose: () => v
           <fieldset className="opt-group">
             <legend>Variations</legend>
             {item.variations.map((v) => (
-              <VariationRow key={`${v.id}-${v.name}-${v.sku}-${v.price}-${v.active}`} v={v} onRecipe={setRecipeFor} />
+              <VariationRow key={`${v.id}-${v.name}-${v.sku}-${v.price}-${v.active}`} v={v} onRecipe={setRecipeFor} onOverrides={setOverridesFor} />
             ))}
             <NewVariation itemId={itemId} />
           </fieldset>
         )}
       </Modal>
       {recipeFor && <RecipeEditor variation={recipeFor} onClose={() => setRecipeFor(null)} />}
+      {overridesFor && <OverridesEditor variation={overridesFor} onClose={() => setOverridesFor(null)} />}
     </>
   )
 }

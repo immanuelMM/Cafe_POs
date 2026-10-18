@@ -10,6 +10,8 @@ import { ReceiptPage } from './features/orders/ReceiptPage'
 import { CatalogPage } from './features/catalog/CatalogPage'
 import { InventoryPage } from './features/inventory/InventoryPage'
 import { SettingsPage } from './features/settings/SettingsPage'
+import { LocationsPage } from './features/locations/LocationsPage'
+import { UsersPage } from './features/users/UsersPage'
 
 export function App() {
   useEffect(() => {
@@ -30,6 +32,10 @@ export function App() {
           </Route>
           <Route element={<ProtectedRoute roles={['Admin']} />}>
             <Route path="/admin/settings" element={<SettingsPage />} />
+            <Route path="/admin/users" element={<UsersPage />} />
+          </Route>
+          <Route element={<ProtectedRoute ownerOnly />}>
+            <Route path="/admin/locations" element={<LocationsPage />} />
           </Route>
         </Route>
       </Route>

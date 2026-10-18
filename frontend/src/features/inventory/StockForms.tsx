@@ -183,11 +183,11 @@ export function AdjustForm({ ing, onClose }: { ing: Ingredient; onClose: () => v
   )
 }
 
-export function MovementsModal({ ing, onClose }: { ing: Ingredient; onClose: () => void }) {
+export function MovementsModal({ ing, locationId, locationName, onClose }: { ing: Ingredient; locationId?: string; locationName?: string; onClose: () => void }) {
   const [page, setPage] = useState(1)
-  const q = useMovements(ing.id, page)
+  const q = useMovements(ing.id, page, locationId)
   return (
-    <Modal title={`Stock ledger: ${ing.name}`} onClose={onClose} wide>
+    <Modal title={`Stock ledger: ${ing.name}${locationName ? ` (${locationName})` : ''}`} onClose={onClose} wide>
       {q.isLoading && <Spinner />}
       {q.error && <ErrorBox error={q.error} onRetry={() => void q.refetch()} />}
       {q.data && q.data.data.length === 0 && <p className="muted">No movements yet.</p>}

@@ -4,7 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ErrorBox, PageHeader, Pager, Spinner } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import { formatDateTime, formatMoney } from '../../lib/format'
-import type { LocationDto, Order, OrderStatus, Paged } from '../../lib/types'
+import type { Order, OrderStatus, Paged } from '../../lib/types'
+import { useAuthStore } from '../auth/authStore'
+import { useCurrentLocation, useLocations } from '../locations/locationsApi'
 
 const PAGE_SIZE = 15
 
@@ -17,16 +19,24 @@ export function OrdersPage() {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
+  const [locationId, setLocationId] = useState('')
+  const user = useAuthStore((s) => s.user)
+  const owner = !!user?.isOwner
   const qc = useQueryClient()
 
-  const loc = useQuery({ queryKey: ['location'], queryFn: () => api<LocationDto>('/locations/current') })
-  const tz = loc.data?.timeZone ?? 'Asia/Manila'
+  const loc = useCurrentLocation()
+  const locations = useLocations(owner)
+  const locName = new Map((locations.data ?? []).map((l) => [l.id, l.name]))
+  const viewedLoc = locationId ? locations.data?.find((l) => l.id === locationId) : loc.data
+  const tz = viewedLoc?.timeZone ?? loc.data?.timeZone ?? 'Asia/Manila'
+  // Without an active location and without a filter the server returns every location's orders.
+  const spansLocations = owner && !locationId && !user?.location
 
   const orders = useQuery({
-    queryKey: ['orders', { status, from, to, page }],
+    queryKey: ['orders', { status, from, to, page, locationId }],
     queryFn: () =>
       api<Paged<Order>>('/orders', {
-        query: { status, from: from ? dayStart(from) : undefined, to: to ? dayEnd(to) : undefined, page, pageSize: PAGE_SIZE },
+        query: { status, from: from ? dayStart(from) : undefined, to: to ? dayEnd(to) : undefined, locationId: owner ? locationId : undefined, page, pageSize: PAGE_SIZE },
       }),
     placeholderData: (prev) => prev,
   })
@@ -45,6 +55,20 @@ export function OrdersPage() {
     <section className="page">
       <PageHeader title="Order history" />
       <form className="filters" onSubmit={(e) => e.preventDefault()}>
+        {owner && (
+          <label className="field">
+            <span className="field-label">Location</span>
+            <select value={locationId} onChange={(e) => reset(setLocationId)(e.target.value)}>
+              <option value="">{user?.location ? `Current (${user.location.name})` : 'All locations'}</option>
+              {(locations.data ?? []).map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                  {l.active ? '' : ' (inactive)'}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="field">
           <span className="field-label">Status</span>
           <select value={status} onChange={(e) => reset(setStatus)(e.target.value as '' | OrderStatus)}>
@@ -67,6 +91,7 @@ export function OrdersPage() {
           className="btn"
           onClick={() => {
             setStatus('')
+            setLocationId('')
             setFrom('')
             setTo('')
             setPage(1)
@@ -88,7 +113,10 @@ export function OrdersPage() {
               <summary>
                 <span className="order-no">{o.orderNumber != null ? `#${String(o.orderNumber).padStart(5, '0')}` : 'Open'}</span>
                 <span className="muted order-when">{formatDateTime(o.completedAt ?? o.createdAt, tz)}</span>
-                <span className="muted order-cashier">{o.cashierName}</span>
+                <span className="muted order-cashier">
+                  {o.cashierName}
+                  {spansLocations && <span className="loc-tag">{locName.get(o.locationId) ?? 'Unknown location'}</span>}
+                </span>
                 <span className={`badge badge-${o.status.toLowerCase()}`}>{o.status}</span>
                 <strong className="order-total">{formatMoney(o.total)}</strong>
               </summary>

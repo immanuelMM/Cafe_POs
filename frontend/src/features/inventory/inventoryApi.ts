@@ -2,13 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import type { Ingredient, Paged, StockMovement } from '../../lib/types'
 
-export const useIngredients = () =>
-  useQuery({ queryKey: ['ingredients'], queryFn: () => api<Ingredient[]>('/ingredients') })
-
-export const useMovements = (id: string | undefined, page: number) =>
+/** Stock levels for `locationId`, or the active location when omitted. An Owner with no active location must pass one. */
+export const useIngredients = (locationId?: string, enabled = true) =>
   useQuery({
-    queryKey: ['movements', id, page],
-    queryFn: () => api<Paged<StockMovement>>(`/ingredients/${id}/movements`, { query: { page, pageSize: 15 } }),
+    queryKey: ['ingredients', { locationId: locationId ?? null }],
+    queryFn: () => api<Ingredient[]>('/ingredients', { query: { locationId } }),
+    enabled,
+  })
+
+export const useMovements = (id: string | undefined, page: number, locationId?: string) =>
+  useQuery({
+    queryKey: ['movements', id, page, { locationId: locationId ?? null }],
+    queryFn: () => api<Paged<StockMovement>>(`/ingredients/${id}/movements`, { query: { locationId, page, pageSize: 15 } }),
     enabled: !!id,
     placeholderData: (prev) => prev,
   })

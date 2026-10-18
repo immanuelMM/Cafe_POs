@@ -1,4 +1,7 @@
-export type Role = 'Cashier' | 'Manager' | 'Admin'
+/** Per-location roles that can be assigned to a user. */
+export type AssignableRole = 'Cashier' | 'Manager' | 'Admin'
+/** `Owner` is a user flag; it is the session role for Owners (and role of every entry in an Owner's `locations`). */
+export type Role = AssignableRole | 'Owner'
 
 export interface UserLocation { locationId: string; locationName: string; role: Role }
 export interface User {
@@ -6,7 +9,9 @@ export interface User {
   email: string
   displayName: string
   role: Role
-  location: { id: string; name: string }
+  isOwner: boolean
+  /** null in an Owner cross-location ("All locations") session */
+  location: { id: string; name: string } | null
   locations: UserLocation[]
 }
 export interface AuthResponse { accessToken: string; expiresAt: string; user: User }
@@ -21,10 +26,31 @@ export interface LocationDto {
   contactPhone: string | null
   vatRatePercent: number
   active: boolean
+  stripeTerminalLocationId: string | null
+}
+
+export interface UserDto {
+  id: string
+  email: string
+  displayName: string
+  active: boolean
+  isOwner: boolean
+  locations: { locationId: string; locationName: string; role: AssignableRole }[]
+}
+export interface StaffMember { userId: string; email: string; displayName: string; role: AssignableRole; active: boolean }
+
+export interface LocationOverride {
+  variationId: string
+  locationId: string
+  locationName: string
+  priceOverride: number | null
+  trackInventoryOverride: boolean | null
+  lowStockThresholdOverride: number | null
+  effectivePrice: number
 }
 
 export interface Category { id: string; name: string; sortOrder: number; active: boolean }
-export interface Variation { id: string; itemId: string; name: string; sku: string; price: number; active: boolean }
+export interface Variation { id: string; itemId: string; name: string; sku: string; price: number; active: boolean; effectivePrice?: number }
 export interface Item {
   id: string
   categoryId: string
@@ -58,6 +84,7 @@ export type MovementReason = 'Sale' | 'Restock' | 'Adjustment' | 'Waste'
 export interface StockMovement {
   id: string
   ingredientId: string
+  locationId: string
   quantityDelta: number
   reason: MovementReason
   sourceDocumentRef: string | null

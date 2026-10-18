@@ -21,4 +21,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   setReady: () => set({ ready: true }),
 }))
 
-export const isManager = (u: User | null) => u?.role === 'Manager' || u?.role === 'Admin'
+export const isManager = (u: User | null) => !!u && (u.isOwner || u.role === 'Manager' || u.role === 'Admin')
+export const isAdmin = (u: User | null) => !!u && (u.isOwner || u.role === 'Admin')
+export const isOwner = (u: User | null) => !!u?.isOwner

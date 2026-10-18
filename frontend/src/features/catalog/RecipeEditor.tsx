@@ -3,13 +3,19 @@ import { Modal } from '../../components/Modal'
 import { ErrorBox, Spinner } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
 import type { Variation } from '../../lib/types'
+import { useAuthStore } from '../auth/authStore'
+import { useLocations } from '../locations/locationsApi'
 import { useIngredients } from '../inventory/inventoryApi'
 import { catalogCalls, useCatalogMutation, useRecipe } from './catalogApi'
 
 interface Line { ingredientId: string; quantity: string }
 
 function Editor({ variation, initial, onClose }: { variation: Variation; initial: Line[]; onClose: () => void }) {
-  const ings = useIngredients()
+  // Ingredients are global, but GET /ingredients needs a location; in an Owner "All locations" session borrow the first one.
+  const hasActive = useAuthStore((st) => !!st.user?.location)
+  const locs = useLocations(!hasActive)
+  const fallbackId = locs.data?.[0]?.id
+  const ings = useIngredients(hasActive ? undefined : fallbackId, hasActive || !!fallbackId)
   const [lines, setLines] = useState<Line[]>(initial)
   const save = useCatalogMutation(catalogCalls.saveRecipe, ['recipe'])
 

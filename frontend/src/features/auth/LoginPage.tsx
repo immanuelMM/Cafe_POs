@@ -33,6 +33,10 @@ export function LoginPage() {
 
   const onSubmit = async (v: Values) => {
     setError(null)
+    if (choices && !locationId) {
+      setError('Choose a location to sign in to.')
+      return
+    }
     try {
       await login(v.email, v.password, locationId || null)
       navigate((location.state as { from?: string } | null)?.from ?? '/pos', { replace: true })

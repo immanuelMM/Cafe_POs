@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { ErrorBox, Field, PageHeader, Spinner } from '../../components/ui'
 import { api, errorMessage } from '../../lib/api'
 import type { LocationDto } from '../../lib/types'
+import { useAuthStore } from '../auth/authStore'
+import { StaffList } from '../locations/StaffList'
+import { useCurrentLocation } from '../locations/locationsApi'
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -28,6 +31,7 @@ function LocationForm({ loc }: { loc: LocationDto }) {
     onSuccess: () => {
       setSaved(true)
       void qc.invalidateQueries({ queryKey: ['location'] })
+      void qc.invalidateQueries({ queryKey: ['locations'] })
     },
   })
   const {
@@ -84,13 +88,25 @@ function LocationForm({ loc }: { loc: LocationDto }) {
 }
 
 export function SettingsPage() {
-  const q = useQuery({ queryKey: ['location'], queryFn: () => api<LocationDto>('/locations/current') })
+  const hasLocation = useAuthStore((s) => !!s.user?.location)
+  const q = useCurrentLocation()
   return (
     <section className="page narrow">
       <PageHeader title="Location settings" />
-      {q.isLoading && <Spinner />}
+      {!hasLocation && (
+        <p className="muted">
+          You are in the All locations view. Pick a location in the header to edit its settings, or manage every location under Locations.
+        </p>
+      )}
+      {hasLocation && q.isLoading && <Spinner />}
       {q.error && <ErrorBox error={q.error} onRetry={() => void q.refetch()} />}
-      {q.data && <LocationForm key={q.data.id} loc={q.data} />}
+      {q.data && (
+        <>
+          <LocationForm key={q.data.id} loc={q.data} />
+          <h2 className="section-title">Staff at {q.data.name}</h2>
+          <StaffList locationId={q.data.id} />
+        </>
+      )}
     </section>
   )
 }

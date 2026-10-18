@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ErrorBox, PageHeader, Spinner } from '../../components/ui'
+import { useAuthStore } from '../auth/authStore'
+import { useLocations } from '../locations/locationsApi'
 import { formatQty } from '../../lib/format'
 import type { Ingredient } from '../../lib/types'
 import { STATUS_LABEL, stockStatus, useIngredients } from './inventoryApi'
@@ -8,7 +10,17 @@ import { AdjustForm, IngredientForm, MovementsModal, RestockForm } from './Stock
 type Dialog = { kind: 'new' } | { kind: 'edit' | 'restock' | 'adjust' | 'history'; ing: Ingredient } | null
 
 export function InventoryPage() {
-  const q = useIngredients()
+  const user = useAuthStore((s) => s.user)
+  const owner = !!user?.isOwner
+  const [locationId, setLocationId] = useState('')
+  const locations = useLocations(owner)
+  // Owner without an active location must choose a location to see stock.
+  const needsLocation = owner && !user?.location && !locationId
+  const q = useIngredients(owner ? locationId || undefined : undefined, !needsLocation)
+  const viewedId = (owner && locationId) || user?.location?.id
+  const viewedName = locations.data?.find((l) => l.id === viewedId)?.name ?? user?.location?.name
+  // Restocks, adjustments and new stock always post to the ACTIVE location, so only allow them when viewing it.
+  const canWrite = !!user?.location && (!locationId || locationId === user.location.id)
   const [lowOnly, setLowOnly] = useState(false)
   const [search, setSearch] = useState('')
   const [dialog, setDialog] = useState<Dialog>(null)
@@ -26,10 +38,33 @@ export function InventoryPage() {
   return (
     <section className="page">
       <PageHeader title="Inventory">
-        <button className="btn btn-primary" onClick={() => setDialog({ kind: 'new' })}>
+        <button className="btn btn-primary" disabled={!canWrite} onClick={() => setDialog({ kind: 'new' })}>
           + New ingredient
         </button>
       </PageHeader>
+
+      {owner && (
+        <div className="toolbar">
+          <label className="field loc-filter">
+            <span className="field-label">Location</span>
+            <select value={locationId} onChange={(e) => setLocationId(e.target.value)}>
+              <option value="">{user?.location ? `Current (${user.location.name})` : 'Select a location…'}</option>
+              {(locations.data ?? []).map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                  {l.active ? '' : ' (inactive)'}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
+      {needsLocation && <p className="muted">Pick a location above to see its stock levels.</p>}
+      {!needsLocation && !canWrite && (
+        <p className="muted">
+          Viewing {viewedName ?? 'another location'} read-only. Switch your active location in the header to restock or adjust stock there.
+        </p>
+      )}
 
       <div className="summary">
         <div className={`stat ${lowCount > 0 ? 'stat-low' : 'stat-ok'}`}>
@@ -71,10 +106,10 @@ export function InventoryPage() {
                 </small>
               </div>
               <div className="stock-actions">
-                <button className="btn btn-sm btn-primary" onClick={() => setDialog({ kind: 'restock', ing: i })}>
+                <button className="btn btn-sm btn-primary" disabled={!canWrite} onClick={() => setDialog({ kind: 'restock', ing: i })}>
                   Restock
                 </button>
-                <button className="btn btn-sm" onClick={() => setDialog({ kind: 'adjust', ing: i })}>
+                <button className="btn btn-sm" disabled={!canWrite} onClick={() => setDialog({ kind: 'adjust', ing: i })}>
                   Adjust / waste
                 </button>
                 <button className="btn btn-sm" onClick={() => setDialog({ kind: 'history', ing: i })}>
@@ -93,7 +128,7 @@ export function InventoryPage() {
       {dialog?.kind === 'edit' && <IngredientForm ing={dialog.ing} onClose={close} />}
       {dialog?.kind === 'restock' && <RestockForm ing={dialog.ing} onClose={close} />}
       {dialog?.kind === 'adjust' && <AdjustForm ing={dialog.ing} onClose={close} />}
-      {dialog?.kind === 'history' && <MovementsModal ing={dialog.ing} onClose={close} />}
+      {dialog?.kind === 'history' && <MovementsModal ing={dialog.ing} locationId={viewedId} locationName={viewedName} onClose={close} />}
     </section>
   )
 }
