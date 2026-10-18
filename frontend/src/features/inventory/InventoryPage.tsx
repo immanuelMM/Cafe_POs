@@ -14,9 +14,9 @@ export function InventoryPage() {
   const owner = !!user?.isOwner
   const [locationId, setLocationId] = useState('')
   const locations = useLocations(owner)
-  // Owner without an active location must choose a location to see stock.
-  const needsLocation = owner && !user?.location && !locationId
-  const q = useIngredients(owner ? locationId || undefined : undefined, !needsLocation)
+  // Owner without an active location and without a filter gets the global catalog (no stock figures).
+  const catalogOnly = owner && !user?.location && !locationId
+  const q = useIngredients(owner ? locationId || undefined : undefined)
   const viewedId = (owner && locationId) || user?.location?.id
   const viewedName = locations.data?.find((l) => l.id === viewedId)?.name ?? user?.location?.name
   // Restocks, adjustments and new stock always post to the ACTIVE location, so only allow them when viewing it.
@@ -29,11 +29,11 @@ export function InventoryPage() {
   const rows = useMemo(() => {
     const all = (q.data ?? []).filter((i) => i.active)
     return all
-      .filter((i) => (!lowOnly || i.isLowStock) && i.name.toLowerCase().includes(search.trim().toLowerCase()))
-      .sort((a, b) => Number(b.isLowStock) - Number(a.isLowStock) || a.name.localeCompare(b.name))
+      .filter((i) => (!lowOnly || i.isLowStock === true) && i.name.toLowerCase().includes(search.trim().toLowerCase()))
+      .sort((a, b) => Number(b.isLowStock === true) - Number(a.isLowStock === true) || a.name.localeCompare(b.name))
   }, [q.data, lowOnly, search])
 
-  const lowCount = (q.data ?? []).filter((i) => i.active && i.isLowStock).length
+  const lowCount = (q.data ?? []).filter((i) => i.active && i.isLowStock === true).length
 
   return (
     <section className="page">
@@ -48,7 +48,7 @@ export function InventoryPage() {
           <label className="field loc-filter">
             <span className="field-label">Location</span>
             <select value={locationId} onChange={(e) => setLocationId(e.target.value)}>
-              <option value="">{user?.location ? `Current (${user.location.name})` : 'Select a location…'}</option>
+              <option value="">{user?.location ? `Current (${user.location.name})` : 'All locations (catalog only)'}</option>
               {(locations.data ?? []).map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
@@ -59,8 +59,8 @@ export function InventoryPage() {
           </label>
         </div>
       )}
-      {needsLocation && <p className="muted">Pick a location above to see its stock levels.</p>}
-      {!needsLocation && !canWrite && (
+      {catalogOnly && <p className="muted">Showing the ingredient catalog only. Pick a location above to see its stock levels.</p>}
+      {!catalogOnly && !canWrite && (
         <p className="muted">
           Viewing {viewedName ?? 'another location'} read-only. Switch your active location in the header to restock or adjust stock there.
         </p>
@@ -95,11 +95,11 @@ export function InventoryPage() {
             <li key={i.id} className={`stock-row stock-${st}`}>
               <div className="stock-name">
                 <strong>{i.name}</strong>
-                <span className={`pill pill-${st}`}>{STATUS_LABEL[st]}</span>
+                {i.quantityOnHand !== null && <span className={`pill pill-${st}`}>{STATUS_LABEL[st]}</span>}
               </div>
               <div className="stock-qty">
                 <strong>
-                  {formatQty(i.quantityOnHand)} {i.unit}
+                  {i.quantityOnHand === null ? '—' : formatQty(i.quantityOnHand)} {i.unit}
                 </strong>
                 <small className="muted">
                   threshold {formatQty(i.lowStockThreshold)} {i.unit}
@@ -112,7 +112,7 @@ export function InventoryPage() {
                 <button className="btn btn-sm" disabled={!canWrite} onClick={() => setDialog({ kind: 'adjust', ing: i })}>
                   Adjust / waste
                 </button>
-                <button className="btn btn-sm" onClick={() => setDialog({ kind: 'history', ing: i })}>
+                <button className="btn btn-sm" disabled={catalogOnly} onClick={() => setDialog({ kind: 'history', ing: i })}>
                   Ledger
                 </button>
                 <button className="btn btn-sm btn-ghost" onClick={() => setDialog({ kind: 'edit', ing: i })}>

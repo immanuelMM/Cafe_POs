@@ -130,7 +130,7 @@ function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
   const [saved, setSaved] = useState(false)
   const save = useMutation({
     mutationFn: (v: EditValues) =>
-      userCalls.update({ id: u.id, body: { displayName: v.displayName, active: v.active, ...(owner ? { isOwner: v.isOwner } : {}) } }),
+      userCalls.update({ id: u.id, body: { displayName: v.displayName, ...(owner ? { active: v.active, isOwner: v.isOwner } : {}) } }),
     onSuccess: invalidate,
   })
   const {
@@ -161,13 +161,15 @@ function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
       <Field label="Display name" error={errors.displayName?.message}>
         <input {...register('displayName')} />
       </Field>
-      <label className="check">
-        <input type="checkbox" disabled={isSelf} {...register('active')} /> Active
-      </label>
       {owner && (
-        <label className="check">
-          <input type="checkbox" disabled={isSelf} {...register('isOwner')} /> Owner (unrestricted, all locations)
-        </label>
+        <>
+          <label className="check">
+            <input type="checkbox" disabled={isSelf} {...register('active')} /> Active (account-wide)
+          </label>
+          <label className="check">
+            <input type="checkbox" disabled={isSelf} {...register('isOwner')} /> Owner (unrestricted, all locations)
+          </label>
+        </>
       )}
       {isSelf && <small className="muted">You cannot deactivate or demote yourself.</small>}
       <button className="btn btn-primary" disabled={!isDirty || save.isPending}>
@@ -178,7 +180,6 @@ function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
 }
 
 function Assignments({ u }: { u: UserDto }) {
-  const me = useAuthStore((s) => s.user)
   const locations = useAssignableLocations()
   const invalidate = useInvalidateUsers()
   const assign = useMutation({ mutationFn: userCalls.assign, onSuccess: invalidate })
@@ -186,8 +187,6 @@ function Assignments({ u }: { u: UserDto }) {
   const [locationId, setLocationId] = useState('')
   const [role, setRole] = useState<AssignableRole>('Cashier')
   const error = assign.error ?? unassign.error
-  // Admins can only change assignments at their own location.
-  const editable = (id: string) => !!me?.isOwner || me?.location?.id === id
 
   if (u.isOwner) return <p className="muted">Owners work at every location and have no assignments.</p>
 
@@ -205,7 +204,7 @@ function Assignments({ u }: { u: UserDto }) {
               aria-label={`Role at ${a.locationName}`}
               className="role-select"
               value={a.role}
-              disabled={!editable(a.locationId) || assign.isPending}
+              disabled={assign.isPending}
               onChange={(e) => assign.mutate({ id: u.id, locationId: a.locationId, role: e.target.value as AssignableRole })}
             >
               {ROLES.map((r) => (
@@ -214,7 +213,7 @@ function Assignments({ u }: { u: UserDto }) {
             </select>
             <button
               className="btn btn-sm btn-danger-ghost"
-              disabled={!editable(a.locationId) || unassign.isPending}
+              disabled={unassign.isPending}
               onClick={() => window.confirm(`Remove ${u.displayName} from ${a.locationName}?`) && unassign.mutate({ id: u.id, locationId: a.locationId })}
             >
               Remove
@@ -272,7 +271,67 @@ function EditUserModal({ id, onClose }: { id: string; onClose: () => void }) {
   )
 }
 
-type Dialog = { kind: 'new' } | { kind: 'edit'; id: string } | null
+const existingSchema = z.object({
+  email: z.string().trim().min(1, 'Email is required').email('Enter a valid email'),
+  locationId: z.string().min(1, 'Choose a location'),
+  role: z.enum(['Cashier', 'Manager', 'Admin']),
+})
+type ExistingValues = z.infer<typeof existingSchema>
+
+/** Assign an existing user (exact email) to a location, or change their role there. */
+function AddExistingModal({ onClose }: { onClose: () => void }) {
+  const locations = useAssignableLocations()
+  const invalidate = useInvalidateUsers()
+  const add = useMutation({
+    mutationFn: (v: ExistingValues) => userCalls.addByEmail(v),
+    onSuccess: () => {
+      invalidate()
+      onClose()
+    },
+  })
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ExistingValues>({
+    resolver: zodResolver(existingSchema),
+    defaultValues: { email: '', locationId: locations.length === 1 ? locations[0].id : '', role: 'Cashier' },
+  })
+  return (
+    <Modal title="Add existing staff by email" onClose={onClose}>
+      <form className="form" noValidate onSubmit={handleSubmit((v) => add.mutate(v))}>
+        {add.error && <div className="alert alert-error" role="alert">{errorMessage(add.error)}</div>}
+        <Field label="User email (exact)" error={errors.email?.message} hint="The person must already have an account.">
+          <input type="email" autoComplete="off" inputMode="email" {...register('email')} />
+        </Field>
+        <div className="grid-2">
+          <Field label="Location" error={errors.locationId?.message}>
+            <select {...register('locationId')}>
+              <option value="">Select…</option>
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Role">
+            <select {...register('role')}>
+              {ROLES.map((r) => (
+                <option key={r}>{r}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        <button className="btn btn-primary" disabled={add.isPending}>
+          {add.isPending ? 'Adding…' : 'Add to location'}
+        </button>
+      </form>
+    </Modal>
+  )
+}
+
+type Dialog = { kind: 'new' } | { kind: 'existing' } | { kind: 'edit'; id: string } | null
 
 export function UsersPage() {
   const me = useAuthStore((s) => s.user)
@@ -286,10 +345,17 @@ export function UsersPage() {
   const q = useUsers({ search: search.trim(), locationId: owner ? locationId : '', page })
   const deactivate = useMutation({ mutationFn: userCalls.deactivate, onSuccess: invalidate })
   const close = () => setDialog(null)
+  const removeConfirm = (u: UserDto) =>
+    owner
+      ? `Deactivate the account of ${u.displayName}? They will be signed out everywhere and unable to log in.`
+      : `Remove ${u.displayName} from ${me?.location?.name ?? 'this location'}? Their account stays active at any other location they work at.`
 
   return (
     <section className="page">
       <PageHeader title="Staff">
+        <button className="btn" onClick={() => setDialog({ kind: 'existing' })}>
+          Add existing by email
+        </button>
         <button className="btn btn-primary" onClick={() => setDialog({ kind: 'new' })}>
           + New staff member
         </button>
@@ -354,9 +420,9 @@ export function UsersPage() {
                 <button
                   className="btn btn-sm btn-danger-ghost"
                   disabled={deactivate.isPending}
-                  onClick={() => window.confirm(`Deactivate ${u.displayName}? They will be signed out and unable to log in.`) && deactivate.mutate(u.id)}
+                  onClick={() => window.confirm(removeConfirm(u)) && deactivate.mutate(u.id)}
                 >
-                  Deactivate
+                  {owner ? 'Deactivate account' : 'Remove from location'}
                 </button>
               )}
             </div>
@@ -366,6 +432,7 @@ export function UsersPage() {
       {q.data && <Pager page={q.data.page} totalPages={q.data.totalPages} onPage={setPage} />}
 
       {dialog?.kind === 'new' && <CreateUserModal onClose={close} />}
+      {dialog?.kind === 'existing' && <AddExistingModal onClose={close} />}
       {dialog?.kind === 'edit' && <EditUserModal id={dialog.id} onClose={close} />}
     </section>
   )

@@ -108,7 +108,7 @@ export function RestockForm({ ing, onClose }: { ing: Ingredient; onClose: () => 
         )}
       >
         <p className="muted">
-          On hand: {formatQty(ing.quantityOnHand)} {ing.unit}
+          On hand: {formatQty(ing.quantityOnHand ?? 0)} {ing.unit}
         </p>
         {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
         <Field label={`Quantity received (${ing.unit})`} error={errors.quantity?.message}>
@@ -159,7 +159,7 @@ export function AdjustForm({ ing, onClose }: { ing: Ingredient; onClose: () => v
         )}
       >
         <p className="muted">
-          On hand: {formatQty(ing.quantityOnHand)} {ing.unit}
+          On hand: {formatQty(ing.quantityOnHand ?? 0)} {ing.unit}
         </p>
         {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
         <Field label="Type">

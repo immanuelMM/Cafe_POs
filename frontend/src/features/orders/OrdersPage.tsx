@@ -142,7 +142,7 @@ export function OrdersPage() {
                     </Link>
                   )}
                   {o.status === 'Open' && (
-                    <button className="btn" disabled={cancel.isPending} onClick={() => cancel.mutate(o.id)}>
+                    <button className="btn" disabled={cancel.isPending || !user?.location} title={user?.location ? undefined : 'Pick a location in the header to cancel orders'} onClick={() => cancel.mutate(o.id)}>
                       Cancel order
                     </button>
                   )}

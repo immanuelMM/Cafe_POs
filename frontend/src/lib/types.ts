@@ -77,8 +77,9 @@ export interface Ingredient {
   unit: string
   lowStockThreshold: number
   active: boolean
-  quantityOnHand: number
-  isLowStock: boolean
+  /** null in the global catalog view (Owner cross-location session without a locationId) */
+  quantityOnHand: number | null
+  isLowStock: boolean | null
 }
 export type MovementReason = 'Sale' | 'Restock' | 'Adjustment' | 'Waste'
 export interface StockMovement {

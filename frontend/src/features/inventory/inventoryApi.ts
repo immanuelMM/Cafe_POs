@@ -22,6 +22,7 @@ export type StockStatus = 'out' | 'low' | 'warn' | 'ok'
 
 /** Colour coding: red at/below threshold (server isLowStock), amber within 25% above it, otherwise green. */
 export function stockStatus(i: Ingredient): StockStatus {
+  if (i.quantityOnHand === null) return 'ok'
   if (i.quantityOnHand <= 0) return 'out'
   if (i.isLowStock) return 'low'
   if (i.quantityOnHand <= i.lowStockThreshold * 1.25) return 'warn'
