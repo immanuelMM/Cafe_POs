@@ -51,6 +51,9 @@ namespace CafePos.Api.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsOwner")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -284,6 +287,32 @@ namespace CafePos.Api.Data.Migrations
                     b.ToTable("ItemVariations");
                 });
 
+            modelBuilder.Entity("CafePos.Api.Domain.ItemVariationLocationOverride", b =>
+                {
+                    b.Property<Guid>("ItemVariationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("LowStockThresholdOverride")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal?>("PriceOverride")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool?>("TrackInventoryOverride")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("ItemVariationId", "LocationId");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("ItemVariationLocationOverrides");
+                });
+
             modelBuilder.Entity("CafePos.Api.Domain.Location", b =>
                 {
                     b.Property<Guid>("Id")
@@ -307,6 +336,10 @@ namespace CafePos.Api.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<string>("StripeTerminalLocationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("TimeZone")
                         .IsRequired()
@@ -602,7 +635,7 @@ namespace CafePos.Api.Data.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("LocationId")
+                    b.Property<Guid?>("LocationId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("RevokedAt")
@@ -821,6 +854,21 @@ namespace CafePos.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("CafePos.Api.Domain.ItemVariationLocationOverride", b =>
+                {
+                    b.HasOne("CafePos.Api.Domain.ItemVariation", null)
+                        .WithMany()
+                        .HasForeignKey("ItemVariationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CafePos.Api.Domain.Location", null)
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CafePos.Api.Domain.Modifier", b =>

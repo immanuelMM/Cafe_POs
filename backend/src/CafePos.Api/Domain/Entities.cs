@@ -7,9 +7,15 @@ public static class Roles
     public const string Cashier = "Cashier";
     public const string Manager = "Manager";
     public const string Admin = "Admin";
-    /// <summary>Comma list for [Authorize(Roles = ...)]: Manager and Admin (Admin is a superset of Manager).</summary>
-    public const string ManagerUp = "Manager,Admin";
-    public static readonly string[] All = { Cashier, Manager, Admin };
+    /// <summary>Unrestricted across all locations. A user flag (ApplicationUser.IsOwner), not a StaffAssignment role.</summary>
+    public const string Owner = "Owner";
+    /// <summary>Comma list for [Authorize(Roles = ...)]: Manager, Admin and Owner.</summary>
+    public const string ManagerUp = "Manager,Admin,Owner";
+    /// <summary>Admin and Owner.</summary>
+    public const string AdminUp = "Admin,Owner";
+    /// <summary>Roles that can be stored in a StaffAssignment.</summary>
+    public static readonly string[] Assignable = { Cashier, Manager, Admin };
+    public static readonly string[] All = { Cashier, Manager, Admin, Owner };
 }
 
 public enum OrderStatus { Open, Completed, Canceled }
@@ -26,6 +32,8 @@ public class Location
     public string? Address { get; set; }
     public string TimeZone { get; set; } = "Asia/Manila";
     public string? ContactPhone { get; set; }
+    /// <summary>Stripe Terminal's own Location object id (not this entity); unused until the Stripe phase.</summary>
+    public string? StripeTerminalLocationId { get; set; }
     /// <summary>VAT percent (12 = 12%). Catalog prices are VAT-INCLUSIVE; see PricingCalculator.</summary>
     public decimal VatRatePercent { get; set; } = 12m;
     public bool Active { get; set; } = true;
@@ -37,6 +45,8 @@ public class ApplicationUser : IdentityUser<Guid>
 {
     public string DisplayName { get; set; } = "";
     public bool Active { get; set; } = true;
+    /// <summary>Unrestricted: sees/acts on every location, no StaffAssignment rows needed.</summary>
+    public bool IsOwner { get; set; }
 }
 
 /// <summary>A user role at a location (plan 4.8). One role per (user, location).</summary>
@@ -53,7 +63,8 @@ public class RefreshToken
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
-    public Guid LocationId { get; set; }
+    /// <summary>Active location the session was created for; null for an Owner's cross-location session.</summary>
+    public Guid? LocationId { get; set; }
     public string TokenHash { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
@@ -93,6 +104,22 @@ public class ItemVariation
     public bool Active { get; set; } = true;
     public Item? Item { get; set; }
     public List<RecipeLine> Recipe { get; set; } = new();
+}
+
+/// <summary>
+/// Optional per-location tweak of a global variation (plan 4.2). Not ILocationScoped: it is catalog configuration that an Owner
+/// may edit for any location, so access is checked explicitly in the controller.
+/// </summary>
+public class ItemVariationLocationOverride
+{
+    public Guid ItemVariationId { get; set; }
+    public Guid LocationId { get; set; }
+    /// <summary>VAT-inclusive price at this location; null inherits ItemVariation.Price.</summary>
+    public decimal? PriceOverride { get; set; }
+    /// <summary>false = sales of this variation at this location do not consume recipe stock; null inherits (tracked).</summary>
+    public bool? TrackInventoryOverride { get; set; }
+    /// <summary>Stored for the location; not yet enforced anywhere (ingredient thresholds stay global).</summary>
+    public decimal? LowStockThresholdOverride { get; set; }
 }
 
 public class ModifierList

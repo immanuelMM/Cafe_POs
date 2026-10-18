@@ -75,7 +75,12 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    public Task<HttpClient> AdminAsync() => LoginAsync(DevDataSeeder.AdminEmail, DevDataSeeder.AdminPassword);
+    /// <summary>The seeded Owner, switched into the Main location (location-scoped work needs an active location).</summary>
+    public Task<HttpClient> AdminAsync() => LoginAsync(DevDataSeeder.AdminEmail, DevDataSeeder.AdminPassword, DevDataSeeder.MainLocationId);
+    /// <summary>The seeded Owner in the cross-location session (no active location).</summary>
+    public Task<HttpClient> OwnerAsync() => LoginAsync(DevDataSeeder.AdminEmail, DevDataSeeder.AdminPassword);
+    public Task<HttpClient> ManagerAsync(Guid locationId) => LoginAsync(DevDataSeeder.ManagerEmail, DevDataSeeder.ManagerPassword, locationId);
+    public Task<HttpClient> UptownCashierAsync() => LoginAsync(DevDataSeeder.UptownCashierEmail, DevDataSeeder.UptownCashierPassword);
     public Task<HttpClient> CashierAsync() => LoginAsync(DevDataSeeder.CashierEmail, DevDataSeeder.CashierPassword);
 
     /// <summary>A DbContext scoped to a given location (null = system context with no location).</summary>
@@ -117,6 +122,7 @@ public sealed class FixedLocation : ICurrentLocation
     public FixedLocation(Guid? locationId) => LocationId = locationId;
     public Guid? LocationId { get; }
     public Guid? UserId => null;
+    public bool IsOwner => false;
 }
 
 public static class TestExtensions

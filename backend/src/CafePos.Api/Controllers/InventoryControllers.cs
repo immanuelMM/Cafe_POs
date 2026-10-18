@@ -10,71 +10,32 @@ using Microsoft.EntityFrameworkCore;
 namespace CafePos.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/locations")]
-[Authorize]
-public class LocationsController : ControllerBase
-{
-    private readonly CafeDbContext _db;
-    private readonly ILogger<LocationsController> _logger;
-    public LocationsController(CafeDbContext db, ILogger<LocationsController> logger) { _db = db; _logger = logger; }
-
-    private static LocationDto Map(Location l) => new(l.Id, l.Name, l.Address, l.TimeZone, l.ContactPhone, l.VatRatePercent, l.Active);
-
-    /// <summary>Locations the caller is assigned to.</summary>
-    [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<LocationDto>>> List(CancellationToken ct)
-    {
-        var userId = User.RequireUserId();
-        var rows = await _db.StaffAssignments.AsNoTracking().Where(a => a.UserId == userId).Select(a => a.Location!).OrderBy(l => l.Name).ToListAsync(ct);
-        return rows.Select(Map).ToList();
-    }
-
-    /// <summary>The caller's active location (name, address, VAT rate for the POS header and tax display).</summary>
-    [HttpGet("current")]
-    public async Task<ActionResult<LocationDto>> Current(CancellationToken ct) =>
-        Map(await _db.Locations.AsNoTracking().FirstAsync(l => l.Id == User.RequireLocationId(), ct));
-
-    /// <summary>Admin only, own active location. Use this to configure the VAT rate.</summary>
-    [HttpPut("{id:guid}"), Authorize(Roles = Roles.Admin)]
-    public async Task<ActionResult<LocationDto>> Update(Guid id, UpdateLocationRequest req, CancellationToken ct)
-    {
-        if (id != User.RequireLocationId()) throw ApiException.NotFound("Location"); // cannot touch other locations
-        try { TimeZoneInfo.FindSystemTimeZoneById(req.TimeZone); }
-        catch (TimeZoneNotFoundException) { throw ApiException.Unprocessable("Invalid time zone", $"'{req.TimeZone}' is not a known IANA time zone."); }
-
-        var loc = await _db.Locations.FirstAsync(l => l.Id == id, ct);
-        loc.Name = req.Name.Trim();
-        loc.Address = req.Address;
-        loc.TimeZone = req.TimeZone;
-        loc.ContactPhone = req.ContactPhone;
-        loc.VatRatePercent = req.VatRatePercent;
-        await _db.SaveChangesAsync(ct);
-        _logger.LogInformation("Location {LocationId} updated by {UserId}; VAT rate {Vat}", id, User.RequireUserId(), loc.VatRatePercent);
-        return Map(loc);
-    }
-}
-
-[ApiController]
 [Route("api/v1")]
 [Authorize]
 public class InventoryController : ControllerBase
 {
     private readonly CafeDbContext _db;
     private readonly StockService _stock;
-    public InventoryController(CafeDbContext db, StockService stock) { _db = db; _stock = stock; }
+    private readonly ILocationAccess _access;
+    public InventoryController(CafeDbContext db, StockService stock, ILocationAccess access) { _db = db; _stock = stock; _access = access; }
 
     private static IngredientDto Map(Ingredient i, decimal onHand) =>
         new(i.Id, i.Name, i.Unit, i.LowStockThreshold, i.Active, onHand, onHand <= i.LowStockThreshold);
 
     private static StockMovementDto Map(StockMovement m) =>
-        new(m.Id, m.IngredientId, m.QuantityDelta, m.Reason.ToString(), m.SourceDocumentRef, m.Note, m.Supplier, m.UnitCost, m.CreatedAt, m.UserId);
+        new(m.Id, m.IngredientId, m.LocationId, m.QuantityDelta, m.Reason.ToString(), m.SourceDocumentRef, m.Note, m.Supplier, m.UnitCost, m.CreatedAt, m.UserId);
 
-    private async Task<List<IngredientDto>> QueryAsync(bool lowOnly, bool includeInactive, CancellationToken ct)
+    private async Task<List<IngredientDto>> QueryAsync(bool lowOnly, bool includeInactive, Guid? locationId, CancellationToken ct)
     {
-        // Left join onto the per-location stock rows (query-filtered to the active location).
+        // Left join onto the per-location stock rows. Active location: the global query filter applies. Another location
+        // (Owner only, resolved by ILocationAccess): explicit IgnoreQueryFilters restricted to that one location.
+        var target = await _access.ResolveAsync(User, locationId, ct);
+        var stocks = target.CrossLocation
+            ? _db.IngredientStocks.IgnoreQueryFilters().AsNoTracking().Where(s => s.LocationId == target.LocationId)
+            : _db.IngredientStocks.AsNoTracking();
         var rows = await (from i in _db.Ingredients.AsNoTracking()
                           where includeInactive || i.Active
-                          join s in _db.IngredientStocks.AsNoTracking() on i.Id equals s.IngredientId into ss
+                          join s in stocks on i.Id equals s.IngredientId into ss
                           from s in ss.DefaultIfEmpty()
                           orderby i.Name
                           select new { Ingredient = i, OnHand = s == null ? 0m : s.QuantityOnHand }).ToListAsync(ct);
@@ -82,23 +43,25 @@ public class InventoryController : ControllerBase
     }
 
     [HttpGet("ingredients")]
-    public async Task<ActionResult<IReadOnlyList<IngredientDto>>> List([FromQuery] bool includeInactive = false, CancellationToken ct = default) =>
-        await QueryAsync(false, includeInactive && User.IsManagerUp(), ct);
+    public async Task<ActionResult<IReadOnlyList<IngredientDto>>> List([FromQuery] bool includeInactive = false, [FromQuery] Guid? locationId = null, CancellationToken ct = default) =>
+        await QueryAsync(false, includeInactive && User.IsManagerUp(), locationId, ct);
 
-    /// <summary>Ingredients at or below their low-stock threshold at the active location.</summary>
+    /// <summary>Ingredients at or below their low-stock threshold at the active location (or `locationId`, Owner only).</summary>
     [HttpGet("ingredients/low-stock")]
-    public async Task<ActionResult<IReadOnlyList<IngredientDto>>> LowStock(CancellationToken ct) =>
-        await QueryAsync(true, false, ct);
+    public async Task<ActionResult<IReadOnlyList<IngredientDto>>> LowStock([FromQuery] Guid? locationId, CancellationToken ct) =>
+        await QueryAsync(true, false, locationId, ct);
 
     [HttpPost("ingredients"), Authorize(Roles = Roles.ManagerUp)]
     public async Task<ActionResult<IngredientDto>> Create(CreateIngredientRequest req, CancellationToken ct)
     {
         var name = req.Name.Trim();
+        var hasLocation = User.ActiveLocationId() is not null; // an Owner cross-location session can still create the global ingredient
+        if (req.InitialQuantity > 0 && !hasLocation) throw ApiException.LocationRequired();
         if (await _db.Ingredients.AnyAsync(i => i.Name == name, ct)) throw ApiException.Conflict("Duplicate ingredient", $"'{name}' already exists.");
         var ing = new Ingredient { Id = Guid.NewGuid(), Name = name, Unit = req.Unit.Trim(), LowStockThreshold = req.LowStockThreshold };
         _db.Ingredients.Add(ing);
         await _db.SaveChangesAsync(ct);
-        await _stock.EnsureStockRowAsync(ing.Id, ct);
+        if (hasLocation) await _stock.EnsureStockRowAsync(ing.Id, ct);
         if (req.InitialQuantity > 0)
             await _stock.ApplyManualAsync(ing.Id, req.InitialQuantity, StockMovementReason.Adjustment, User.RequireUserId(), "Opening balance", null, null, ct);
         var onHand = await _db.IngredientStocks.Where(s => s.IngredientId == ing.Id).Select(s => s.QuantityOnHand).FirstOrDefaultAsync(ct);
@@ -120,13 +83,16 @@ public class InventoryController : ControllerBase
         return Map(ing, onHand);
     }
 
-    /// <summary>Ledger history for one ingredient at the active location, newest first.</summary>
+    /// <summary>Ledger history for one ingredient at the active location (or `locationId`, Owner only), newest first.</summary>
     [HttpGet("ingredients/{id:guid}/movements"), Authorize(Roles = Roles.ManagerUp)]
-    public async Task<ActionResult<PagedResult<StockMovementDto>>> Movements(Guid id, [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken ct)
+    public async Task<ActionResult<PagedResult<StockMovementDto>>> Movements(Guid id, [FromQuery] Guid? locationId, [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken ct)
     {
         if (!await _db.Ingredients.AnyAsync(i => i.Id == id, ct)) throw ApiException.NotFound("Ingredient");
+        var target = await _access.ResolveAsync(User, locationId, ct);
         var (p, ps) = Paging.Normalize(page, pageSize);
-        var q = _db.StockMovements.AsNoTracking().Where(m => m.IngredientId == id);
+        var q = (target.CrossLocation
+                ? _db.StockMovements.IgnoreQueryFilters().Where(m => m.LocationId == target.LocationId)
+                : _db.StockMovements).AsNoTracking().Where(m => m.IngredientId == id);
         var total = await q.CountAsync(ct);
         var rows = await q.OrderByDescending(m => m.CreatedAt).Skip((p - 1) * ps).Take(ps).ToListAsync(ct);
         return new PagedResult<StockMovementDto>(rows.Select(Map).ToList(), p, ps, total);

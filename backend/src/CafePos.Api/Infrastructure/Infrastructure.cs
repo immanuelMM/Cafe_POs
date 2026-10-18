@@ -23,6 +23,9 @@ public class ApiException : Exception
     public static ApiException NotFound(string what) => new(404, "Not found", $"{what} was not found.");
     public static ApiException Conflict(string title, string? detail = null, IDictionary<string, object?>? ext = null) => new(409, title, detail, ext);
     public static ApiException BadRequest(string title, string? detail = null) => new(400, title, detail);
+    public static ApiException Forbidden(string detail) => new(403, "Forbidden", detail);
+    public static ApiException LocationRequired() =>
+        new(400, "Location required", "This request needs an active location. Owners: call POST /api/v1/auth/switch-location or pass locationId.");
     public static ApiException Unprocessable(string title, string? detail = null) => new(422, title, detail);
 }
 
@@ -67,6 +70,7 @@ public sealed class HttpCurrentLocation : ICurrentLocation
 
     public Guid? LocationId => Guid.TryParse(User?.FindFirstValue(AppClaims.LocationId), out var id) ? id : null;
     public Guid? UserId => Guid.TryParse(User?.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+    public bool IsOwner => User?.IsInRole(CafePos.Api.Domain.Roles.Owner) == true;
 }
 
 public static class AppClaims
@@ -77,7 +81,12 @@ public static class AppClaims
 public static class ClaimsExtensions
 {
     public static bool IsManagerUp(this ClaimsPrincipal user) =>
-        user.IsInRole(CafePos.Api.Domain.Roles.Manager) || user.IsInRole(CafePos.Api.Domain.Roles.Admin);
+        user.IsInRole(CafePos.Api.Domain.Roles.Manager) || user.IsInRole(CafePos.Api.Domain.Roles.Admin) || user.IsOwner();
+
+    public static bool IsOwner(this ClaimsPrincipal user) => user.IsInRole(CafePos.Api.Domain.Roles.Owner);
+
+    public static Guid? ActiveLocationId(this ClaimsPrincipal user) =>
+        Guid.TryParse(user.FindFirstValue(AppClaims.LocationId), out var id) ? id : null;
 
     public static Guid RequireUserId(this ClaimsPrincipal user) =>
         Guid.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
@@ -87,7 +96,9 @@ public static class ClaimsExtensions
     public static Guid RequireLocationId(this ClaimsPrincipal user) =>
         Guid.TryParse(user.FindFirstValue(AppClaims.LocationId), out var id)
             ? id
-            : throw new ApiException(401, "Unauthorized", "Token has no active location.");
+            : user.IsOwner()
+                ? throw new ApiException(400, "Location required", "This Owner session has no active location. Call POST /api/v1/auth/switch-location first.")
+                : throw new ApiException(401, "Unauthorized", "Token has no active location.");
 }
 
 /// <summary>Offset pagination envelope.</summary>

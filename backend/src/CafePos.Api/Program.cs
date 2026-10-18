@@ -53,8 +53,9 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
-builder.Services.AddAuthorization(o =>
-    o.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()); // secure by default
+builder.Services.AddAuthorization(Policies.Register);
+builder.Services.AddSingleton<IAuthorizationHandler, LocationAccessHandler>();
+builder.Services.AddScoped<ILocationAccess, LocationAccess>();
 
 // ---- App services ----
 builder.Services.AddScoped<TokenService>();

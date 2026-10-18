@@ -68,10 +68,21 @@ public class ItemsController : ControllerBase
     private readonly ILogger<ItemsController> _logger;
     public ItemsController(CafeDbContext db, ILogger<ItemsController> logger) { _db = db; _logger = logger; }
 
-    private static VariationDto Map(ItemVariation v) => new(v.Id, v.ItemId, v.Name, v.Sku, v.Price, v.Active);
+    /// <summary>Price overrides at the caller's active location, by variation id (empty for an Owner without an active location).</summary>
+    private async Task<Dictionary<Guid, decimal>> PriceOverridesAsync(CancellationToken ct)
+    {
+        var loc = User.ActiveLocationId();
+        if (loc is null) return new();
+        return await _db.ItemVariationLocationOverrides.AsNoTracking()
+            .Where(o => o.LocationId == loc && o.PriceOverride != null)
+            .ToDictionaryAsync(o => o.ItemVariationId, o => o.PriceOverride!.Value, ct);
+    }
 
-    private static ItemDto Map(Item i, bool includeInactiveVariations) => new(i.Id, i.CategoryId, i.Name, i.Description, i.SortOrder, i.Active,
-        i.Variations.Where(v => includeInactiveVariations || v.Active).OrderBy(v => v.Price).Select(Map).ToList(),
+    private static VariationDto Map(ItemVariation v, IReadOnlyDictionary<Guid, decimal> prices) =>
+        new(v.Id, v.ItemId, v.Name, v.Sku, v.Price, v.Active, prices.TryGetValue(v.Id, out var p) ? p : v.Price);
+
+    private static ItemDto Map(Item i, bool includeInactiveVariations, IReadOnlyDictionary<Guid, decimal> prices) => new(i.Id, i.CategoryId, i.Name, i.Description, i.SortOrder, i.Active,
+        i.Variations.Where(v => includeInactiveVariations || v.Active).OrderBy(v => v.Price).Select(v => Map(v, prices)).ToList(),
         i.ModifierLists.Select(m => m.ModifierListId).ToList());
 
     private IQueryable<Item> Query() => _db.Items.Include(i => i.Variations).Include(i => i.ModifierLists);
@@ -87,15 +98,16 @@ public class ItemsController : ControllerBase
         if (categoryId is not null) q = q.Where(i => i.CategoryId == categoryId);
         if (!string.IsNullOrWhiteSpace(search)) q = q.Where(i => EF.Functions.ILike(i.Name, $"%{search.Trim()}%"));
         var total = await q.CountAsync(ct);
+        var prices = await PriceOverridesAsync(ct);
         var rows = await q.OrderBy(i => i.SortOrder).ThenBy(i => i.Name).Skip((p - 1) * ps).Take(ps).ToListAsync(ct);
-        return new PagedResult<ItemDto>(rows.Select(i => Map(i, inactive)).ToList(), p, ps, total);
+        return new PagedResult<ItemDto>(rows.Select(i => Map(i, inactive, prices)).ToList(), p, ps, total);
     }
 
     [HttpGet("items/{id:guid}")]
     public async Task<ActionResult<ItemDto>> Get(Guid id, CancellationToken ct)
     {
         var item = await Query().AsNoTracking().FirstOrDefaultAsync(i => i.Id == id, ct) ?? throw ApiException.NotFound("Item");
-        return Map(item, User.IsManagerUp());
+        return Map(item, User.IsManagerUp(), await PriceOverridesAsync(ct));
     }
 
     [HttpPost("items"), Authorize(Roles = Roles.ManagerUp)]
@@ -121,7 +133,7 @@ public class ItemsController : ControllerBase
         _db.Items.Add(item);
         await _db.SaveChangesAsync(ct);
         _logger.LogInformation("Item {ItemId} created with {Count} variations", item.Id, item.Variations.Count);
-        return Created($"/api/v1/items/{item.Id}", Map(item, true));
+        return Created($"/api/v1/items/{item.Id}", Map(item, true, await PriceOverridesAsync(ct)));
     }
 
     [HttpPut("items/{id:guid}"), Authorize(Roles = Roles.ManagerUp)]
@@ -147,7 +159,7 @@ public class ItemsController : ControllerBase
                 item.ModifierLists.Add(new ItemModifierList { ItemId = item.Id, ModifierListId = mid });
         }
         await _db.SaveChangesAsync(ct);
-        return Map(item, true);
+        return Map(item, true, await PriceOverridesAsync(ct));
     }
 
     [HttpDelete("items/{id:guid}"), Authorize(Roles = Roles.ManagerUp)]
@@ -165,8 +177,9 @@ public class ItemsController : ControllerBase
     {
         if (!await _db.Items.AnyAsync(i => i.Id == id, ct)) throw ApiException.NotFound("Item");
         var inactive = User.IsManagerUp();
+        var prices = await PriceOverridesAsync(ct);
         return (await _db.ItemVariations.AsNoTracking().Where(v => v.ItemId == id && (inactive || v.Active)).OrderBy(v => v.Price).ToListAsync(ct))
-            .Select(Map).ToList();
+            .Select(v => Map(v, prices)).ToList();
     }
 
     [HttpPost("items/{id:guid}/variations"), Authorize(Roles = Roles.ManagerUp)]
@@ -177,7 +190,7 @@ public class ItemsController : ControllerBase
         var v = new ItemVariation { Id = Guid.NewGuid(), ItemId = id, Name = req.Name.Trim(), Sku = req.Sku.Trim(), Price = req.Price, Active = req.Active ?? true };
         _db.ItemVariations.Add(v);
         await _db.SaveChangesAsync(ct);
-        return Created($"/api/v1/variations/{v.Id}", Map(v));
+        return Created($"/api/v1/variations/{v.Id}", Map(v, await PriceOverridesAsync(ct)));
     }
 
     [HttpPut("variations/{id:guid}"), Authorize(Roles = Roles.ManagerUp)]
@@ -190,7 +203,7 @@ public class ItemsController : ControllerBase
         v.Price = req.Price;
         if (req.Active is not null) v.Active = req.Active.Value;
         await _db.SaveChangesAsync(ct);
-        return Map(v);
+        return Map(v, await PriceOverridesAsync(ct));
     }
 
     [HttpDelete("variations/{id:guid}"), Authorize(Roles = Roles.ManagerUp)]

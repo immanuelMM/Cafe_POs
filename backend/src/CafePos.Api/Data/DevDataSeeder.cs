@@ -6,15 +6,23 @@ namespace CafePos.Api.Data;
 
 /// <summary>
 /// Development seed data (runs only when Database:SeedDevData is true, and only on an empty database).
-/// The credentials below are DEV ONLY and documented in docs/api/phase1-api.md.
+/// The credentials below are DEV ONLY and documented in docs/api/phase1-api.md and docs/api/phase2-api.md.
 /// </summary>
 public static class DevDataSeeder
 {
     public static readonly Guid MainLocationId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    public static readonly Guid UptownLocationId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    /// <summary>Owner (unrestricted, no assignments). Was the single Admin in Phase 1.</summary>
     public const string AdminEmail = "admin@cafe.local";
     public const string AdminPassword = "Admin#Dev12345";
     public const string CashierEmail = "cashier@cafe.local";
     public const string CashierPassword = "Cashier#Dev12345";
+    /// <summary>Manager assigned to BOTH locations (exercises the multi-location login / switch flow).</summary>
+    public const string ManagerEmail = "manager@cafe.local";
+    public const string ManagerPassword = "Manager#Dev12345";
+    /// <summary>Cashier assigned to the Uptown branch only.</summary>
+    public const string UptownCashierEmail = "cashier.uptown@cafe.local";
+    public const string UptownCashierPassword = "Cashier#Dev12345";
 
     public static async Task SeedAsync(IServiceProvider sp)
     {
@@ -30,14 +38,28 @@ public static class DevDataSeeder
             ContactPhone = "+63 2 8123 4567",
             VatRatePercent = 12m
         };
-        db.Locations.Add(location);
+        var uptown = new Location
+        {
+            Id = UptownLocationId,
+            Name = "Brew & Bean - Uptown Branch",
+            Address = "88 Katipunan Avenue, Quezon City, Metro Manila",
+            TimeZone = "Asia/Manila",
+            ContactPhone = "+63 2 8765 4321",
+            VatRatePercent = 12m
+        };
+        db.Locations.AddRange(location, uptown);
         await db.SaveChangesAsync();
 
         var users = sp.GetRequiredService<UserManager<ApplicationUser>>();
-        var admin = await CreateUser(users, AdminEmail, AdminPassword, "Alex Admin");
+        var owner = await CreateUser(users, AdminEmail, AdminPassword, "Alex Admin", isOwner: true);
         var cashier = await CreateUser(users, CashierEmail, CashierPassword, "Casey Cashier");
-        db.StaffAssignments.Add(new StaffAssignment { UserId = admin.Id, LocationId = location.Id, Role = Roles.Admin });
+        var manager = await CreateUser(users, ManagerEmail, ManagerPassword, "Morgan Manager");
+        var uptownCashier = await CreateUser(users, UptownCashierEmail, UptownCashierPassword, "Uma Uptown");
+        _ = owner; // Owners need no StaffAssignment rows
         db.StaffAssignments.Add(new StaffAssignment { UserId = cashier.Id, LocationId = location.Id, Role = Roles.Cashier });
+        db.StaffAssignments.Add(new StaffAssignment { UserId = manager.Id, LocationId = location.Id, Role = Roles.Manager });
+        db.StaffAssignments.Add(new StaffAssignment { UserId = manager.Id, LocationId = uptown.Id, Role = Roles.Manager });
+        db.StaffAssignments.Add(new StaffAssignment { UserId = uptownCashier.Id, LocationId = uptown.Id, Role = Roles.Cashier });
 
         // Ingredients (name, unit, low-stock threshold, opening stock)
         var beans = Ing("Espresso Beans", "g", 1000, 5000);
@@ -50,12 +72,16 @@ public static class DevDataSeeder
         await db.SaveChangesAsync();
         foreach (var (ing, qty) in ingredients)
         {
-            db.IngredientStocks.Add(new IngredientStock { LocationId = location.Id, IngredientId = ing.Id, QuantityOnHand = qty });
-            db.StockMovements.Add(new StockMovement
+            // Independent stock + ledger per location. Uptown starts with different levels (Tea Bags is healthy there).
+            foreach (var (loc, opening) in new[] { (location, qty), (uptown, ing.Name == "Tea Bags" ? 60m : Math.Round(qty * 0.6m)) })
             {
-                Id = Guid.NewGuid(), LocationId = location.Id, IngredientId = ing.Id, QuantityDelta = qty,
-                Reason = StockMovementReason.Adjustment, Note = "Opening balance (seed)", CreatedAt = DateTime.UtcNow
-            });
+                db.IngredientStocks.Add(new IngredientStock { LocationId = loc.Id, IngredientId = ing.Id, QuantityOnHand = opening });
+                db.StockMovements.Add(new StockMovement
+                {
+                    Id = Guid.NewGuid(), LocationId = loc.Id, IngredientId = ing.Id, QuantityDelta = opening,
+                    Reason = StockMovementReason.Adjustment, Note = "Opening balance (seed)", CreatedAt = DateTime.UtcNow
+                });
+            }
         }
 
         // Categories
@@ -114,9 +140,9 @@ public static class DevDataSeeder
         item.Variations.Add(v);
     }
 
-    private static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> users, string email, string password, string displayName)
+    private static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> users, string email, string password, string displayName, bool isOwner = false)
     {
-        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = email, Email = email, EmailConfirmed = true, DisplayName = displayName };
+        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = email, Email = email, EmailConfirmed = true, DisplayName = displayName, IsOwner = isOwner };
         var result = await users.CreateAsync(user, password);
         if (!result.Succeeded) throw new InvalidOperationException("Seeding user failed: " + string.Join("; ", result.Errors.Select(e => e.Description)));
         return user;

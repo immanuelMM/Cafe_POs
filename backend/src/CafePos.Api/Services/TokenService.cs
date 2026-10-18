@@ -31,26 +31,27 @@ public class TokenService
         _db = db;
     }
 
-    public (string token, DateTime expiresAt) CreateAccessToken(ApplicationUser user, Guid locationId, string role)
+    public (string token, DateTime expiresAt) CreateAccessToken(ApplicationUser user, Guid? locationId, string role)
     {
         var expires = DateTime.UtcNow.AddMinutes(_opts.AccessTokenMinutes);
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.DisplayName),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
-            new Claim(ClaimTypes.Role, role),
-            new Claim(AppClaims.LocationId, locationId.ToString()),
+            new Claim("role", role),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+        // No location_id for an Owner's cross-location session.
+        if (locationId is not null) claims.Add(new Claim(AppClaims.LocationId, locationId.Value.ToString()));
         var creds = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opts.Key)), SecurityAlgorithms.HmacSha256);
         var jwt = new JwtSecurityToken(_opts.Issuer, _opts.Audience, claims, expires: expires, signingCredentials: creds);
         return (new JwtSecurityTokenHandler().WriteToken(jwt), expires);
     }
 
     /// <summary>Creates and persists a refresh token; returns the raw value (only its SHA-256 hash is stored).</summary>
-    public async Task<(string raw, DateTime expiresAt)> CreateRefreshTokenAsync(Guid userId, Guid locationId, CancellationToken ct)
+    public async Task<(string raw, DateTime expiresAt)> CreateRefreshTokenAsync(Guid userId, Guid? locationId, CancellationToken ct)
     {
         var raw = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
         var expires = DateTime.UtcNow.AddDays(_opts.RefreshTokenDays);

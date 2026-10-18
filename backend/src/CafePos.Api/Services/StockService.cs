@@ -23,14 +23,19 @@ public class StockService
         _logger = logger;
     }
 
-    private Guid LocationId => _current.LocationId ?? throw new ApiException(401, "Unauthorized", "No active location.");
+    private Guid LocationId => _current.LocationId ?? throw ApiException.LocationRequired();
 
     /// <summary>Consumes recipe ingredients for a completed order. Throws 409 (and the caller's transaction rolls back) if short.</summary>
     public async Task ConsumeForOrderAsync(Order order, Guid? userId, CancellationToken ct)
     {
         var variationIds = order.Items.Select(i => i.ItemVariationId).Distinct().ToList();
+        // Variations this location has switched to "do not track inventory" consume nothing.
+        var untracked = await _db.ItemVariationLocationOverrides.AsNoTracking()
+            .Where(o => o.LocationId == order.LocationId && o.TrackInventoryOverride == false && variationIds.Contains(o.ItemVariationId))
+            .Select(o => o.ItemVariationId).ToListAsync(ct);
+        variationIds.RemoveAll(untracked.Contains);
         var recipes = await _db.RecipeLines.AsNoTracking().Where(r => variationIds.Contains(r.ItemVariationId)).ToListAsync(ct);
-        var soldByVariation = order.Items.GroupBy(i => i.ItemVariationId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
+        var soldByVariation = order.Items.Where(i => variationIds.Contains(i.ItemVariationId)).GroupBy(i => i.ItemVariationId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
 
         var required = recipes
             .GroupBy(r => r.IngredientId)

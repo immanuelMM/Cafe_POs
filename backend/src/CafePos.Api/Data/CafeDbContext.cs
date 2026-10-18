@@ -9,6 +9,8 @@ public interface ICurrentLocation
 {
     Guid? LocationId { get; }
     Guid? UserId { get; }
+    /// <summary>True for the unrestricted Owner role (may use explicit cross-location queries).</summary>
+    bool IsOwner { get; }
 }
 
 public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
@@ -27,6 +29,7 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
 
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<StaffAssignment> StaffAssignments => Set<StaffAssignment>();
+    public DbSet<ItemVariationLocationOverride> ItemVariationLocationOverrides => Set<ItemVariationLocationOverride>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Item> Items => Set<Item>();
@@ -63,6 +66,7 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
             e.HasKey(x => x.Id);
             e.Property(x => x.VatRatePercent).HasPrecision(5, 2);
             e.Property(x => x.Name).HasMaxLength(200);
+            e.Property(x => x.StripeTerminalLocationId).HasMaxLength(100);
         });
 
         b.Entity<StaffAssignment>(e =>
@@ -71,6 +75,16 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
             e.Property(x => x.Role).HasMaxLength(50);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
             e.HasOne(x => x.Location).WithMany().HasForeignKey(x => x.LocationId);
+        });
+
+        b.Entity<ItemVariationLocationOverride>(e =>
+        {
+            e.HasKey(x => new { x.ItemVariationId, x.LocationId });
+            e.HasIndex(x => x.LocationId);
+            e.Property(x => x.PriceOverride).HasPrecision(18, 2);
+            e.Property(x => x.LowStockThresholdOverride).HasPrecision(18, 3);
+            e.HasOne<ItemVariation>().WithMany().HasForeignKey(x => x.ItemVariationId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Location>().WithMany().HasForeignKey(x => x.LocationId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<RefreshToken>(e =>
@@ -194,6 +208,9 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
 
         // Multi-location isolation: every ILocationScoped entity gets a global query filter
         // on LocationId == CurrentLocationId (plan 4.1), plus an index on LocationId.
+        // StaffAssignment is filtered too (not ILocationScoped: an Owner/Admin must be able to write assignments for the target
+        // location). Auth flows and Owner-gated code read it with an explicit IgnoreQueryFilters().
+        b.Entity<StaffAssignment>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<IngredientStock>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<StockMovement>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
         b.Entity<Order>().HasQueryFilter(x => x.LocationId == CurrentLocationId);

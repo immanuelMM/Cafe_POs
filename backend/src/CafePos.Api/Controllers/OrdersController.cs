@@ -20,8 +20,8 @@ public class OrdersController : ControllerBase
 
     [HttpGet]
     public Task<PagedResult<OrderDto>> List([FromQuery] string? status, [FromQuery] DateTime? from, [FromQuery] DateTime? to,
-        [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken ct) =>
-        _orders.ListAsync(UserId, ManagerUp, status, from, to, page, pageSize, ct);
+        [FromQuery] Guid? locationId, [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken ct) =>
+        _orders.ListAsync(UserId, ManagerUp, status, from, to, locationId, page, pageSize, ct);
 
     [HttpGet("{id:guid}")]
     public Task<OrderDto> Get(Guid id, CancellationToken ct) => _orders.GetAsync(id, UserId, ManagerUp, ct);

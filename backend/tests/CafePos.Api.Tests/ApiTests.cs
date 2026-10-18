@@ -50,11 +50,11 @@ public class AuthTests
     [Fact]
     public async Task Login_returns_token_role_and_location()
     {
-        var res = await _f.CreateClient().PostAsJsonAsync("/api/v1/auth/login", new { email = DevDataSeeder.AdminEmail, password = DevDataSeeder.AdminPassword });
+        var res = await _f.CreateClient().PostAsJsonAsync("/api/v1/auth/login", new { email = DevDataSeeder.CashierEmail, password = DevDataSeeder.CashierPassword });
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         var auth = await res.ReadAsync<AuthResponse>();
-        Assert.Equal("Admin", auth.User.Role);
-        Assert.Equal(DevDataSeeder.MainLocationId, auth.User.Location.Id);
+        Assert.Equal("Cashier", auth.User.Role);
+        Assert.Equal(DevDataSeeder.MainLocationId, auth.User.Location!.Id);
         Assert.False(string.IsNullOrEmpty(auth.AccessToken));
     }
 

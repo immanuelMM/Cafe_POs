@@ -31,18 +31,15 @@ public class OrderService
         _logger = logger;
     }
 
-    private Guid LocationId => _current.LocationId ?? throw new ApiException(401, "Unauthorized", "No active location.");
-
-    private IQueryable<Order> OrdersWithDetails() =>
-        _db.Orders.Include(o => o.Items).ThenInclude(i => i.Modifiers).Include(o => o.Payments);
+    private Guid LocationId => _current.LocationId ?? throw ApiException.LocationRequired();
 
     // ---------- queries ----------
 
     public async Task<PagedResult<OrderDto>> ListAsync(Guid userId, bool managerUp, string? status, DateTime? from, DateTime? to,
-        int? page, int? pageSize, CancellationToken ct)
+        Guid? locationId, int? page, int? pageSize, CancellationToken ct)
     {
         var (p, ps) = Paging.Normalize(page, pageSize);
-        var q = _db.Orders.AsNoTracking().AsQueryable();
+        var q = await ScopedOrdersAsync(locationId, ct);
         if (!managerUp) q = q.Where(o => o.CashierId == userId);
         if (!string.IsNullOrWhiteSpace(status))
         {
@@ -60,9 +57,30 @@ public class OrderService
         return new PagedResult<OrderDto>(rows.Select(Map).ToList(), p, ps, total);
     }
 
+    /// <summary>
+    /// Orders visible to the caller. Default: the active location (global query filter). Cross-location views are Owner only and use
+    /// an explicit IgnoreQueryFilters(): `locationId` of another location, or no active location and no locationId = all locations.
+    /// </summary>
+    private async Task<IQueryable<Order>> ScopedOrdersAsync(Guid? locationId, CancellationToken ct)
+    {
+        var active = _current.LocationId;
+        if (locationId is null || locationId == active)
+        {
+            if (active is not null) return _db.Orders.AsNoTracking();
+            if (!_current.IsOwner) throw ApiException.LocationRequired();
+            return _db.Orders.IgnoreQueryFilters().AsNoTracking(); // Owner, cross-location session: every location
+        }
+        if (!_current.IsOwner) throw ApiException.Forbidden("You do not have access to that location.");
+        if (!await _db.Locations.AnyAsync(l => l.Id == locationId, ct)) throw ApiException.NotFound("Location");
+        return _db.Orders.IgnoreQueryFilters().AsNoTracking().Where(o => o.LocationId == locationId);
+    }
+
     public async Task<Order> GetEntityAsync(Guid id, Guid userId, bool managerUp, bool track, CancellationToken ct)
     {
-        var q = OrdersWithDetails().AsSplitQuery();
+        // Read-only lookups by an Owner may cross locations (explicit IgnoreQueryFilters); anything that mutates stays in the active location.
+        var crossRead = !track && _current.IsOwner;
+        var q = (crossRead ? _db.Orders.IgnoreQueryFilters() : _db.Orders)
+            .Include(o => o.Items).ThenInclude(i => i.Modifiers).Include(o => o.Payments).AsSplitQuery();
         if (!track) q = q.AsNoTracking();
         var order = await q.FirstOrDefaultAsync(o => o.Id == id, ct);
         // Other location's orders are invisible (query filter); a cashier cannot see colleagues' orders.
@@ -338,7 +356,10 @@ public class OrderService
                     $"'{list.Name}' requires between {list.MinSelections} and {list.MaxSelections} selection(s) (got {n}).");
         }
 
-        var unit = PricingCalculator.Round(variation.Price + modifiers.Sum(m => m.PriceDelta));
+        // The order's location may charge its own price for this variation; otherwise the global price applies.
+        var priceOverride = await _db.ItemVariationLocationOverrides.AsNoTracking()
+            .Where(o => o.ItemVariationId == variation.Id && o.LocationId == order.LocationId).Select(o => o.PriceOverride).FirstOrDefaultAsync(ct);
+        var unit = PricingCalculator.Round((priceOverride ?? variation.Price) + modifiers.Sum(m => m.PriceDelta));
         var item = new OrderItem
         {
             Id = Guid.NewGuid(),
