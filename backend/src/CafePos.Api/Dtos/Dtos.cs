@@ -64,60 +64,6 @@ public record SaveBrandDesignRequest
 // ---- Variation location overrides ----
 
 // ---- Catalog ----
-public record CategoryDto(Guid Id, string Name, int SortOrder, bool Active);
-
-public record UpsertCategoryRequest
-{
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    public int SortOrder { get; init; }
-    public bool? Active { get; init; }
-}
-
-/// <summary>Price is the global price; EffectivePrice is what the caller's active location charges (override when present).</summary>
-public record VariationDto(Guid Id, Guid ItemId, string Name, string Sku, decimal Price, bool Active, decimal EffectivePrice);
-
-/// <summary>ImageUrl: versioned path relative to the API origin, or null when the item has no photo.</summary>
-public record ItemDto(Guid Id, Guid CategoryId, string Name, string? Description, int SortOrder, bool Active,
-    IReadOnlyList<VariationDto> Variations, IReadOnlyList<Guid> ModifierListIds, string? ImageUrl);
-
-public record UpsertVariationRequest
-{
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [Required, MaxLength(64)] public string Sku { get; init; } = "";
-    [Range(0, 1_000_000)] public decimal Price { get; init; }
-    public bool? Active { get; init; }
-}
-
-public record UpsertItemRequest
-{
-    [Required] public Guid CategoryId { get; init; }
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [MaxLength(500)] public string? Description { get; init; }
-    public int SortOrder { get; init; }
-    public bool? Active { get; init; }
-    public List<Guid>? ModifierListIds { get; init; }
-    /// <summary>Required (at least one) on create; ignored on update (use the variation endpoints).</summary>
-    public List<UpsertVariationRequest>? Variations { get; init; }
-}
-
-public record ModifierDto(Guid Id, string Name, decimal PriceDelta, bool Active);
-public record ModifierListDto(Guid Id, string Name, int MinSelections, int MaxSelections, bool Active, IReadOnlyList<ModifierDto> Modifiers);
-
-public record UpsertModifierRequest
-{
-    /// <summary>Existing modifier id to update; omit to create.</summary>
-    public Guid? Id { get; init; }
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [Range(-100_000, 100_000)] public decimal PriceDelta { get; init; }
-}
-
-public record UpsertModifierListRequest
-{
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [Range(0, 50)] public int MinSelections { get; init; }
-    [Range(1, 50)] public int MaxSelections { get; init; } = 1;
-    public List<UpsertModifierRequest> Modifiers { get; init; } = new();
-}
 
 // ---- Inventory ----
 /// <summary>QuantityOnHand/IsLowStock are null only for the global catalog view of an Owner cross-location session (no location, no stock).</summary>

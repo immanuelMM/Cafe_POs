@@ -1,3 +1,4 @@
+using CafePos.Application.Features.Catalog;
 using CafePos.Application.Features.Locations;
 using CafePos.Application.Features.Users;
 using CafePos.Application.Features.VariationOverrides;
@@ -15,6 +16,9 @@ public static class DependencyInjection
         // Request validators are stateless; the Api layer resolves them by request type (validation filter, OpenAPI schema rules).
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, ServiceLifetime.Singleton, includeInternalTypes: true);
 
+        services.AddScoped<CategoryService>();
+        services.AddScoped<ItemService>();
+        services.AddScoped<ModifierListService>();
         services.AddScoped<LocationService>();
         services.AddScoped<UserService>();
         services.AddScoped<VariationOverrideService>();

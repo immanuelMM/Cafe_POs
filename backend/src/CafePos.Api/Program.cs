@@ -92,6 +92,7 @@ builder.Services.AddOpenApi(o =>
 {
     o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
     o.AddDocumentTransformer<OpenApiDocumentSetup>();
+    o.AddDocumentTransformer<ContractOrderDocumentTransformer>();
     o.AddSchemaTransformer<NumericSchemaTransformer>();
     o.AddSchemaTransformer<ValidatorRulesSchemaTransformer>();
     o.AddOperationTransformer<MultipartUploadOperationTransformer>();

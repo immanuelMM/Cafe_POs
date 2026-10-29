@@ -14,6 +14,10 @@ public static class Uploads
     public static readonly string[] ImageTypes = { "image/png", "image/jpeg", "image/webp" };
     public static readonly string[] ImageOrPdfTypes = { "image/png", "image/jpeg", "image/webp", "application/pdf" };
 
+    /// <summary>Adapts a multipart file to the framework-independent upload the Application layer validates.</summary>
+    public static CafePos.Application.Common.Uploads.UploadedFile? ToUploadedFile(IFormFile? file) =>
+        file is null ? null : new CafePos.Application.Common.Uploads.UploadedFile(file.ContentType, file.Length, file.OpenReadStream);
+
     /// <summary>Validates declared content type, size and the file signature; returns the bytes and the (signature-confirmed) type.</summary>
     public static async Task<(byte[] data, string type)> ReadAsync(IFormFile? file, string[] allowed, int maxBytes, string what, CancellationToken ct)
     {
