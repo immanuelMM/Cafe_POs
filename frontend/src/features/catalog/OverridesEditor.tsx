@@ -5,7 +5,7 @@ import { errorMessage } from '../../lib/api'
 import { formatMoney } from '../../lib/format'
 import type { LocationOverride, Variation } from '../../lib/types'
 import { useAuthStore } from '../auth/authStore'
-import { useLocations } from '../locations/locationsApi'
+import { useLocations } from '../locations/useLocations'
 import { saveOverride, useCatalogMutation, useLocationOverrides } from './catalogApi'
 
 const numOrNull = (s: string) => (s.trim() === '' ? null : Number(s))

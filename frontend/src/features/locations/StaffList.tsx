@@ -1,5 +1,5 @@
 import { ErrorBox, Spinner } from '../../components/ui'
-import { useLocationStaff } from './locationsApi'
+import { useLocationStaff } from './useLocations'
 
 /** Read-only staff roster for one location (GET /locations/{id}/staff). */
 export function StaffList({ locationId }: { locationId: string }) {

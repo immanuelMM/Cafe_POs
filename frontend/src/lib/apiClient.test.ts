@@ -4,7 +4,7 @@ import { server } from '../test/server'
 import { useAuthStore } from '../features/auth/authStore'
 import { anonClient, API_ORIGIN, client, unwrap } from './apiClient'
 import { ApiError, NetworkError } from './errors'
-import type { AuthResponse } from './types'
+import type { AuthResponse } from '../api/types'
 
 const session = (token: string) =>
   ({

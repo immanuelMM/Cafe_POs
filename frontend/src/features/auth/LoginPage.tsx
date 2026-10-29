@@ -2,19 +2,13 @@ import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { login } from './authApi'
+import { loginSchema, type LoginValues } from './loginSchema'
 import { useAuthStore } from './authStore'
 import { useBrandName } from '../branding/brandingApi'
 import { BrandLogo } from '../branding/BrandLogo'
-import { ApiError, errorMessage } from '../../lib/api'
+import { ApiError, errorMessage } from '../../lib/errors'
 import { Field } from '../../components/ui'
-
-const schema = z.object({
-  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
-})
-type Values = z.infer<typeof schema>
 
 /** Shape of the `locations` extension on the 400 "Location required" login response. */
 interface LocChoice {
@@ -34,11 +28,11 @@ export function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<Values>({ resolver: zodResolver(schema) })
+  } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) })
 
   if (user) return <Navigate to={(location.state as { from?: string } | null)?.from ?? '/pos'} replace />
 
-  const onSubmit = async (v: Values) => {
+  const onSubmit = async (v: LoginValues) => {
     setError(null)
     if (choices && !locationId) {
       setError('Choose a location to sign in to.')

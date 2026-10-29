@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { server } from '../test/server'
 import { useAuthStore } from '../features/auth/authStore'
 import { API_ORIGIN, client, fileBody } from './apiClient'
-import type { AuthResponse } from './types'
+import type { AuthResponse } from '../api/types'
 
 const session = (token: string) =>
   ({ accessToken: token, expiresAt: '2099-01-01T00:00:00Z', user: { id: 'u1' } }) as unknown as AuthResponse

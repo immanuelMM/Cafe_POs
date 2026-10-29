@@ -1,20 +1,17 @@
-import { api, refreshSession } from '../../lib/api'
-import type { AuthResponse } from '../../lib/types'
+import { anonClient, refreshSession, unwrap } from '../../lib/apiClient'
 import { useAuthStore } from './authStore'
 
 export async function login(email: string, password: string, locationId?: string | null) {
-  const r = await api<AuthResponse>('/auth/login', {
-    method: 'POST',
-    body: { email, password, locationId: locationId ?? null },
-    anonymous: true,
-  })
+  const r = await unwrap(
+    anonClient.POST('/api/v1/auth/login', { body: { email, password, locationId: locationId ?? null } }),
+  )
   useAuthStore.getState().setSession(r)
   return r
 }
 
 export async function logout() {
   try {
-    await api<void>('/auth/logout', { method: 'POST', anonymous: true })
+    await anonClient.POST('/api/v1/auth/logout')
   } finally {
     useAuthStore.getState().clear()
   }

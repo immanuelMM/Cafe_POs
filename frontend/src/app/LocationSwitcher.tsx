@@ -1,7 +1,7 @@
-import { errorMessage } from '../lib/api'
+import { errorMessage } from '../lib/errors'
 import { useAuthStore } from '../features/auth/authStore'
 import { useCartStore } from '../features/pos/cartStore'
-import { useSwitchLocation } from '../features/locations/locationsApi'
+import { useSwitchLocation } from '../features/locations/useLocations'
 
 /** Header control: Owner and multi-location staff can switch, single-location staff see a locked label. */
 export function LocationSwitcher() {

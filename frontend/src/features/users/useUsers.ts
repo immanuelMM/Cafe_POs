@@ -1,17 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../lib/api'
-import type { AssignableRole, Paged, StaffMember, UserDto } from '../../lib/types'
+import type { AssignableRole } from '../../api/types'
+import { client, unwrap } from '../../lib/apiClient'
 
 export const ROLES: AssignableRole[] = ['Cashier', 'Manager', 'Admin']
 
 export const useUsers = (params: { search: string; locationId: string; page: number }) =>
   useQuery({
     queryKey: ['users', params],
-    queryFn: () => api<Paged<UserDto>>('/users', { query: { ...params, pageSize: 15 } }),
+    queryFn: () => unwrap(client.GET('/api/v1/users', { params: { query: { ...params, pageSize: 15 } } })),
     placeholderData: (prev) => prev,
   })
 
-export const useUser = (id: string) => useQuery({ queryKey: ['user', id], queryFn: () => api<UserDto>(`/users/${id}`) })
+export const useUser = (id: string) =>
+  useQuery({
+    queryKey: ['user', id],
+    queryFn: () => unwrap(client.GET('/api/v1/users/{id}', { params: { path: { id } } })),
+  })
 
 export interface NewUserInput {
   email: string
@@ -22,16 +26,31 @@ export interface NewUserInput {
 }
 
 export const userCalls = {
-  create: (body: NewUserInput) => api<UserDto>('/users', { method: 'POST', body }),
+  create: (body: NewUserInput) => unwrap(client.POST('/api/v1/users', { body })),
   update: (v: { id: string; body: { displayName: string; active?: boolean; isOwner?: boolean } }) =>
-    api<UserDto>(`/users/${v.id}`, { method: 'PUT', body: v.body }),
-  deactivate: (id: string) => api<void>(`/users/${id}`, { method: 'DELETE' }),
+    unwrap(client.PUT('/api/v1/users/{id}', { params: { path: { id: v.id } }, body: v.body })),
+  deactivate: (id: string) => unwrap(client.DELETE('/api/v1/users/{id}', { params: { path: { id } } })),
   assign: (v: { id: string; locationId: string; role: AssignableRole }) =>
-    api<UserDto>(`/users/${v.id}/locations`, { method: 'POST', body: { locationId: v.locationId, role: v.role } }),
+    unwrap(
+      client.POST('/api/v1/users/{id}/locations', {
+        params: { path: { id: v.id } },
+        body: { locationId: v.locationId, role: v.role },
+      }),
+    ),
   addByEmail: (v: { email: string; locationId: string; role: AssignableRole }) =>
-    api<StaffMember>(`/locations/${v.locationId}/staff`, { method: 'POST', body: { email: v.email, role: v.role } }),
-  setPin: (v: { id: string; pin: string }) => api<void>(`/users/${v.id}/pin`, { method: 'PUT', body: { pin: v.pin } }),
-  clearPin: (id: string) => api<void>(`/users/${id}/pin`, { method: 'DELETE' }),
+    unwrap(
+      client.POST('/api/v1/locations/{id}/staff', {
+        params: { path: { id: v.locationId } },
+        body: { email: v.email, role: v.role },
+      }),
+    ),
+  setPin: (v: { id: string; pin: string }) =>
+    unwrap(client.PUT('/api/v1/users/{id}/pin', { params: { path: { id: v.id } }, body: { pin: v.pin } })),
+  clearPin: (id: string) => unwrap(client.DELETE('/api/v1/users/{id}/pin', { params: { path: { id } } })),
   unassign: (v: { id: string; locationId: string }) =>
-    api<void>(`/users/${v.id}/locations/${v.locationId}`, { method: 'DELETE' }),
+    unwrap(
+      client.DELETE('/api/v1/users/{id}/locations/{locationId}', {
+        params: { path: { id: v.id, locationId: v.locationId } },
+      }),
+    ),
 }

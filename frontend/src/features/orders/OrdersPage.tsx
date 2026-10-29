@@ -6,7 +6,7 @@ import { api, errorMessage } from '../../lib/api'
 import { formatDateTime, formatMoney } from '../../lib/format'
 import type { Order, OrderStatus, Paged } from '../../lib/types'
 import { useAuthStore } from '../auth/authStore'
-import { useCurrentLocation, useLocations } from '../locations/locationsApi'
+import { useCurrentLocation, useLocations } from '../locations/useLocations'
 
 const PAGE_SIZE = 15
 

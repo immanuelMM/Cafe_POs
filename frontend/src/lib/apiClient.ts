@@ -2,7 +2,6 @@ import createClient from 'openapi-fetch'
 import type { paths } from '../api/schema'
 import { useAuthStore } from '../features/auth/authStore'
 import { ApiError, NetworkError } from './errors'
-import type { AuthResponse } from './types'
 
 export const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:5080/api/v1'
 
@@ -51,7 +50,21 @@ function createApiFetch(anonymous: boolean) {
 export const authedFetch = createApiFetch(false)
 export const anonFetch = createApiFetch(true)
 
-const clientOptions = { baseUrl: API_ORIGIN, credentials: 'include', headers: { Accept: 'application/json' } } as const
+/** Query strings as the app has always built them: null, undefined and '' are omitted. */
+const querySerializer = (query: object) => {
+  const qs = new URLSearchParams()
+  for (const [k, v] of Object.entries(query)) {
+    if (v !== undefined && v !== null && v !== '') qs.set(k, String(v))
+  }
+  return qs.toString()
+}
+
+const clientOptions = {
+  baseUrl: API_ORIGIN,
+  credentials: 'include',
+  headers: { Accept: 'application/json' },
+  querySerializer,
+} as const
 
 /** Authenticated client (bearer + refresh-on-401). */
 export const client = createClient<paths>({ ...clientOptions, fetch: authedFetch })
@@ -84,7 +97,7 @@ export function refreshSession(): Promise<boolean> {
     refreshing = (async () => {
       try {
         const data = await unwrap(anonClient.POST('/api/v1/auth/refresh'))
-        useAuthStore.getState().setSession(data as unknown as AuthResponse) // typed from the schema in F3
+        useAuthStore.getState().setSession(data)
         return true
       } catch (e) {
         if (e instanceof ApiError) useAuthStore.getState().clear()

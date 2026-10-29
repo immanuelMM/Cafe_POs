@@ -4,7 +4,7 @@ import { ErrorBox, Field, PageHeader, Spinner } from '../../components/ui'
 import { formatDate, formatTime } from '../../lib/format'
 import { addDays, startOfDayUtc, todayIn, weekdayIndex } from '../../lib/zonedTime'
 import { isManager, useAuthStore } from '../auth/authStore'
-import { useCurrentLocation } from '../locations/locationsApi'
+import { useCurrentLocation } from '../locations/useLocations'
 import { useTimeClockStaff, useTimeEntries } from './timeclockApi'
 
 type Preset = 'today' | 'week' | '7d' | 'month' | 'custom'

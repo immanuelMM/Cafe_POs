@@ -2,29 +2,19 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Field, PageHeader, Spinner } from '../../components/ui'
-import { api, errorMessage } from '../../lib/api'
-import type { LocationDto } from '../../lib/types'
+import type { LocationDto } from '../../api/types'
+import { client, unwrap } from '../../lib/apiClient'
+import { errorMessage } from '../../lib/errors'
 import { StaffList } from './StaffList'
-import { useLocations } from './locationsApi'
-
-const schema = z.object({
-  name: z.string().trim().min(1, 'Name is required'),
-  address: z.string().trim().optional(),
-  timeZone: z.string().trim().min(1, 'Time zone is required'),
-  contactPhone: z.string().trim().optional(),
-  vatRatePercent: z.number({ invalid_type_error: 'Enter a number' }).min(0, 'Min 0').max(100, 'Max 100'),
-  stripeTerminalLocationId: z.string().trim().optional(),
-  active: z.boolean(),
-})
-type Values = z.infer<typeof schema>
+import { useLocations } from './useLocations'
+import { locationSchema, type LocationValues } from './locationSchema'
 
 function LocationFormModal({ loc, onClose }: { loc: LocationDto | null; onClose: () => void }) {
   const qc = useQueryClient()
   const save = useMutation({
-    mutationFn: (v: Values) => {
+    mutationFn: (v: LocationValues) => {
       const base = {
         name: v.name,
         address: v.address || null,
@@ -34,14 +24,17 @@ function LocationFormModal({ loc, onClose }: { loc: LocationDto | null; onClose:
       }
       // Contract: on update an empty string clears the Stripe id (omitted = unchanged).
       return loc
-        ? api<LocationDto>(`/locations/${loc.id}`, {
-            method: 'PUT',
-            body: { ...base, active: v.active, stripeTerminalLocationId: v.stripeTerminalLocationId ?? '' },
-          })
-        : api<LocationDto>('/locations', {
-            method: 'POST',
-            body: { ...base, stripeTerminalLocationId: v.stripeTerminalLocationId || null },
-          })
+        ? unwrap(
+            client.PUT('/api/v1/locations/{id}', {
+              params: { path: { id: loc.id } },
+              body: { ...base, active: v.active, stripeTerminalLocationId: v.stripeTerminalLocationId ?? '' },
+            }),
+          )
+        : unwrap(
+            client.POST('/api/v1/locations', {
+              body: { ...base, stripeTerminalLocationId: v.stripeTerminalLocationId || null },
+            }),
+          )
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['locations'] })
@@ -53,8 +46,8 @@ function LocationFormModal({ loc, onClose }: { loc: LocationDto | null; onClose:
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Values>({
-    resolver: zodResolver(schema),
+  } = useForm<LocationValues>({
+    resolver: zodResolver(locationSchema),
     defaultValues: {
       name: loc?.name ?? '',
       address: loc?.address ?? '',

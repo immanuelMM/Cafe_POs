@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { renderWithProviders } from '../../test/render'
 import { useAuthStore } from './authStore'
 import { ProtectedRoute } from './ProtectedRoute'
-import type { User } from '../../lib/types'
+import type { User } from '../../api/types'
 
 const tree = (
   <Routes>

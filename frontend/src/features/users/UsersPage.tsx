@@ -2,14 +2,21 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Field, PageHeader, Pager, Spinner } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
-import type { AssignableRole, UserDto } from '../../lib/types'
+import { errorMessage } from '../../lib/errors'
+import type { AssignableRole, UserDto } from '../../api/types'
 import { useAuthStore } from '../auth/authStore'
-import { useLocations } from '../locations/locationsApi'
-import { ROLES, useUser, useUsers, userCalls } from './usersApi'
+import { useLocations } from '../locations/useLocations'
+import { ROLES, useUser, useUsers, userCalls } from './useUsers'
+import {
+  createUserSchema,
+  editUserSchema,
+  existingUserSchema,
+  type CreateValues,
+  type EditValues,
+  type ExistingValues,
+} from './userSchema'
 
 /** Locations the current actor may assign people to: Owner = all active, Admin = own active location. */
 function useAssignableLocations() {
@@ -29,18 +36,6 @@ function useInvalidateUsers() {
   }
 }
 
-const createSchema = z
-  .object({
-    email: z.string().trim().min(1, 'Email is required').email('Enter a valid email'),
-    displayName: z.string().trim().min(1, 'Name is required'),
-    password: z.string().min(8, 'At least 8 characters'),
-    isOwner: z.boolean(),
-    locationId: z.string(),
-    role: z.enum(['Cashier', 'Manager', 'Admin']),
-  })
-  .refine((v) => v.isOwner || v.locationId !== '', { path: ['locationId'], message: 'Choose a location' })
-type CreateValues = z.infer<typeof createSchema>
-
 function CreateUserModal({ onClose }: { onClose: () => void }) {
   const owner = useAuthStore((s) => !!s.user?.isOwner)
   const locations = useAssignableLocations()
@@ -58,7 +53,7 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
     watch,
     formState: { errors },
   } = useForm<CreateValues>({
-    resolver: zodResolver(createSchema),
+    resolver: zodResolver(createUserSchema),
     defaultValues: {
       email: '',
       displayName: '',
@@ -132,13 +127,6 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-const editSchema = z.object({
-  displayName: z.string().trim().min(1, 'Name is required'),
-  active: z.boolean(),
-  isOwner: z.boolean(),
-})
-type EditValues = z.infer<typeof editSchema>
-
 function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
   const owner = useAuthStore((s) => !!s.user?.isOwner)
   const invalidate = useInvalidateUsers()
@@ -157,7 +145,7 @@ function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
     reset,
     formState: { errors, isDirty },
   } = useForm<EditValues>({
-    resolver: zodResolver(editSchema),
+    resolver: zodResolver(editUserSchema),
     defaultValues: { displayName: u.displayName, active: u.active, isOwner: u.isOwner },
   })
   return (
@@ -384,13 +372,6 @@ function EditUserModal({ id, onClose }: { id: string; onClose: () => void }) {
   )
 }
 
-const existingSchema = z.object({
-  email: z.string().trim().min(1, 'Email is required').email('Enter a valid email'),
-  locationId: z.string().min(1, 'Choose a location'),
-  role: z.enum(['Cashier', 'Manager', 'Admin']),
-})
-type ExistingValues = z.infer<typeof existingSchema>
-
 /** Assign an existing user (exact email) to a location, or change their role there. */
 function AddExistingModal({ onClose }: { onClose: () => void }) {
   const locations = useAssignableLocations()
@@ -407,7 +388,7 @@ function AddExistingModal({ onClose }: { onClose: () => void }) {
     handleSubmit,
     formState: { errors },
   } = useForm<ExistingValues>({
-    resolver: zodResolver(existingSchema),
+    resolver: zodResolver(existingUserSchema),
     defaultValues: { email: '', locationId: locations.length === 1 ? locations[0].id : '', role: 'Cashier' },
   })
   return (

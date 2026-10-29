@@ -57,7 +57,16 @@ export function PageHeader({ title, children }: { title: string; children?: Reac
   )
 }
 
-export function Pager({ page, totalPages, onPage }: { page: number; totalPages: number; onPage: (p: number) => void }) {
+/** `totalPages` is optional in the OpenAPI contract (computed server-side); a missing value means a single page. */
+export function Pager({
+  page,
+  totalPages = 1,
+  onPage,
+}: {
+  page: number
+  totalPages?: number
+  onPage: (p: number) => void
+}) {
   if (totalPages <= 1) return null
   return (
     <nav className="pager" aria-label="Pagination">

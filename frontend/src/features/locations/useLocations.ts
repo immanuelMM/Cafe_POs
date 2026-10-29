@@ -1,19 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../lib/api'
-import type { AuthResponse, LocationDto, StaffMember } from '../../lib/types'
+import { client, unwrap } from '../../lib/apiClient'
 import { useAuthStore } from '../auth/authStore'
 import { useCartStore } from '../pos/cartStore'
 
 /** All locations visible to the caller (Owner: every location incl. inactive; others: their assigned active ones). */
 export const useLocations = (enabled = true) =>
-  useQuery({ queryKey: ['locations'], queryFn: () => api<LocationDto[]>('/locations'), enabled })
+  useQuery({ queryKey: ['locations'], queryFn: () => unwrap(client.GET('/api/v1/locations')), enabled })
 
 /** The active location. Not available in an Owner cross-location session (400), so callers must check `user.location`. */
 export const useCurrentLocation = () => {
   const activeId = useAuthStore((s) => s.user?.location?.id)
   return useQuery({
     queryKey: ['location', activeId],
-    queryFn: () => api<LocationDto>('/locations/current'),
+    queryFn: () => unwrap(client.GET('/api/v1/locations/current')),
     enabled: !!activeId,
   })
 }
@@ -21,7 +20,7 @@ export const useCurrentLocation = () => {
 export const useLocationStaff = (id: string | undefined) =>
   useQuery({
     queryKey: ['location-staff', id],
-    queryFn: () => api<StaffMember[]>(`/locations/${id}/staff`),
+    queryFn: () => unwrap(client.GET('/api/v1/locations/{id}/staff', { params: { path: { id: id! } } })),
     enabled: !!id,
   })
 
@@ -30,7 +29,7 @@ export function useSwitchLocation() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (locationId: string | null) =>
-      api<AuthResponse>('/auth/switch-location', { method: 'POST', body: { locationId } }),
+      unwrap(client.POST('/api/v1/auth/switch-location', { body: { locationId } })),
     onSuccess: (r) => {
       useAuthStore.getState().setSession(r)
       // Prices, stock and orders differ per location: drop the in-progress cart and refetch everything.

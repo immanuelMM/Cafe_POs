@@ -5,7 +5,7 @@ import { ApiError, errorMessage } from '../../lib/api'
 import { formatTime } from '../../lib/format'
 import type { TimeClockStaff } from '../../lib/types'
 import { useAuthStore } from '../auth/authStore'
-import { useCurrentLocation } from '../locations/locationsApi'
+import { useCurrentLocation } from '../locations/useLocations'
 import { PinModal } from './PinModal'
 import { usePunch, useSetMyPin, useTimeClockStaff } from './timeclockApi'
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { AuthResponse, User } from '../../lib/types'
+import type { AuthResponse, User } from '../../api/types'
 
 /** Access token lives in memory only; the refresh cookie is HttpOnly. */
 interface AuthState {

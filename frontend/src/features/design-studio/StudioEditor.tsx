@@ -12,7 +12,7 @@ import {
 } from '../branding/brandingApi'
 import { buildSections } from '../branding/menuSections'
 import { useCategories, useItems } from '../catalog/catalogApi'
-import { useCurrentLocation } from '../locations/locationsApi'
+import { useCurrentLocation } from '../locations/useLocations'
 import { AddPanel } from './AddPanel'
 import { StudioEnvContext, type StudioEnv } from './env'
 import { LayersPanel } from './LayersPanel'

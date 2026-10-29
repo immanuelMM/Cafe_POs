@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ErrorBox, PageHeader, Spinner } from '../../components/ui'
 import { useAuthStore } from '../auth/authStore'
-import { useLocations } from '../locations/locationsApi'
+import { useLocations } from '../locations/useLocations'
 import { formatQty } from '../../lib/format'
 import type { Ingredient } from '../../lib/types'
 import { STATUS_LABEL, stockStatus, useIngredients } from './inventoryApi'
