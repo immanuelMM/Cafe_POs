@@ -21,6 +21,14 @@ public sealed class BootstrapOptions
     /// <summary>VAT percent of the first location, 0 to 100. Falls back to the entity default (12).</summary>
     public decimal? LocationVatRatePercent { get; set; }
 
+    /// <summary>Email of the existing Owner whose password is reset at startup (see <see cref="OwnerPasswordReset"/>). Both reset keys must be set.</summary>
+    public string? ResetOwnerEmail { get; set; }
+    /// <summary>The new password for <see cref="ResetOwnerEmail"/>. Remove it from the environment right after signing in.</summary>
+    public string? ResetOwnerPassword { get; set; }
+
+    /// <summary>True when either reset key is set, i.e. the reset has something to do or to warn about.</summary>
+    public bool IsResetConfigured => !string.IsNullOrWhiteSpace(ResetOwnerEmail) || !string.IsNullOrEmpty(ResetOwnerPassword);
+
     /// <summary>True when either credential is set, i.e. the bootstrapper has something to do or to warn about.</summary>
     public bool IsConfigured => !string.IsNullOrWhiteSpace(OwnerEmail) || !string.IsNullOrEmpty(OwnerPassword);
 }

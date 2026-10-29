@@ -49,6 +49,27 @@ public static class DatabaseStartup
         }
     }
 
+    /// <summary>
+    /// One-time owner password recovery (see <see cref="OwnerPasswordReset"/>), same retry and never-crash policy as
+    /// <see cref="BootstrapOwnerAsync"/>. Runs after migrations and the bootstrap, independent of migrate-on-startup.
+    /// </summary>
+    public static async Task ResetOwnerPasswordAsync(IServiceProvider services, ILogger logger, CancellationToken ct = default)
+    {
+        try
+        {
+            await WithRetryAsync(async () =>
+            {
+                using var scope = services.CreateScope();
+                await OwnerPasswordReset.RunAsync(scope.ServiceProvider, logger, ct);
+            }, logger, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            var sqlState = (ex as PostgresException ?? ex.InnerException as PostgresException)?.SqlState;
+            logger.LogError("Owner password reset failed with {ExceptionType} (SQLSTATE {SqlState}); startup continues and nothing was changed.", ex.GetType().Name, sqlState ?? "n/a");
+        }
+    }
+
     private static async Task WithRetryAsync(Func<Task> action, ILogger logger, CancellationToken ct)
     {
         for (var attempt = 1; ; attempt++)

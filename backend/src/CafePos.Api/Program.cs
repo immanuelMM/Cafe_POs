@@ -31,6 +31,9 @@ if (!BuildEnvironment.IsOpenApiGeneration)
     // Runs whether or not this process migrated (a pre-deploy step may have), and only when Bootstrap credentials are configured.
     if (app.Services.GetRequiredService<IOptions<BootstrapOptions>>().Value.IsConfigured)
         await DatabaseStartup.BootstrapOwnerAsync(app.Services, app.Logger);
+    // One-time password recovery for hosts without a shell; after the bootstrap so a freshly created owner is not reset.
+    if (app.Services.GetRequiredService<IOptions<BootstrapOptions>>().Value.IsResetConfigured)
+        await DatabaseStartup.ResetOwnerPasswordAsync(app.Services, app.Logger);
 }
 
 // First, so every later component (HTTPS redirection, CORS, rate limiting, cookies) sees the client address and scheme set by a
