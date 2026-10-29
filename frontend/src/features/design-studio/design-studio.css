@@ -3,7 +3,7 @@
   .studio {
     display: flex;
     flex-direction: column;
-    height: calc(100dvh - 118px);
+    height: 100%;
     min-height: 460px;
   }
   .studio-bar {
@@ -444,9 +444,9 @@
   }
   .studio-sheet {
     position: fixed;
-    left: 0;
+    left: var(--shell-left);
     right: 0;
-    bottom: 58px;
+    bottom: calc(58px + var(--bottom-nav-h));
     z-index: 30;
     max-height: 55dvh;
     display: flex;
@@ -464,9 +464,9 @@
   }
   .studio-bottom {
     position: fixed;
-    left: 0;
+    left: var(--shell-left);
     right: 0;
-    bottom: 0;
+    bottom: var(--bottom-nav-h);
     z-index: 31;
     display: flex;
     gap: 8px;
@@ -498,7 +498,7 @@
   }
   @media (min-width: 768px) {
     .studio {
-      height: calc(100dvh - 60px);
+      height: 100%;
     }
   }
 }

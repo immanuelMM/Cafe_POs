@@ -20,27 +20,12 @@ const punchError = (e: unknown) => {
   return errorMessage(e)
 }
 
-function useFullscreen() {
-  const [on, setOn] = useState(!!document.fullscreenElement)
-  useEffect(() => {
-    const h = () => setOn(!!document.fullscreenElement)
-    document.addEventListener('fullscreenchange', h)
-    return () => document.removeEventListener('fullscreenchange', h)
-  }, [])
-  const toggle = () => {
-    if (document.fullscreenElement) void document.exitFullscreen()
-    else void document.documentElement.requestFullscreen?.().catch(() => undefined)
-  }
-  return { on, toggle, supported: !!document.documentElement.requestFullscreen }
-}
-
 export function TimeClockPage() {
   const hasLocation = useAuthStore((s) => !!s.user?.location)
   const tz = useCurrentLocation().data?.timeZone
   const staff = useTimeClockStaff()
   const punch = usePunch()
   const myPin = useSetMyPin()
-  const fs = useFullscreen()
   const [target, setTarget] = useState<TimeClockStaff | null>(null)
   const [settingPin, setSettingPin] = useState(false)
   const [banner, setBanner] = useState<string | null>(null)
@@ -107,11 +92,6 @@ export function TimeClockPage() {
         >
           Set my PIN
         </button>
-        {fs.supported && (
-          <button type="button" className="btn" onClick={fs.toggle}>
-            {fs.on ? 'Exit full screen' : 'Full screen'}
-          </button>
-        )}
       </PageHeader>
       {pinSaved && (
         <div className="alert alert-ok" role="status">

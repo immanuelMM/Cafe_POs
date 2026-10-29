@@ -16,8 +16,19 @@
     gap: 8px;
     text-decoration: none;
   }
-  .btn:hover:not(:disabled) {
-    background: #efe3d3;
+  .btn {
+    font-size: var(--fs-lg);
+    transition:
+      transform var(--dur-fast),
+      filter var(--dur-fast);
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover:not(:disabled) {
+      background: #efe3d3;
+    }
   }
   .btn:disabled {
     opacity: 0.45;
@@ -27,9 +38,11 @@
     background: var(--brand-bg);
     color: var(--on-brand);
   }
-  .btn-primary:hover:not(:disabled) {
-    background: var(--brand-bg);
-    filter: brightness(0.85);
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover:not(:disabled) {
+      background: var(--brand-bg);
+      filter: brightness(0.85);
+    }
   }
   .btn-ghost {
     border-color: transparent;
@@ -41,13 +54,13 @@
     background: transparent;
   }
   .btn-sm {
-    min-height: 44px;
+    min-height: var(--tap-min);
     padding: 0 14px;
-    font-size: 0.95rem;
+    font-size: var(--fs-md);
   }
   .btn-lg {
-    min-height: 56px;
-    font-size: 1.1rem;
+    min-height: var(--tap-lg);
+    font-size: var(--fs-lg);
   }
   .btn-icon {
     padding: 0;
@@ -457,13 +470,52 @@
   .table .num {
     text-align: right;
   }
-  .userbox .btn {
-    background: transparent;
-    color: var(--on-brand);
-    border-color: var(--on-brand);
+  /* Sticky dialog footers: primary actions are 64px */
+  .modal-foot .btn-primary {
+    min-height: var(--tap-lg);
   }
-  .userbox .btn:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--on-brand) 15%, transparent);
+  /* Shared keypad (cash and PIN entry) */
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-2);
+    width: 100%;
+  }
+  .key {
+    min-height: var(--tap-xl);
+    border: 2px solid var(--line-strong);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--fs-2xl);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--dur-fast);
+  }
+  .key:active:not(:disabled) {
+    transform: scale(0.97);
+    background: var(--bg);
+  }
+  .key:disabled {
+    opacity: 0.45;
+  }
+  /* Location switcher inside the Account popover (light surface, not the brand bar) */
+  .account-pop .loc-switch,
+  .account-pop .loc-label {
+    color: var(--ink);
+  }
+  .account-pop .loc-switch select {
+    flex: 1;
+    max-width: none;
+    min-height: var(--tap);
+    border: 2px solid var(--line-strong);
+  }
+  .account-pop .loc-switch {
+    width: 100%;
   }
   .loc-switch,
   .loc-label {

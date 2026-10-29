@@ -12,7 +12,12 @@
   html,
   body {
     margin: 0;
+    height: 100%;
+    overscroll-behavior: none; /* no pull-to-refresh or rubber-band in kiosk use */
     background: var(--bg);
+  }
+  body {
+    font-size: var(--fs-md);
   }
   body.no-scroll {
     overflow: hidden;
@@ -31,9 +36,24 @@
     font: inherit;
     color: inherit;
   }
+  input,
+  select,
+  textarea {
+    font-size: max(16px, var(--fs-md)); /* 16px or more: no iOS zoom on focus */
+  }
   :focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 2px;
+    outline: 2px solid transparent; /* stays visible in forced-colors mode */
+    box-shadow: var(--focus-ring);
+  }
+  /* Touch: no double-tap zoom delay, no tap flash, no text-selection highlight on controls */
+  button,
+  [role='tab'],
+  a.btn,
+  .tile,
+  .key {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
   }
   #print-root {
     display: none;

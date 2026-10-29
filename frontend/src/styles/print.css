@@ -28,9 +28,19 @@
   body.print-banner #print-root {
     display: none !important;
   }
-  body.print-banner .topbar,
+  body.print-banner .rail,
+  body.print-banner .appbar,
   body.print-banner .no-print {
     display: none !important;
+  }
+  body.print-banner .shell {
+    display: block;
+    height: auto;
+    overflow: visible;
+    padding: 0;
+  }
+  body.print-banner .main {
+    overflow: visible;
   }
   body.print-banner .page {
     padding: 0;

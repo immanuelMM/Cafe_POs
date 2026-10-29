@@ -4,3171 +4,3171 @@
  */
 
 export interface paths {
-    "/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["LoginRequest"];
-                    "text/json": components["schemas"]["LoginRequest"];
-                    "application/*+json": components["schemas"]["LoginRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AuthResponse"];
-                        "application/json": components["schemas"]["AuthResponse"];
-                        "text/json": components["schemas"]["AuthResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AuthResponse"];
-                        "application/json": components["schemas"]["AuthResponse"];
-                        "text/json": components["schemas"]["AuthResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/switch-location": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SwitchLocationRequest"];
-                    "text/json": components["schemas"]["SwitchLocationRequest"];
-                    "application/*+json": components["schemas"]["SwitchLocationRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AuthResponse"];
-                        "application/json": components["schemas"]["AuthResponse"];
-                        "text/json": components["schemas"]["AuthResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["UserInfoDto"];
-                        "application/json": components["schemas"]["UserInfoDto"];
-                        "text/json": components["schemas"]["UserInfoDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/branding": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandingDto"];
-                        "application/json": components["schemas"]["BrandingDto"];
-                        "text/json": components["schemas"]["BrandingDto"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateBrandingRequest"];
-                    "text/json": components["schemas"]["UpdateBrandingRequest"];
-                    "application/*+json": components["schemas"]["UpdateBrandingRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandingDto"];
-                        "application/json": components["schemas"]["BrandingDto"];
-                        "text/json": components["schemas"]["BrandingDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/branding/designs/{kind}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    kind: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandDesignDto"];
-                        "application/json": components["schemas"]["BrandDesignDto"];
-                        "text/json": components["schemas"]["BrandDesignDto"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    kind: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SaveBrandDesignRequest"];
-                    "text/json": components["schemas"]["SaveBrandDesignRequest"];
-                    "application/*+json": components["schemas"]["SaveBrandDesignRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandDesignDto"];
-                        "application/json": components["schemas"]["BrandDesignDto"];
-                        "text/json": components["schemas"]["BrandDesignDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/branding/logo": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "multipart/form-data": {
-                        file?: components["schemas"]["IFormFile"];
-                    };
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandingDto"];
-                        "application/json": components["schemas"]["BrandingDto"];
-                        "text/json": components["schemas"]["BrandingDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandingDto"];
-                        "application/json": components["schemas"]["BrandingDto"];
-                        "text/json": components["schemas"]["BrandingDto"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/branding/tarpaulin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "multipart/form-data": {
-                        file?: components["schemas"]["IFormFile"];
-                    };
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandingDto"];
-                        "application/json": components["schemas"]["BrandingDto"];
-                        "text/json": components["schemas"]["BrandingDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BrandingDto"];
-                        "application/json": components["schemas"]["BrandingDto"];
-                        "text/json": components["schemas"]["BrandingDto"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    includeInactive?: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CategoryDto"][];
-                        "application/json": components["schemas"]["CategoryDto"][];
-                        "text/json": components["schemas"]["CategoryDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertCategoryRequest"];
-                    "text/json": components["schemas"]["UpsertCategoryRequest"];
-                    "application/*+json": components["schemas"]["UpsertCategoryRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CategoryDto"];
-                        "application/json": components["schemas"]["CategoryDto"];
-                        "text/json": components["schemas"]["CategoryDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/categories/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertCategoryRequest"];
-                    "text/json": components["schemas"]["UpsertCategoryRequest"];
-                    "application/*+json": components["schemas"]["UpsertCategoryRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CategoryDto"];
-                        "application/json": components["schemas"]["CategoryDto"];
-                        "text/json": components["schemas"]["CategoryDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    categoryId?: string;
-                    search?: string;
-                    includeInactive?: boolean;
-                    page?: number;
-                    pageSize?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PagedResultOfItemDto"];
-                        "application/json": components["schemas"]["PagedResultOfItemDto"];
-                        "text/json": components["schemas"]["PagedResultOfItemDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertItemRequest"];
-                    "text/json": components["schemas"]["UpsertItemRequest"];
-                    "application/*+json": components["schemas"]["UpsertItemRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ItemDto"];
-                        "application/json": components["schemas"]["ItemDto"];
-                        "text/json": components["schemas"]["ItemDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/items/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ItemDto"];
-                        "application/json": components["schemas"]["ItemDto"];
-                        "text/json": components["schemas"]["ItemDto"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertItemRequest"];
-                    "text/json": components["schemas"]["UpsertItemRequest"];
-                    "application/*+json": components["schemas"]["UpsertItemRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ItemDto"];
-                        "application/json": components["schemas"]["ItemDto"];
-                        "text/json": components["schemas"]["ItemDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/items/{id}/image": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "multipart/form-data": {
-                        file?: components["schemas"]["IFormFile"];
-                    };
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ItemDto"];
-                        "application/json": components["schemas"]["ItemDto"];
-                        "text/json": components["schemas"]["ItemDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ItemDto"];
-                        "application/json": components["schemas"]["ItemDto"];
-                        "text/json": components["schemas"]["ItemDto"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/items/{id}/variations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["VariationDto"][];
-                        "application/json": components["schemas"]["VariationDto"][];
-                        "text/json": components["schemas"]["VariationDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertVariationRequest"];
-                    "text/json": components["schemas"]["UpsertVariationRequest"];
-                    "application/*+json": components["schemas"]["UpsertVariationRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["VariationDto"];
-                        "application/json": components["schemas"]["VariationDto"];
-                        "text/json": components["schemas"]["VariationDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/variations/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertVariationRequest"];
-                    "text/json": components["schemas"]["UpsertVariationRequest"];
-                    "application/*+json": components["schemas"]["UpsertVariationRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["VariationDto"];
-                        "application/json": components["schemas"]["VariationDto"];
-                        "text/json": components["schemas"]["VariationDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/modifier-lists": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ModifierListDto"][];
-                        "application/json": components["schemas"]["ModifierListDto"][];
-                        "text/json": components["schemas"]["ModifierListDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertModifierListRequest"];
-                    "text/json": components["schemas"]["UpsertModifierListRequest"];
-                    "application/*+json": components["schemas"]["UpsertModifierListRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ModifierListDto"];
-                        "application/json": components["schemas"]["ModifierListDto"];
-                        "text/json": components["schemas"]["ModifierListDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/modifier-lists/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertModifierListRequest"];
-                    "text/json": components["schemas"]["UpsertModifierListRequest"];
-                    "application/*+json": components["schemas"]["UpsertModifierListRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ModifierListDto"];
-                        "application/json": components["schemas"]["ModifierListDto"];
-                        "text/json": components["schemas"]["ModifierListDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ingredients": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    includeInactive?: boolean;
-                    locationId?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["IngredientDto"][];
-                        "application/json": components["schemas"]["IngredientDto"][];
-                        "text/json": components["schemas"]["IngredientDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateIngredientRequest"];
-                    "text/json": components["schemas"]["CreateIngredientRequest"];
-                    "application/*+json": components["schemas"]["CreateIngredientRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["IngredientDto"];
-                        "application/json": components["schemas"]["IngredientDto"];
-                        "text/json": components["schemas"]["IngredientDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ingredients/low-stock": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    locationId?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["IngredientDto"][];
-                        "application/json": components["schemas"]["IngredientDto"][];
-                        "text/json": components["schemas"]["IngredientDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ingredients/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateIngredientRequest"];
-                    "text/json": components["schemas"]["UpdateIngredientRequest"];
-                    "application/*+json": components["schemas"]["UpdateIngredientRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["IngredientDto"];
-                        "application/json": components["schemas"]["IngredientDto"];
-                        "text/json": components["schemas"]["IngredientDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ingredients/{id}/movements": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    locationId?: string;
-                    page?: number;
-                    pageSize?: number;
-                };
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PagedResultOfStockMovementDto"];
-                        "application/json": components["schemas"]["PagedResultOfStockMovementDto"];
-                        "text/json": components["schemas"]["PagedResultOfStockMovementDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/restocks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["RestockRequest"];
-                    "text/json": components["schemas"]["RestockRequest"];
-                    "application/*+json": components["schemas"]["RestockRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["StockMovementDto"];
-                        "application/json": components["schemas"]["StockMovementDto"];
-                        "text/json": components["schemas"]["StockMovementDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ingredients/{id}/adjustments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AdjustmentRequest"];
-                    "text/json": components["schemas"]["AdjustmentRequest"];
-                    "application/*+json": components["schemas"]["AdjustmentRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["StockMovementDto"];
-                        "application/json": components["schemas"]["StockMovementDto"];
-                        "text/json": components["schemas"]["StockMovementDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/variations/{id}/recipe": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["RecipeDto"];
-                        "application/json": components["schemas"]["RecipeDto"];
-                        "text/json": components["schemas"]["RecipeDto"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SetRecipeRequest"];
-                    "text/json": components["schemas"]["SetRecipeRequest"];
-                    "application/*+json": components["schemas"]["SetRecipeRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["RecipeDto"];
-                        "application/json": components["schemas"]["RecipeDto"];
-                        "text/json": components["schemas"]["RecipeDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/locations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["LocationDto"][];
-                        "application/json": components["schemas"]["LocationDto"][];
-                        "text/json": components["schemas"]["LocationDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateLocationRequest"];
-                    "text/json": components["schemas"]["CreateLocationRequest"];
-                    "application/*+json": components["schemas"]["CreateLocationRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["LocationDto"];
-                        "application/json": components["schemas"]["LocationDto"];
-                        "text/json": components["schemas"]["LocationDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/locations/current": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["LocationDto"];
-                        "application/json": components["schemas"]["LocationDto"];
-                        "text/json": components["schemas"]["LocationDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/locations/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateLocationRequest"];
-                    "text/json": components["schemas"]["UpdateLocationRequest"];
-                    "application/*+json": components["schemas"]["UpdateLocationRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["LocationDto"];
-                        "application/json": components["schemas"]["LocationDto"];
-                        "text/json": components["schemas"]["LocationDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/locations/{id}/staff": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["StaffMemberDto"][];
-                        "application/json": components["schemas"]["StaffMemberDto"][];
-                        "text/json": components["schemas"]["StaffMemberDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AssignStaffByEmailRequest"];
-                    "text/json": components["schemas"]["AssignStaffByEmailRequest"];
-                    "application/*+json": components["schemas"]["AssignStaffByEmailRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["StaffMemberDto"];
-                        "application/json": components["schemas"]["StaffMemberDto"];
-                        "text/json": components["schemas"]["StaffMemberDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    status?: string;
-                    from?: string;
-                    to?: string;
-                    locationId?: string;
-                    page?: number;
-                    pageSize?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PagedResultOfOrderDto"];
-                        "application/json": components["schemas"]["PagedResultOfOrderDto"];
-                        "text/json": components["schemas"]["PagedResultOfOrderDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateOrderRequest"];
-                    "text/json": components["schemas"]["CreateOrderRequest"];
-                    "application/*+json": components["schemas"]["CreateOrderRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders/{id}/items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["OrderLineRequest"];
-                    "text/json": components["schemas"]["OrderLineRequest"];
-                    "application/*+json": components["schemas"]["OrderLineRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders/{id}/items/{itemId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                    itemId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["OrderLineRequest"];
-                    "text/json": components["schemas"]["OrderLineRequest"];
-                    "application/*+json": components["schemas"]["OrderLineRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                    itemId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders/{id}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "Idempotency-Key"?: string;
-                };
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CompleteOrderRequest"];
-                    "text/json": components["schemas"]["CompleteOrderRequest"];
-                    "application/*+json": components["schemas"]["CompleteOrderRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders/{id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OrderDto"];
-                        "application/json": components["schemas"]["OrderDto"];
-                        "text/json": components["schemas"]["OrderDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders/{id}/receipt": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ReceiptDto"];
-                        "application/json": components["schemas"]["ReceiptDto"];
-                        "text/json": components["schemas"]["ReceiptDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/timeclock/staff": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TimeClockStaffDto"][];
-                        "application/json": components["schemas"]["TimeClockStaffDto"][];
-                        "text/json": components["schemas"]["TimeClockStaffDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/timeclock/punch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["PunchRequest"];
-                    "text/json": components["schemas"]["PunchRequest"];
-                    "application/*+json": components["schemas"]["PunchRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PunchResultDto"];
-                        "application/json": components["schemas"]["PunchResultDto"];
-                        "text/json": components["schemas"]["PunchResultDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/timeclock/my-pin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SetPinRequest"];
-                    "text/json": components["schemas"]["SetPinRequest"];
-                    "application/*+json": components["schemas"]["SetPinRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/timeclock/entries": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    from?: string;
-                    to?: string;
-                    userId?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TimeEntryDto"][];
-                        "application/json": components["schemas"]["TimeEntryDto"][];
-                        "text/json": components["schemas"]["TimeEntryDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    locationId?: string;
-                    search?: string;
-                    page?: number;
-                    pageSize?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PagedResultOfUserDto"];
-                        "application/json": components["schemas"]["PagedResultOfUserDto"];
-                        "text/json": components["schemas"]["PagedResultOfUserDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateUserRequest"];
-                    "text/json": components["schemas"]["CreateUserRequest"];
-                    "application/*+json": components["schemas"]["CreateUserRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["UserDto"];
-                        "application/json": components["schemas"]["UserDto"];
-                        "text/json": components["schemas"]["UserDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/users/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["UserDto"];
-                        "application/json": components["schemas"]["UserDto"];
-                        "text/json": components["schemas"]["UserDto"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateUserRequest"];
-                    "text/json": components["schemas"]["UpdateUserRequest"];
-                    "application/*+json": components["schemas"]["UpdateUserRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["UserDto"];
-                        "application/json": components["schemas"]["UserDto"];
-                        "text/json": components["schemas"]["UserDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/users/{id}/pin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SetPinRequest"];
-                    "text/json": components["schemas"]["SetPinRequest"];
-                    "application/*+json": components["schemas"]["SetPinRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/users/{id}/locations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AssignmentRequest"];
-                    "text/json": components["schemas"]["AssignmentRequest"];
-                    "application/*+json": components["schemas"]["AssignmentRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["UserDto"];
-                        "application/json": components["schemas"]["UserDto"];
-                        "text/json": components["schemas"]["UserDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/users/{id}/locations/{locationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                    locationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/variations/{variationId}/location-overrides": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    variationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["LocationOverrideDto"][];
-                        "application/json": components["schemas"]["LocationOverrideDto"][];
-                        "text/json": components["schemas"]["LocationOverrideDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/variations/{variationId}/location-overrides/{locationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    variationId: string;
-                    locationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpsertLocationOverrideRequest"];
-                    "text/json": components["schemas"]["UpsertLocationOverrideRequest"];
-                    "application/*+json": components["schemas"]["UpsertLocationOverrideRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["LocationOverrideDto"];
-                        "application/json": components["schemas"]["LocationOverrideDto"];
-                        "text/json": components["schemas"]["LocationOverrideDto"];
-                    };
-                };
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+  '/health': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/login': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['LoginRequest']
+          'text/json': components['schemas']['LoginRequest']
+          'application/*+json': components['schemas']['LoginRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['AuthResponse']
+            'application/json': components['schemas']['AuthResponse']
+            'text/json': components['schemas']['AuthResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/refresh': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['AuthResponse']
+            'application/json': components['schemas']['AuthResponse']
+            'text/json': components['schemas']['AuthResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/switch-location': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SwitchLocationRequest']
+          'text/json': components['schemas']['SwitchLocationRequest']
+          'application/*+json': components['schemas']['SwitchLocationRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['AuthResponse']
+            'application/json': components['schemas']['AuthResponse']
+            'text/json': components['schemas']['AuthResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/logout': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/me': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UserInfoDto']
+            'application/json': components['schemas']['UserInfoDto']
+            'text/json': components['schemas']['UserInfoDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/branding': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandingDto']
+            'application/json': components['schemas']['BrandingDto']
+            'text/json': components['schemas']['BrandingDto']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpdateBrandingRequest']
+          'text/json': components['schemas']['UpdateBrandingRequest']
+          'application/*+json': components['schemas']['UpdateBrandingRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandingDto']
+            'application/json': components['schemas']['BrandingDto']
+            'text/json': components['schemas']['BrandingDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/branding/designs/{kind}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          kind: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandDesignDto']
+            'application/json': components['schemas']['BrandDesignDto']
+            'text/json': components['schemas']['BrandDesignDto']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          kind: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SaveBrandDesignRequest']
+          'text/json': components['schemas']['SaveBrandDesignRequest']
+          'application/*+json': components['schemas']['SaveBrandDesignRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandDesignDto']
+            'application/json': components['schemas']['BrandDesignDto']
+            'text/json': components['schemas']['BrandDesignDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/branding/logo': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'multipart/form-data': {
+            file?: components['schemas']['IFormFile']
+          }
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandingDto']
+            'application/json': components['schemas']['BrandingDto']
+            'text/json': components['schemas']['BrandingDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandingDto']
+            'application/json': components['schemas']['BrandingDto']
+            'text/json': components['schemas']['BrandingDto']
+          }
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/branding/tarpaulin': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'multipart/form-data': {
+            file?: components['schemas']['IFormFile']
+          }
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandingDto']
+            'application/json': components['schemas']['BrandingDto']
+            'text/json': components['schemas']['BrandingDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['BrandingDto']
+            'application/json': components['schemas']['BrandingDto']
+            'text/json': components['schemas']['BrandingDto']
+          }
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/categories': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          includeInactive?: boolean
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['CategoryDto'][]
+            'application/json': components['schemas']['CategoryDto'][]
+            'text/json': components['schemas']['CategoryDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertCategoryRequest']
+          'text/json': components['schemas']['UpsertCategoryRequest']
+          'application/*+json': components['schemas']['UpsertCategoryRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['CategoryDto']
+            'application/json': components['schemas']['CategoryDto']
+            'text/json': components['schemas']['CategoryDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/categories/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertCategoryRequest']
+          'text/json': components['schemas']['UpsertCategoryRequest']
+          'application/*+json': components['schemas']['UpsertCategoryRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['CategoryDto']
+            'application/json': components['schemas']['CategoryDto']
+            'text/json': components['schemas']['CategoryDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/items': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          categoryId?: string
+          search?: string
+          includeInactive?: boolean
+          page?: number
+          pageSize?: number
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['PagedResultOfItemDto']
+            'application/json': components['schemas']['PagedResultOfItemDto']
+            'text/json': components['schemas']['PagedResultOfItemDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertItemRequest']
+          'text/json': components['schemas']['UpsertItemRequest']
+          'application/*+json': components['schemas']['UpsertItemRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ItemDto']
+            'application/json': components['schemas']['ItemDto']
+            'text/json': components['schemas']['ItemDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/items/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ItemDto']
+            'application/json': components['schemas']['ItemDto']
+            'text/json': components['schemas']['ItemDto']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertItemRequest']
+          'text/json': components['schemas']['UpsertItemRequest']
+          'application/*+json': components['schemas']['UpsertItemRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ItemDto']
+            'application/json': components['schemas']['ItemDto']
+            'text/json': components['schemas']['ItemDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/items/{id}/image': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'multipart/form-data': {
+            file?: components['schemas']['IFormFile']
+          }
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ItemDto']
+            'application/json': components['schemas']['ItemDto']
+            'text/json': components['schemas']['ItemDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ItemDto']
+            'application/json': components['schemas']['ItemDto']
+            'text/json': components['schemas']['ItemDto']
+          }
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/items/{id}/variations': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['VariationDto'][]
+            'application/json': components['schemas']['VariationDto'][]
+            'text/json': components['schemas']['VariationDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertVariationRequest']
+          'text/json': components['schemas']['UpsertVariationRequest']
+          'application/*+json': components['schemas']['UpsertVariationRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['VariationDto']
+            'application/json': components['schemas']['VariationDto']
+            'text/json': components['schemas']['VariationDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/variations/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertVariationRequest']
+          'text/json': components['schemas']['UpsertVariationRequest']
+          'application/*+json': components['schemas']['UpsertVariationRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['VariationDto']
+            'application/json': components['schemas']['VariationDto']
+            'text/json': components['schemas']['VariationDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/modifier-lists': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ModifierListDto'][]
+            'application/json': components['schemas']['ModifierListDto'][]
+            'text/json': components['schemas']['ModifierListDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertModifierListRequest']
+          'text/json': components['schemas']['UpsertModifierListRequest']
+          'application/*+json': components['schemas']['UpsertModifierListRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ModifierListDto']
+            'application/json': components['schemas']['ModifierListDto']
+            'text/json': components['schemas']['ModifierListDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/modifier-lists/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertModifierListRequest']
+          'text/json': components['schemas']['UpsertModifierListRequest']
+          'application/*+json': components['schemas']['UpsertModifierListRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ModifierListDto']
+            'application/json': components['schemas']['ModifierListDto']
+            'text/json': components['schemas']['ModifierListDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/ingredients': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          includeInactive?: boolean
+          locationId?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['IngredientDto'][]
+            'application/json': components['schemas']['IngredientDto'][]
+            'text/json': components['schemas']['IngredientDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateIngredientRequest']
+          'text/json': components['schemas']['CreateIngredientRequest']
+          'application/*+json': components['schemas']['CreateIngredientRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['IngredientDto']
+            'application/json': components['schemas']['IngredientDto']
+            'text/json': components['schemas']['IngredientDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/ingredients/low-stock': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          locationId?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['IngredientDto'][]
+            'application/json': components['schemas']['IngredientDto'][]
+            'text/json': components['schemas']['IngredientDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/ingredients/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpdateIngredientRequest']
+          'text/json': components['schemas']['UpdateIngredientRequest']
+          'application/*+json': components['schemas']['UpdateIngredientRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['IngredientDto']
+            'application/json': components['schemas']['IngredientDto']
+            'text/json': components['schemas']['IngredientDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/ingredients/{id}/movements': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          locationId?: string
+          page?: number
+          pageSize?: number
+        }
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['PagedResultOfStockMovementDto']
+            'application/json': components['schemas']['PagedResultOfStockMovementDto']
+            'text/json': components['schemas']['PagedResultOfStockMovementDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/restocks': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['RestockRequest']
+          'text/json': components['schemas']['RestockRequest']
+          'application/*+json': components['schemas']['RestockRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['StockMovementDto']
+            'application/json': components['schemas']['StockMovementDto']
+            'text/json': components['schemas']['StockMovementDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/ingredients/{id}/adjustments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['AdjustmentRequest']
+          'text/json': components['schemas']['AdjustmentRequest']
+          'application/*+json': components['schemas']['AdjustmentRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['StockMovementDto']
+            'application/json': components['schemas']['StockMovementDto']
+            'text/json': components['schemas']['StockMovementDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/variations/{id}/recipe': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['RecipeDto']
+            'application/json': components['schemas']['RecipeDto']
+            'text/json': components['schemas']['RecipeDto']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SetRecipeRequest']
+          'text/json': components['schemas']['SetRecipeRequest']
+          'application/*+json': components['schemas']['SetRecipeRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['RecipeDto']
+            'application/json': components['schemas']['RecipeDto']
+            'text/json': components['schemas']['RecipeDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/locations': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['LocationDto'][]
+            'application/json': components['schemas']['LocationDto'][]
+            'text/json': components['schemas']['LocationDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateLocationRequest']
+          'text/json': components['schemas']['CreateLocationRequest']
+          'application/*+json': components['schemas']['CreateLocationRequest']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['LocationDto']
+            'application/json': components['schemas']['LocationDto']
+            'text/json': components['schemas']['LocationDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/locations/current': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['LocationDto']
+            'application/json': components['schemas']['LocationDto']
+            'text/json': components['schemas']['LocationDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/locations/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpdateLocationRequest']
+          'text/json': components['schemas']['UpdateLocationRequest']
+          'application/*+json': components['schemas']['UpdateLocationRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['LocationDto']
+            'application/json': components['schemas']['LocationDto']
+            'text/json': components['schemas']['LocationDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/locations/{id}/staff': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['StaffMemberDto'][]
+            'application/json': components['schemas']['StaffMemberDto'][]
+            'text/json': components['schemas']['StaffMemberDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['AssignStaffByEmailRequest']
+          'text/json': components['schemas']['AssignStaffByEmailRequest']
+          'application/*+json': components['schemas']['AssignStaffByEmailRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['StaffMemberDto']
+            'application/json': components['schemas']['StaffMemberDto']
+            'text/json': components['schemas']['StaffMemberDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/orders': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          status?: string
+          from?: string
+          to?: string
+          locationId?: string
+          page?: number
+          pageSize?: number
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['PagedResultOfOrderDto']
+            'application/json': components['schemas']['PagedResultOfOrderDto']
+            'text/json': components['schemas']['PagedResultOfOrderDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateOrderRequest']
+          'text/json': components['schemas']['CreateOrderRequest']
+          'application/*+json': components['schemas']['CreateOrderRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/orders/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/orders/{id}/items': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['OrderLineRequest']
+          'text/json': components['schemas']['OrderLineRequest']
+          'application/*+json': components['schemas']['OrderLineRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/orders/{id}/items/{itemId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+          itemId: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['OrderLineRequest']
+          'text/json': components['schemas']['OrderLineRequest']
+          'application/*+json': components['schemas']['OrderLineRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+          itemId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/orders/{id}/complete': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: {
+          'Idempotency-Key'?: string
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CompleteOrderRequest']
+          'text/json': components['schemas']['CompleteOrderRequest']
+          'application/*+json': components['schemas']['CompleteOrderRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/orders/{id}/cancel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['OrderDto']
+            'application/json': components['schemas']['OrderDto']
+            'text/json': components['schemas']['OrderDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/orders/{id}/receipt': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ReceiptDto']
+            'application/json': components['schemas']['ReceiptDto']
+            'text/json': components['schemas']['ReceiptDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/timeclock/staff': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['TimeClockStaffDto'][]
+            'application/json': components['schemas']['TimeClockStaffDto'][]
+            'text/json': components['schemas']['TimeClockStaffDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/timeclock/punch': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['PunchRequest']
+          'text/json': components['schemas']['PunchRequest']
+          'application/*+json': components['schemas']['PunchRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['PunchResultDto']
+            'application/json': components['schemas']['PunchResultDto']
+            'text/json': components['schemas']['PunchResultDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/timeclock/my-pin': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SetPinRequest']
+          'text/json': components['schemas']['SetPinRequest']
+          'application/*+json': components['schemas']['SetPinRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/timeclock/entries': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          from?: string
+          to?: string
+          userId?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['TimeEntryDto'][]
+            'application/json': components['schemas']['TimeEntryDto'][]
+            'text/json': components['schemas']['TimeEntryDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/users': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          locationId?: string
+          search?: string
+          page?: number
+          pageSize?: number
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['PagedResultOfUserDto']
+            'application/json': components['schemas']['PagedResultOfUserDto']
+            'text/json': components['schemas']['PagedResultOfUserDto']
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateUserRequest']
+          'text/json': components['schemas']['CreateUserRequest']
+          'application/*+json': components['schemas']['CreateUserRequest']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UserDto']
+            'application/json': components['schemas']['UserDto']
+            'text/json': components['schemas']['UserDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/users/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UserDto']
+            'application/json': components['schemas']['UserDto']
+            'text/json': components['schemas']['UserDto']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpdateUserRequest']
+          'text/json': components['schemas']['UpdateUserRequest']
+          'application/*+json': components['schemas']['UpdateUserRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UserDto']
+            'application/json': components['schemas']['UserDto']
+            'text/json': components['schemas']['UserDto']
+          }
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/users/{id}/pin': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SetPinRequest']
+          'text/json': components['schemas']['SetPinRequest']
+          'application/*+json': components['schemas']['SetPinRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/users/{id}/locations': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['AssignmentRequest']
+          'text/json': components['schemas']['AssignmentRequest']
+          'application/*+json': components['schemas']['AssignmentRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UserDto']
+            'application/json': components['schemas']['UserDto']
+            'text/json': components['schemas']['UserDto']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/users/{id}/locations/{locationId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+          locationId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/variations/{variationId}/location-overrides': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          variationId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['LocationOverrideDto'][]
+            'application/json': components['schemas']['LocationOverrideDto'][]
+            'text/json': components['schemas']['LocationOverrideDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/variations/{variationId}/location-overrides/{locationId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          variationId: string
+          locationId: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpsertLocationOverrideRequest']
+          'text/json': components['schemas']['UpsertLocationOverrideRequest']
+          'application/*+json': components['schemas']['UpsertLocationOverrideRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['LocationOverrideDto']
+            'application/json': components['schemas']['LocationOverrideDto']
+            'text/json': components['schemas']['LocationOverrideDto']
+          }
+        }
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
-export type webhooks = Record<string, never>;
+export type webhooks = Record<string, never>
 export interface components {
-    schemas: {
-        AdjustmentRequest: {
-            /** Format: double */
-            quantityDelta?: number;
-            reason?: string;
-            note: string;
-        };
-        AssignmentRequest: {
-            /** Format: uuid */
-            locationId: string;
-            role: string;
-        };
-        AssignStaffByEmailRequest: {
-            email: string;
-            role: string;
-        };
-        AuthResponse: {
-            accessToken: string;
-            /** Format: date-time */
-            expiresAt: string;
-            user: components["schemas"]["UserInfoDto"];
-        };
-        BrandDesignDto: {
-            kind: string;
-            document: components["schemas"]["JsonElement"];
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        BrandingDto: {
-            brandName: string;
-            tagline: null | string;
-            primaryColor: string;
-            logoUrl: null | string;
-            tarpaulinUrl: null | string;
-            tarpaulinContentType: null | string;
-            secondaryColor: null | string;
-            tertiaryColor: null | string;
-            gradient: boolean;
-            /** Format: int32 */
-            gradientAngle: number;
-        };
-        CategoryDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            /** Format: int32 */
-            sortOrder: number;
-            active: boolean;
-        };
-        CompleteOrderRequest: {
-            paymentMethod: string;
-            /** Format: double */
-            amountTendered?: null | number;
-        };
-        CreateIngredientRequest: {
-            name: string;
-            unit: string;
-            /** Format: double */
-            lowStockThreshold?: number;
-            /** Format: double */
-            initialQuantity?: number;
-        };
-        CreateLocationRequest: {
-            name: string;
-            address?: null | string;
-            timeZone: string;
-            contactPhone?: null | string;
-            /** Format: double */
-            vatRatePercent?: number;
-            stripeTerminalLocationId?: null | string;
-        };
-        CreateOrderRequest: {
-            /** Format: uuid */
-            id: string;
-            note?: null | string;
-            items?: components["schemas"]["OrderLineRequest"][];
-        };
-        CreateUserRequest: {
-            email: string;
-            displayName: string;
-            password: string;
-            isOwner?: boolean;
-            assignments?: components["schemas"]["AssignmentRequest"][];
-        };
-        /** Format: binary */
-        IFormFile: string;
-        IngredientDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            unit: string;
-            /** Format: double */
-            lowStockThreshold: number;
-            active: boolean;
-            /** Format: double */
-            quantityOnHand: null | number;
-            isLowStock: null | boolean;
-        };
-        ItemDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            categoryId: string;
-            name: string;
-            description: null | string;
-            /** Format: int32 */
-            sortOrder: number;
-            active: boolean;
-            variations: components["schemas"]["VariationDto"][];
-            modifierListIds: string[];
-            imageUrl: null | string;
-        };
-        JsonElement: unknown;
-        LocationDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            address: null | string;
-            timeZone: string;
-            contactPhone: null | string;
-            /** Format: double */
-            vatRatePercent: number;
-            active: boolean;
-            stripeTerminalLocationId: null | string;
-        };
-        LocationOverrideDto: {
-            /** Format: uuid */
-            variationId: string;
-            /** Format: uuid */
-            locationId: string;
-            locationName: string;
-            /** Format: double */
-            priceOverride: null | number;
-            trackInventoryOverride: null | boolean;
-            /** Format: double */
-            lowStockThresholdOverride: null | number;
-            /** Format: double */
-            effectivePrice: number;
-        };
-        LocationRef: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-        };
-        LocationRoleDto: {
-            /** Format: uuid */
-            locationId: string;
-            locationName: string;
-            role: string;
-        };
-        LoginRequest: {
-            email: string;
-            password: string;
-            /** Format: uuid */
-            locationId?: null | string;
-        };
-        ModifierDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            /** Format: double */
-            priceDelta: number;
-            active: boolean;
-        };
-        ModifierListDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            /** Format: int32 */
-            minSelections: number;
-            /** Format: int32 */
-            maxSelections: number;
-            active: boolean;
-            modifiers: components["schemas"]["ModifierDto"][];
-        };
-        OrderDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: int32 */
-            orderNumber: null | number;
-            status: string;
-            /** Format: uuid */
-            locationId: string;
-            /** Format: uuid */
-            cashierId: string;
-            cashierName: string;
-            note: null | string;
-            /** Format: double */
-            vatRatePercent: number;
-            /** Format: double */
-            total: number;
-            /** Format: double */
-            vatableSales: number;
-            /** Format: double */
-            vatAmount: number;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            completedAt: null | string;
-            /** Format: date-time */
-            canceledAt: null | string;
-            items: components["schemas"]["OrderItemDto"][];
-            payments: components["schemas"]["PaymentDto"][];
-        };
-        OrderItemDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            itemVariationId: string;
-            itemName: string;
-            variationName: string;
-            sku: string;
-            /** Format: double */
-            unitPrice: number;
-            /** Format: int32 */
-            quantity: number;
-            /** Format: double */
-            lineTotal: number;
-            note: null | string;
-            modifiers: components["schemas"]["OrderItemModifierDto"][];
-        };
-        OrderItemModifierDto: {
-            /** Format: uuid */
-            modifierId: string;
-            name: string;
-            /** Format: double */
-            priceDelta: number;
-        };
-        OrderLineRequest: {
-            /** Format: uuid */
-            itemVariationId: string;
-            /** Format: int32 */
-            quantity?: number;
-            modifierIds?: null | string[];
-            note?: null | string;
-        };
-        PagedResultOfItemDto: {
-            data: components["schemas"]["ItemDto"][];
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-            /** Format: int32 */
-            totalCount: number;
-            /** Format: int32 */
-            totalPages?: number;
-        };
-        PagedResultOfOrderDto: {
-            data: components["schemas"]["OrderDto"][];
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-            /** Format: int32 */
-            totalCount: number;
-            /** Format: int32 */
-            totalPages?: number;
-        };
-        PagedResultOfStockMovementDto: {
-            data: components["schemas"]["StockMovementDto"][];
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-            /** Format: int32 */
-            totalCount: number;
-            /** Format: int32 */
-            totalPages?: number;
-        };
-        PagedResultOfUserDto: {
-            data: components["schemas"]["UserDto"][];
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-            /** Format: int32 */
-            totalCount: number;
-            /** Format: int32 */
-            totalPages?: number;
-        };
-        PaymentDto: {
-            /** Format: uuid */
-            id: string;
-            method: string;
-            status: string;
-            /** Format: double */
-            amount: number;
-            /** Format: double */
-            amountTendered: null | number;
-            /** Format: double */
-            changeGiven: null | number;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        PunchRequest: {
-            /** Format: uuid */
-            userId: null | string;
-            pin: string;
-        };
-        PunchResultDto: {
-            action: string;
-            entry: components["schemas"]["TimeEntryDto"];
-        };
-        ReceiptDto: {
-            locationName: string;
-            locationAddress: null | string;
-            locationPhone: null | string;
-            /** Format: int32 */
-            orderNumber: number;
-            /** Format: uuid */
-            orderId: string;
-            /** Format: date-time */
-            completedAt: string;
-            timeZone: string;
-            cashierName: string;
-            lines: components["schemas"]["ReceiptLineDto"][];
-            pricesIncludeVat: boolean;
-            /** Format: double */
-            vatRatePercent: number;
-            /** Format: double */
-            vatableSales: number;
-            /** Format: double */
-            vatAmount: number;
-            /** Format: double */
-            total: number;
-            paymentMethod: string;
-            /** Format: double */
-            amountTendered: number;
-            /** Format: double */
-            changeGiven: number;
-            currency: string;
-        };
-        ReceiptLineDto: {
-            description: string;
-            modifiers: null | string;
-            /** Format: int32 */
-            quantity: number;
-            /** Format: double */
-            unitPrice: number;
-            /** Format: double */
-            lineTotal: number;
-        };
-        RecipeDto: {
-            /** Format: uuid */
-            variationId: string;
-            lines: components["schemas"]["RecipeLineDto"][];
-        };
-        RecipeLineDto: {
-            /** Format: uuid */
-            ingredientId: string;
-            ingredientName: string;
-            unit: string;
-            /** Format: double */
-            quantity: number;
-        };
-        RestockRequest: {
-            /** Format: uuid */
-            ingredientId: string;
-            /** Format: double */
-            quantity?: number;
-            /** Format: double */
-            unitCost?: null | number;
-            supplier?: null | string;
-            note?: null | string;
-        };
-        SaveBrandDesignRequest: {
-            document: components["schemas"]["JsonElement"];
-        };
-        SetPinRequest: {
-            pin: string;
-        };
-        SetRecipeLine: {
-            /** Format: uuid */
-            ingredientId: string;
-            /** Format: double */
-            quantity?: number;
-        };
-        SetRecipeRequest: {
-            lines?: components["schemas"]["SetRecipeLine"][];
-        };
-        StaffMemberDto: {
-            /** Format: uuid */
-            userId: string;
-            email: string;
-            displayName: string;
-            role: string;
-            active: boolean;
-        };
-        StockMovementDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            ingredientId: string;
-            /** Format: uuid */
-            locationId: string;
-            /** Format: double */
-            quantityDelta: number;
-            reason: string;
-            sourceDocumentRef: null | string;
-            note: null | string;
-            supplier: null | string;
-            /** Format: double */
-            unitCost: null | number;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: uuid */
-            userId: null | string;
-        };
-        SwitchLocationRequest: {
-            /** Format: uuid */
-            locationId?: null | string;
-        };
-        TimeClockStaffDto: {
-            /** Format: uuid */
-            userId: string;
-            displayName: string;
-            role: string;
-            hasPin: boolean;
-            clockedIn: boolean;
-            /** Format: date-time */
-            openSince: null | string;
-        };
-        TimeEntryDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            userId: string;
-            displayName: string;
-            /** Format: uuid */
-            locationId: string;
-            /** Format: date-time */
-            clockInAt: string;
-            /** Format: date-time */
-            clockOutAt: null | string;
-            /** Format: double */
-            hours: null | number;
-        };
-        UpdateBrandingRequest: {
-            brandName: string;
-            tagline?: null | string;
-            primaryColor: string;
-            secondaryColor?: null | string;
-            tertiaryColor?: null | string;
-            gradient?: boolean;
-            /** Format: int32 */
-            gradientAngle?: number;
-        };
-        UpdateIngredientRequest: {
-            name: string;
-            unit: string;
-            /** Format: double */
-            lowStockThreshold?: number;
-            active?: boolean;
-        };
-        UpdateLocationRequest: {
-            name: string;
-            address?: null | string;
-            timeZone: string;
-            contactPhone?: null | string;
-            /** Format: double */
-            vatRatePercent?: number;
-            active?: null | boolean;
-            stripeTerminalLocationId?: null | string;
-        };
-        UpdateUserRequest: {
-            displayName: string;
-            active?: null | boolean;
-            isOwner?: null | boolean;
-        };
-        UpsertCategoryRequest: {
-            name: string;
-            /** Format: int32 */
-            sortOrder?: number;
-            active?: null | boolean;
-        };
-        UpsertItemRequest: {
-            /** Format: uuid */
-            categoryId: string;
-            name: string;
-            description?: null | string;
-            /** Format: int32 */
-            sortOrder?: number;
-            active?: null | boolean;
-            modifierListIds?: null | string[];
-            variations?: null | components["schemas"]["UpsertVariationRequest"][];
-        };
-        UpsertLocationOverrideRequest: {
-            /** Format: double */
-            priceOverride?: null | number;
-            trackInventoryOverride?: null | boolean;
-            /** Format: double */
-            lowStockThresholdOverride?: null | number;
-        };
-        UpsertModifierListRequest: {
-            name: string;
-            /** Format: int32 */
-            minSelections?: number;
-            /** Format: int32 */
-            maxSelections?: number;
-            modifiers?: components["schemas"]["UpsertModifierRequest"][];
-        };
-        UpsertModifierRequest: {
-            /** Format: uuid */
-            id?: null | string;
-            name: string;
-            /** Format: double */
-            priceDelta?: number;
-        };
-        UpsertVariationRequest: {
-            name: string;
-            sku: string;
-            /** Format: double */
-            price?: number;
-            active?: null | boolean;
-        };
-        UserDto: {
-            /** Format: uuid */
-            id: string;
-            email: string;
-            displayName: string;
-            active: boolean;
-            isOwner: boolean;
-            locations: components["schemas"]["LocationRoleDto"][];
-        };
-        UserInfoDto: {
-            /** Format: uuid */
-            id: string;
-            email: string;
-            displayName: string;
-            role: string;
-            isOwner: boolean;
-            location: null | components["schemas"]["LocationRef"];
-            locations: components["schemas"]["LocationRoleDto"][];
-        };
-        VariationDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            itemId: string;
-            name: string;
-            sku: string;
-            /** Format: double */
-            price: number;
-            active: boolean;
-            /** Format: double */
-            effectivePrice: number;
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: {
+    AdjustmentRequest: {
+      /** Format: double */
+      quantityDelta?: number
+      reason?: string
+      note: string
+    }
+    AssignmentRequest: {
+      /** Format: uuid */
+      locationId: string
+      role: string
+    }
+    AssignStaffByEmailRequest: {
+      email: string
+      role: string
+    }
+    AuthResponse: {
+      accessToken: string
+      /** Format: date-time */
+      expiresAt: string
+      user: components['schemas']['UserInfoDto']
+    }
+    BrandDesignDto: {
+      kind: string
+      document: components['schemas']['JsonElement']
+      /** Format: date-time */
+      updatedAt: string
+    }
+    BrandingDto: {
+      brandName: string
+      tagline: null | string
+      primaryColor: string
+      logoUrl: null | string
+      tarpaulinUrl: null | string
+      tarpaulinContentType: null | string
+      secondaryColor: null | string
+      tertiaryColor: null | string
+      gradient: boolean
+      /** Format: int32 */
+      gradientAngle: number
+    }
+    CategoryDto: {
+      /** Format: uuid */
+      id: string
+      name: string
+      /** Format: int32 */
+      sortOrder: number
+      active: boolean
+    }
+    CompleteOrderRequest: {
+      paymentMethod: string
+      /** Format: double */
+      amountTendered?: null | number
+    }
+    CreateIngredientRequest: {
+      name: string
+      unit: string
+      /** Format: double */
+      lowStockThreshold?: number
+      /** Format: double */
+      initialQuantity?: number
+    }
+    CreateLocationRequest: {
+      name: string
+      address?: null | string
+      timeZone: string
+      contactPhone?: null | string
+      /** Format: double */
+      vatRatePercent?: number
+      stripeTerminalLocationId?: null | string
+    }
+    CreateOrderRequest: {
+      /** Format: uuid */
+      id: string
+      note?: null | string
+      items?: components['schemas']['OrderLineRequest'][]
+    }
+    CreateUserRequest: {
+      email: string
+      displayName: string
+      password: string
+      isOwner?: boolean
+      assignments?: components['schemas']['AssignmentRequest'][]
+    }
+    /** Format: binary */
+    IFormFile: string
+    IngredientDto: {
+      /** Format: uuid */
+      id: string
+      name: string
+      unit: string
+      /** Format: double */
+      lowStockThreshold: number
+      active: boolean
+      /** Format: double */
+      quantityOnHand: null | number
+      isLowStock: null | boolean
+    }
+    ItemDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      categoryId: string
+      name: string
+      description: null | string
+      /** Format: int32 */
+      sortOrder: number
+      active: boolean
+      variations: components['schemas']['VariationDto'][]
+      modifierListIds: string[]
+      imageUrl: null | string
+    }
+    JsonElement: unknown
+    LocationDto: {
+      /** Format: uuid */
+      id: string
+      name: string
+      address: null | string
+      timeZone: string
+      contactPhone: null | string
+      /** Format: double */
+      vatRatePercent: number
+      active: boolean
+      stripeTerminalLocationId: null | string
+    }
+    LocationOverrideDto: {
+      /** Format: uuid */
+      variationId: string
+      /** Format: uuid */
+      locationId: string
+      locationName: string
+      /** Format: double */
+      priceOverride: null | number
+      trackInventoryOverride: null | boolean
+      /** Format: double */
+      lowStockThresholdOverride: null | number
+      /** Format: double */
+      effectivePrice: number
+    }
+    LocationRef: {
+      /** Format: uuid */
+      id: string
+      name: string
+    }
+    LocationRoleDto: {
+      /** Format: uuid */
+      locationId: string
+      locationName: string
+      role: string
+    }
+    LoginRequest: {
+      email: string
+      password: string
+      /** Format: uuid */
+      locationId?: null | string
+    }
+    ModifierDto: {
+      /** Format: uuid */
+      id: string
+      name: string
+      /** Format: double */
+      priceDelta: number
+      active: boolean
+    }
+    ModifierListDto: {
+      /** Format: uuid */
+      id: string
+      name: string
+      /** Format: int32 */
+      minSelections: number
+      /** Format: int32 */
+      maxSelections: number
+      active: boolean
+      modifiers: components['schemas']['ModifierDto'][]
+    }
+    OrderDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: int32 */
+      orderNumber: null | number
+      status: string
+      /** Format: uuid */
+      locationId: string
+      /** Format: uuid */
+      cashierId: string
+      cashierName: string
+      note: null | string
+      /** Format: double */
+      vatRatePercent: number
+      /** Format: double */
+      total: number
+      /** Format: double */
+      vatableSales: number
+      /** Format: double */
+      vatAmount: number
+      /** Format: date-time */
+      createdAt: string
+      /** Format: date-time */
+      completedAt: null | string
+      /** Format: date-time */
+      canceledAt: null | string
+      items: components['schemas']['OrderItemDto'][]
+      payments: components['schemas']['PaymentDto'][]
+    }
+    OrderItemDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      itemVariationId: string
+      itemName: string
+      variationName: string
+      sku: string
+      /** Format: double */
+      unitPrice: number
+      /** Format: int32 */
+      quantity: number
+      /** Format: double */
+      lineTotal: number
+      note: null | string
+      modifiers: components['schemas']['OrderItemModifierDto'][]
+    }
+    OrderItemModifierDto: {
+      /** Format: uuid */
+      modifierId: string
+      name: string
+      /** Format: double */
+      priceDelta: number
+    }
+    OrderLineRequest: {
+      /** Format: uuid */
+      itemVariationId: string
+      /** Format: int32 */
+      quantity?: number
+      modifierIds?: null | string[]
+      note?: null | string
+    }
+    PagedResultOfItemDto: {
+      data: components['schemas']['ItemDto'][]
+      /** Format: int32 */
+      page: number
+      /** Format: int32 */
+      pageSize: number
+      /** Format: int32 */
+      totalCount: number
+      /** Format: int32 */
+      totalPages?: number
+    }
+    PagedResultOfOrderDto: {
+      data: components['schemas']['OrderDto'][]
+      /** Format: int32 */
+      page: number
+      /** Format: int32 */
+      pageSize: number
+      /** Format: int32 */
+      totalCount: number
+      /** Format: int32 */
+      totalPages?: number
+    }
+    PagedResultOfStockMovementDto: {
+      data: components['schemas']['StockMovementDto'][]
+      /** Format: int32 */
+      page: number
+      /** Format: int32 */
+      pageSize: number
+      /** Format: int32 */
+      totalCount: number
+      /** Format: int32 */
+      totalPages?: number
+    }
+    PagedResultOfUserDto: {
+      data: components['schemas']['UserDto'][]
+      /** Format: int32 */
+      page: number
+      /** Format: int32 */
+      pageSize: number
+      /** Format: int32 */
+      totalCount: number
+      /** Format: int32 */
+      totalPages?: number
+    }
+    PaymentDto: {
+      /** Format: uuid */
+      id: string
+      method: string
+      status: string
+      /** Format: double */
+      amount: number
+      /** Format: double */
+      amountTendered: null | number
+      /** Format: double */
+      changeGiven: null | number
+      /** Format: date-time */
+      createdAt: string
+    }
+    PunchRequest: {
+      /** Format: uuid */
+      userId: null | string
+      pin: string
+    }
+    PunchResultDto: {
+      action: string
+      entry: components['schemas']['TimeEntryDto']
+    }
+    ReceiptDto: {
+      locationName: string
+      locationAddress: null | string
+      locationPhone: null | string
+      /** Format: int32 */
+      orderNumber: number
+      /** Format: uuid */
+      orderId: string
+      /** Format: date-time */
+      completedAt: string
+      timeZone: string
+      cashierName: string
+      lines: components['schemas']['ReceiptLineDto'][]
+      pricesIncludeVat: boolean
+      /** Format: double */
+      vatRatePercent: number
+      /** Format: double */
+      vatableSales: number
+      /** Format: double */
+      vatAmount: number
+      /** Format: double */
+      total: number
+      paymentMethod: string
+      /** Format: double */
+      amountTendered: number
+      /** Format: double */
+      changeGiven: number
+      currency: string
+    }
+    ReceiptLineDto: {
+      description: string
+      modifiers: null | string
+      /** Format: int32 */
+      quantity: number
+      /** Format: double */
+      unitPrice: number
+      /** Format: double */
+      lineTotal: number
+    }
+    RecipeDto: {
+      /** Format: uuid */
+      variationId: string
+      lines: components['schemas']['RecipeLineDto'][]
+    }
+    RecipeLineDto: {
+      /** Format: uuid */
+      ingredientId: string
+      ingredientName: string
+      unit: string
+      /** Format: double */
+      quantity: number
+    }
+    RestockRequest: {
+      /** Format: uuid */
+      ingredientId: string
+      /** Format: double */
+      quantity?: number
+      /** Format: double */
+      unitCost?: null | number
+      supplier?: null | string
+      note?: null | string
+    }
+    SaveBrandDesignRequest: {
+      document: components['schemas']['JsonElement']
+    }
+    SetPinRequest: {
+      pin: string
+    }
+    SetRecipeLine: {
+      /** Format: uuid */
+      ingredientId: string
+      /** Format: double */
+      quantity?: number
+    }
+    SetRecipeRequest: {
+      lines?: components['schemas']['SetRecipeLine'][]
+    }
+    StaffMemberDto: {
+      /** Format: uuid */
+      userId: string
+      email: string
+      displayName: string
+      role: string
+      active: boolean
+    }
+    StockMovementDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      ingredientId: string
+      /** Format: uuid */
+      locationId: string
+      /** Format: double */
+      quantityDelta: number
+      reason: string
+      sourceDocumentRef: null | string
+      note: null | string
+      supplier: null | string
+      /** Format: double */
+      unitCost: null | number
+      /** Format: date-time */
+      createdAt: string
+      /** Format: uuid */
+      userId: null | string
+    }
+    SwitchLocationRequest: {
+      /** Format: uuid */
+      locationId?: null | string
+    }
+    TimeClockStaffDto: {
+      /** Format: uuid */
+      userId: string
+      displayName: string
+      role: string
+      hasPin: boolean
+      clockedIn: boolean
+      /** Format: date-time */
+      openSince: null | string
+    }
+    TimeEntryDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      userId: string
+      displayName: string
+      /** Format: uuid */
+      locationId: string
+      /** Format: date-time */
+      clockInAt: string
+      /** Format: date-time */
+      clockOutAt: null | string
+      /** Format: double */
+      hours: null | number
+    }
+    UpdateBrandingRequest: {
+      brandName: string
+      tagline?: null | string
+      primaryColor: string
+      secondaryColor?: null | string
+      tertiaryColor?: null | string
+      gradient?: boolean
+      /** Format: int32 */
+      gradientAngle?: number
+    }
+    UpdateIngredientRequest: {
+      name: string
+      unit: string
+      /** Format: double */
+      lowStockThreshold?: number
+      active?: boolean
+    }
+    UpdateLocationRequest: {
+      name: string
+      address?: null | string
+      timeZone: string
+      contactPhone?: null | string
+      /** Format: double */
+      vatRatePercent?: number
+      active?: null | boolean
+      stripeTerminalLocationId?: null | string
+    }
+    UpdateUserRequest: {
+      displayName: string
+      active?: null | boolean
+      isOwner?: null | boolean
+    }
+    UpsertCategoryRequest: {
+      name: string
+      /** Format: int32 */
+      sortOrder?: number
+      active?: null | boolean
+    }
+    UpsertItemRequest: {
+      /** Format: uuid */
+      categoryId: string
+      name: string
+      description?: null | string
+      /** Format: int32 */
+      sortOrder?: number
+      active?: null | boolean
+      modifierListIds?: null | string[]
+      variations?: null | components['schemas']['UpsertVariationRequest'][]
+    }
+    UpsertLocationOverrideRequest: {
+      /** Format: double */
+      priceOverride?: null | number
+      trackInventoryOverride?: null | boolean
+      /** Format: double */
+      lowStockThresholdOverride?: null | number
+    }
+    UpsertModifierListRequest: {
+      name: string
+      /** Format: int32 */
+      minSelections?: number
+      /** Format: int32 */
+      maxSelections?: number
+      modifiers?: components['schemas']['UpsertModifierRequest'][]
+    }
+    UpsertModifierRequest: {
+      /** Format: uuid */
+      id?: null | string
+      name: string
+      /** Format: double */
+      priceDelta?: number
+    }
+    UpsertVariationRequest: {
+      name: string
+      sku: string
+      /** Format: double */
+      price?: number
+      active?: null | boolean
+    }
+    UserDto: {
+      /** Format: uuid */
+      id: string
+      email: string
+      displayName: string
+      active: boolean
+      isOwner: boolean
+      locations: components['schemas']['LocationRoleDto'][]
+    }
+    UserInfoDto: {
+      /** Format: uuid */
+      id: string
+      email: string
+      displayName: string
+      role: string
+      isOwner: boolean
+      location: null | components['schemas']['LocationRef']
+      locations: components['schemas']['LocationRoleDto'][]
+    }
+    VariationDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      itemId: string
+      name: string
+      sku: string
+      /** Format: double */
+      price: number
+      active: boolean
+      /** Format: double */
+      effectivePrice: number
+    }
+  }
+  responses: never
+  parameters: never
+  requestBodies: never
+  headers: never
+  pathItems: never
 }
-export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export type $defs = Record<string, never>
+export type operations = Record<string, never>

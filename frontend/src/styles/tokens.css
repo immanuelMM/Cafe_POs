@@ -86,6 +86,10 @@
     --tile-min-w: 140px;
     --tile-min-h: 104px;
     --pad-page: 12px;
+    --rail-w: 88px;
+    --shell-left: 0px;
+    --appbar-h: 56px;
+    --bottom-nav-h: calc(64px + env(safe-area-inset-bottom));
 
     /* Type scale (compact values) */
     --fs-xs: 13px;
@@ -101,7 +105,11 @@
   /* medium, expanded and large */
   @media (min-width: 600px) and (min-height: 500px) {
     :root {
+      --tap: 56px;
       --tap-xl: 80px;
+      --rail-w: 80px;
+      --shell-left: calc(var(--rail-w) + env(safe-area-inset-left));
+      --bottom-nav-h: 0px;
       --tile-min-w: 160px;
       --tile-min-h: 120px;
       --pad-page: 16px;
@@ -120,6 +128,7 @@
   @media (min-width: 960px) and (min-height: 500px) {
     :root {
       --pad-page: 20px;
+      --rail-w: 88px;
     }
   }
 

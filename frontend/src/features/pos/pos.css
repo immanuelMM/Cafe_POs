@@ -2,7 +2,7 @@
   /* POS: phone = menu full width + bottom bar/sheet; >=768 = menu + cart sidebar */
   .pos {
     display: block;
-    padding-bottom: 76px;
+    padding-bottom: calc(76px + var(--bottom-nav-h));
   }
   .pos-menu {
     padding: 12px;
@@ -80,9 +80,9 @@
 
   .cart-bar {
     position: fixed;
-    left: 0;
+    left: var(--shell-left);
     right: 0;
-    bottom: 0;
+    bottom: var(--bottom-nav-h);
     z-index: 15;
     min-height: 64px;
     background: var(--brand);
@@ -97,7 +97,7 @@
   }
   .cart {
     position: fixed;
-    left: 0;
+    left: var(--shell-left);
     right: 0;
     bottom: 0;
     z-index: 30;
@@ -229,7 +229,7 @@
     .pos {
       display: grid;
       grid-template-columns: 1fr 340px;
-      height: calc(100dvh - 60px);
+      height: 100%;
       padding-bottom: 0;
     }
     .pos-menu {

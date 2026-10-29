@@ -1,21 +1,117 @@
 @layer layout {
-  /* Shell */
+  /*
+   * App shell (tablet-ui-plan 2.4). One DOM; the size class decides the layout.
+   * Compact = (max-width: 599px), (max-height: 499px): top app bar + bottom tabs.
+   * Everything else: left rail (88px expanded/large, 80px medium). The page never scrolls; .main does.
+   */
   .shell {
-    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+    display: grid;
+    grid-template-columns: calc(var(--rail-w) + env(safe-area-inset-left)) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .rail {
+    grid-column: 1;
+    grid-row: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    background: var(--nav-bg);
+    color: var(--nav-fg);
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  .topbar {
-    background: var(--brand-bg);
-    color: var(--on-brand);
+  .rail-brand {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    gap: 8px 16px;
-    padding: 6px 12px;
-    position: sticky;
-    top: 0;
-    z-index: 20;
+    min-height: 64px;
+    font-size: 1.6rem;
+  }
+  .rail-brand .brand-logo {
+    height: 40px;
+    max-width: 64px;
+  }
+  .rail-nav {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 4px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .rail-manage {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid color-mix(in srgb, var(--nav-fg) 30%, transparent);
+  }
+  .rail-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 4px;
+    border-top: 1px solid color-mix(in srgb, var(--nav-fg) 30%, transparent);
+  }
+  .rail-link {
+    flex: none;
+    min-height: 72px;
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    border-radius: var(--r-md);
+    background: transparent;
+    color: var(--nav-fg);
+    font: inherit;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .rail-link:not(.active) {
+    opacity: 0.85;
+  }
+  .rail-link.active {
+    background: var(--on-brand);
+    color: var(--brand);
+    box-shadow: inset 0 -4px 0 var(--brand-highlight);
+  }
+  .rail-link:active {
+    transform: scale(0.97);
+  }
+  .rail-link:focus-visible {
+    box-shadow: 0 0 0 3px var(--nav-fg);
+  }
+  .rail-link.active:focus-visible {
+    box-shadow:
+      inset 0 -4px 0 var(--brand-highlight),
+      0 0 0 3px var(--nav-fg);
+  }
+  .rail-more {
+    display: none;
+  }
+  .appbar {
+    display: none;
+  }
+  .main {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-padding-bottom: 96px;
   }
   .brand {
     font-weight: 800;
@@ -31,50 +127,144 @@
     object-fit: contain;
     border-radius: 4px;
   }
-  .nav {
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    order: 3;
-    width: 100%;
-  }
-  .nav a {
-    color: var(--on-brand);
-    text-decoration: none;
-    min-height: var(--tap);
-    padding: 0 16px;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 10px;
+  .appbar-title {
     font-weight: 600;
-    white-space: nowrap;
+    opacity: 0.9;
   }
-  .nav a:not(.active) {
-    opacity: 0.85;
+  .more-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
-  .nav a.active {
-    background: var(--on-brand);
-    color: var(--brand);
-    box-shadow: inset 0 -4px 0 var(--brand-highlight);
-  }
-  .userbox {
-    margin-left: auto;
+  .more-link {
+    min-height: var(--tap);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 0 12px;
+    border-radius: var(--r-md);
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
   }
-  .user-meta {
-    display: none;
+  .more-link.active {
+    background: var(--selected-bg);
+    color: var(--selected-fg);
+  }
+  .account-pop {
+    position: fixed;
+    z-index: 55;
+    left: calc(var(--rail-w) + env(safe-area-inset-left) + 8px);
+    bottom: 8px;
+    width: min(320px, calc(100vw - 16px));
+    padding: 14px;
+    display: flex;
     flex-direction: column;
-    text-align: right;
-    line-height: 1.2;
+    gap: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sheet);
   }
-  .user-meta small {
-    opacity: 0.75;
+  .account-who {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
   }
-  .main {
-    flex: 1;
-    min-height: 0;
+  /* Compact: top app bar, bottom tab bar, account/log out pinned top right */
+  @media (max-width: 599px), (max-height: 499px) {
+    .shell {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      padding-bottom: var(--bottom-nav-h);
+    }
+    .shell:has(input:focus, textarea:focus, select:focus) {
+      --bottom-nav-h: 0px;
+    }
+    .shell:has(input:focus, textarea:focus, select:focus) .rail-nav {
+      display: none;
+    }
+    .rail {
+      display: contents;
+    }
+    .rail-brand {
+      display: none;
+    }
+    .rail-nav {
+      position: fixed;
+      z-index: 20;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--bottom-nav-h);
+      flex-direction: row;
+      gap: 0;
+      padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      overflow: hidden;
+      background: var(--nav-bg);
+      color: var(--nav-fg);
+    }
+    .rail-nav > .rail-link {
+      flex: 1;
+      min-height: 0;
+      border-radius: 0;
+    }
+    .rail-manage {
+      display: none;
+    }
+    .rail-more {
+      display: flex;
+    }
+    .rail-foot {
+      position: fixed;
+      z-index: 21;
+      top: env(safe-area-inset-top);
+      right: env(safe-area-inset-right);
+      height: var(--appbar-h);
+      flex-direction: row;
+      align-items: center;
+      gap: 0;
+      padding: 0 4px;
+      border: 0;
+      color: var(--nav-fg);
+    }
+    .rail-foot .rail-link {
+      min-height: var(--tap-min);
+      width: var(--tap-min);
+      padding: 0;
+    }
+    .rail-foot .rail-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+    .appbar {
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: calc(var(--appbar-h) + env(safe-area-inset-top));
+      padding: env(safe-area-inset-top) calc(2 * var(--tap-min) + 12px) 0 calc(12px + env(safe-area-inset-left));
+      background: var(--nav-bg);
+      color: var(--nav-fg);
+    }
+    .appbar .brand-name {
+      display: none;
+    }
+    .main {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    .account-pop {
+      left: auto;
+      bottom: auto;
+      top: calc(var(--appbar-h) + env(safe-area-inset-top) + 4px);
+      right: 8px;
+    }
   }
   .page {
     padding: 16px;
@@ -137,19 +327,6 @@
     align-items: center;
   }
   @media (min-width: 768px) {
-    .topbar {
-      flex-wrap: nowrap;
-      padding: 4px 20px;
-    }
-    .nav {
-      order: 0;
-      width: auto;
-    }
-    .user-meta {
-      display: flex;
-    }
-  }
-  @media (min-width: 768px) {
     .modal-backdrop {
       align-items: center;
     }
@@ -160,6 +337,32 @@
     }
     .modal-wide {
       max-width: 760px;
+    }
+  }
+  /* Modal variants */
+  @media (max-width: 599px), (max-height: 499px) {
+    .modal-full {
+      height: 100dvh;
+      max-height: none;
+      border-radius: 0;
+    }
+  }
+  @media (min-width: 600px) and (min-height: 500px) {
+    .modal-backdrop-side {
+      align-items: stretch;
+      justify-content: flex-end;
+    }
+    .modal-side {
+      width: 70%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      border-radius: 0;
+    }
+  }
+  @media (min-width: 960px) and (min-height: 500px) {
+    .modal-side {
+      width: clamp(560px, 50vw, 720px);
     }
   }
 }
