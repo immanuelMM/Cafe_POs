@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "17 2 * * *" # nightly: full end-to-end suite
+  workflow_dispatch:
 
 # No path filters on purpose: the contract job must run when either side changes.
 concurrency:
@@ -25,7 +28,7 @@ jobs:
   backend:
     name: Backend (build + test)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: backend
@@ -35,10 +38,24 @@ jobs:
         with:
           global-json-file: backend/global.json
           cache: true
-          cache-dependency-path: backend/**/*.csproj
+          # Central package management: versions live in Directory.Packages.props, so it (and Directory.Build.props) must
+          # invalidate the NuGet cache together with the project files.
+          cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Packages.props
+            backend/Directory.Build.props
+            backend/global.json
       - run: dotnet restore
+      # TreatWarningsAsErrors is set in backend/Directory.Build.props, so any warning fails this step.
       - run: dotnet build --no-restore -c Release
+      # Domain + Application unit tests and CafePos.Api.IntegrationTests (Testcontainers PostgreSQL 16; the runner's Docker is used).
       - run: dotnet test --no-build -c Release --logger "trx;LogFileName=test-results.trx"
+      - name: Vulnerable NuGet packages (advisory only)
+        run: |
+          dotnet list CafePos.slnx package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then
+            echo "::warning title=Vulnerable NuGet packages::see the job log (dotnet list package --vulnerable)"
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -47,7 +64,7 @@ jobs:
           if-no-files-found: ignore
 
   contract:
-    name: OpenAPI contract snapshot
+    name: Contract drift (OpenAPI snapshot + generated TS types)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -56,14 +73,32 @@ jobs:
         with:
           global-json-file: backend/global.json
           cache: true
-          cache-dependency-path: backend/**/*.csproj
-      - name: Generate OpenAPI document
+          cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Packages.props
+            backend/Directory.Build.props
+            backend/global.json
+      - name: Regenerate backend/openapi/v1.json
         working-directory: backend
         run: dotnet build src/CafePos.Api -p:OpenApiGenerateDocuments=true
       - name: Fail if backend/openapi/v1.json is out of date
         run: |
           git status --short -- backend/openapi
           git diff --exit-code -- backend/openapi/v1.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Regenerate frontend/src/api/schema.d.ts from the snapshot
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run gen:api
+      - name: Fail if the generated TypeScript types are out of date
+        run: |
+          git status --short -- frontend/src/api
+          git diff --exit-code -- frontend/src/api/schema.d.ts
 
   frontend:
     name: Frontend (lint, typecheck, test, build)
@@ -85,11 +120,111 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
-      - name: Generated API types are up to date
+      - name: npm audit (production dependencies, advisory only)
         run: |
-          if node -e "process.exit(require('./package.json').scripts?.['gen:api'] ? 0 : 1)"; then
-            npm run gen:api
-            git diff --exit-code -- .
-          else
-            echo "No gen:api script yet; skipping generated-types check."
+          npm audit --omit=dev || echo "::warning title=npm audit::production dependencies have known advisories, see the job log"
+
+  docker:
+    name: Docker images (build + smoke checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f backend/src/CafePos.Api/Dockerfile -t cafepos-api:ci backend
+      - name: Build web image
+        run: docker build -t cafepos-web:ci frontend
+      - name: API image runs as non-root and ships no Development settings
+        run: |
+          test "$(docker run --rm --entrypoint id cafepos-api:ci -u)" != "0"
+          if docker run --rm --entrypoint ls cafepos-api:ci /app | grep -q 'appsettings.Development.json'; then
+            echo "appsettings.Development.json must not be published into the image"
+            exit 1
           fi
+      - name: Production fails fast without a signing key
+        run: |
+          set +e
+          out="$(docker run --rm -e ASPNETCORE_ENVIRONMENT=Production -e 'ConnectionStrings__Default=Host=none;Database=none;Username=none;Password=none' cafepos-api:ci 2>&1)"
+          code=$?
+          echo "$out" | head -n 5
+          test "$code" -ne 0
+          echo "$out" | grep -q "Jwt:Key must be set"
+
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: Install Playwright
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      # The E2E override uses its own DB volume and turns the auth rate limiter off (many fresh logins from one IP).
+      - name: Start the stack (db + api + web)
+        run: docker compose -f docker-compose.yml -f e2e/docker-compose.e2e.yml up -d --build --wait --wait-timeout 300
+      - name: Run Playwright (smoke on pull requests, full suite otherwise)
+        working-directory: e2e
+        env:
+          CI: "true" # 1 retry, see e2e/playwright.config.ts
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            npm run test:e2e:smoke
+          else
+            npm run test:e2e
+          fi
+      - name: Compose logs
+        if: failure()
+        run: docker compose -f docker-compose.yml -f e2e/docker-compose.e2e.yml logs --no-color --tail=300
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Stop the stack
+        if: always()
+        run: docker compose -f docker-compose.yml -f e2e/docker-compose.e2e.yml down -v
+
+  migration-bundle:
+    name: EF migration bundle (main only)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend, contract]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Packages.props
+            backend/Directory.Build.props
+            backend/global.json
+      - run: dotnet tool restore
+      # The bundle is applied as a reviewed pre-deploy step. Building it never connects; the design-time factory only needs the
+      # variable to exist, so a placeholder is enough (the real connection string is passed when the bundle runs).
+      - name: Build the bundle (linux-x64, self-contained)
+        env:
+          ConnectionStrings__Default: Host=placeholder;Database=cafepos;Username=placeholder;Password=placeholder
+        run: dotnet ef migrations bundle --project src/CafePos.Infrastructure --self-contained -r linux-x64 --force -o ../artifacts/efbundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: efbundle-linux-x64
+          path: artifacts/efbundle
+          retention-days: 30
