@@ -23,14 +23,14 @@ npm run dev                 # http://localhost:5173 (port is fixed: backend CORS
 `VITE_API_BASE_URL` must be an absolute URL ending in `/api/v1` (a gateway prefix before it is fine); the app throws at startup otherwise. It is
 baked into the bundle, so never put secrets in `VITE_` variables.
 
-| Script | Purpose |
-|---|---|
-| `npm run dev` / `preview` | Vite dev server / serve the production build |
-| `npm run build` | `tsc --noEmit` then `vite build` |
-| `npm run lint` / `typecheck` | ESLint / `tsc --noEmit` |
-| `npm run format` / `format:check` | Prettier write / check (CI runs the check) |
-| `npm test` / `test:watch` | Vitest + React Testing Library + MSW (80 tests) |
-| `npm run gen:api` | Regenerate `src/api/schema.d.ts` from `../backend/openapi/v1.json` |
+| Script                            | Purpose                                                            |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `npm run dev` / `preview`         | Vite dev server / serve the production build                       |
+| `npm run build`                   | `tsc --noEmit` then `vite build`                                   |
+| `npm run lint` / `typecheck`      | ESLint / `tsc --noEmit`                                            |
+| `npm run format` / `format:check` | Prettier write / check (CI runs the check)                         |
+| `npm test` / `test:watch`         | Vitest + React Testing Library + MSW (80 tests)                    |
+| `npm run gen:api`                 | Regenerate `src/api/schema.d.ts` from `../backend/openapi/v1.json` |
 
 ### API types
 
