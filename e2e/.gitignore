@@ -4,3 +4,6 @@ test-results/
 blob-report/
 playwright/.cache/
 *.trace.zip
+
+# M1 visual baseline: local-only, Windows-rendered PNGs (never commit)
+.visual-baseline-m1/

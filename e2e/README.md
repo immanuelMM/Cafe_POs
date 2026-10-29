@@ -25,3 +25,17 @@ npm run stack:down            # stop; `npm run stack:reset` also deletes the E2E
   up consumed ingredients, so the suite can be re-run without resetting. `npm run stack:reset` gives a pristine DB.
 - Override targets with `E2E_BASE_URL` (default `http://localhost:5173`) and `E2E_API_URL` (default `http://localhost:5080`).
 - Reports, traces and screenshots (`playwright-report/`, `test-results/`) are git-ignored.
+
+## M1 visual baseline (local only)
+
+`tests/visual-baseline.spec.ts` (`@visual-m1`) captures 57 full-page screenshots (15 screens x 4 viewports) and pixel-diffs them.
+It is skipped unless `VISUAL_MODE` is set, so it never runs in the normal suite or CI. Run it against an isolated stack
+(own compose project, ports and volume; it can run next to the dev stack):
+
+```bash
+WEB_PORT=15173 API_PORT=15080 DB_PORT=15433 docker compose -p cafepos-e2e \
+  -f ../docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-iso.yml up -d --build --wait
+export E2E_BASE_URL=http://localhost:15173 E2E_API_URL=http://localhost:15080
+node visual.mjs capture   # writes e2e/.visual-baseline-m1/*.png (git-ignored, Windows-rendered, same machine only)
+node visual.mjs compare   # re-captures to _current/, writes _diff/*.png and prints % differing pixels per screenshot
+```

@@ -1,0 +1,8 @@
+# Fully isolated E2E stack that can run NEXT TO the dev stack (own compose project, container names, ports, volume):
+#   WEB_PORT=15173 API_PORT=15080 DB_PORT=15433 docker compose -p cafepos-e2e \
+#     -f ../docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-iso.yml up -d --build --wait
+# Then run the suite with E2E_BASE_URL=http://localhost:15173 E2E_API_URL=http://localhost:15080.
+# Teardown: `docker compose -p cafepos-e2e ... down` (add -v only to delete the cafepos-e2e-pgdata volume).
+services:
+  db:
+    container_name: cafepos-e2e-db
