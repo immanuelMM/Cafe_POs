@@ -4,6 +4,7 @@ using CafePos.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Npgsql;
 
 namespace CafePos.Infrastructure.Persistence;
 
@@ -85,10 +86,18 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>, IUnitOf
         b.Entity<IdempotencyRecord>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         EnforceInvariants();
-        return base.SaveChangesAsync(cancellationToken);
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            // Expose "a concurrent request won the race" to the Application layer without leaking provider types.
+            throw new UniqueConstraintViolationException(ex);
+        }
     }
 
     public override int SaveChanges()

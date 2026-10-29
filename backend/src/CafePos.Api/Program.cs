@@ -11,7 +11,6 @@ using CafePos.Api.OpenApi;
 using CafePos.Api.Validation;
 using CafePos.Application;
 using CafePos.Infrastructure;
-using CafePos.Api.Payments;
 using CafePos.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -69,10 +68,6 @@ builder.Services.AddScoped<ILocationAccess, LocationAccess>();
 
 // ---- App services ----
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<StockService>();
-builder.Services.AddScoped<OrderService>();
-builder.Services.AddSingleton<IPaymentProvider, CashPaymentProvider>();
-builder.Services.AddSingleton<IPaymentProviderResolver, PaymentProviderResolver>();
 
 // ---- Web ----
 builder.Services.AddControllers(o => o.Filters.Add<FluentValidationFilter>())

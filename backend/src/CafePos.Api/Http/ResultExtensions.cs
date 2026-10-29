@@ -20,5 +20,5 @@ public static class ResultExtensions
     public static IActionResult ToNoContent(this Result result) =>
         result.IsSuccess ? new NoContentResult() : new ProblemResult(result.Error!);
 
-    public static IActionResult ToProblem(this Error error) => new ProblemResult(error);
+    public static ProblemResult ToProblem(this Error error) => new ProblemResult(error);
 }

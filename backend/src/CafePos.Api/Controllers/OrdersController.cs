@@ -1,7 +1,6 @@
+using CafePos.Api.Http;
 using CafePos.Application.Common;
-using CafePos.Api.Dtos;
-using CafePos.Api.Infrastructure;
-using CafePos.Api.Services;
+using CafePos.Application.Features.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,21 +10,16 @@ namespace CafePos.Api.Controllers;
 [ApiController]
 [Route("api/v1/orders")]
 [Authorize]
-public class OrdersController : ControllerBase
+public class OrdersController(OrderService orders) : ControllerBase
 {
-    private readonly OrderService _orders;
-    public OrdersController(OrderService orders) => _orders = orders;
-
-    private Guid UserId => User.RequireUserId();
-    private bool ManagerUp => User.IsManagerUp();
-
     [HttpGet]
-    public Task<PagedResult<OrderDto>> List([FromQuery] string? status, [FromQuery] DateTime? from, [FromQuery] DateTime? to,
+    public async Task<ActionResult<PagedResult<OrderDto>>> List([FromQuery] string? status, [FromQuery] DateTime? from, [FromQuery] DateTime? to,
         [FromQuery] Guid? locationId, [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken ct) =>
-        _orders.ListAsync(UserId, ManagerUp, status, from, to, locationId, page, pageSize, ct);
+        (await orders.ListAsync(status, from, to, locationId, page, pageSize, ct)).ToActionResult();
 
     [HttpGet("{id:guid}")]
-    public Task<OrderDto> Get(Guid id, CancellationToken ct) => _orders.GetAsync(id, UserId, ManagerUp, ct);
+    public async Task<ActionResult<OrderDto>> Get(Guid id, CancellationToken ct) =>
+        (await orders.GetAsync(id, ct)).ToActionResult();
 
     /// <summary>Create an OPEN order with a client-generated id. 201 when created, 200 if the id already exists (idempotent).</summary>
     [HttpPost]
@@ -33,20 +27,24 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(OrderDto), 200)]
     public async Task<ActionResult<OrderDto>> Create(CreateOrderRequest req, CancellationToken ct)
     {
-        var (order, created) = await _orders.CreateAsync(req, UserId, User.Identity?.Name ?? "", ct);
-        return created ? Created($"/api/v1/orders/{order.Id}", order) : Ok(order);
+        var result = await orders.CreateAsync(req, ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+        var outcome = result.Value;
+        return outcome.Created ? Created($"/api/v1/orders/{outcome.Order.Id}", outcome.Order) : Ok(outcome.Order);
     }
 
     [HttpPost("{id:guid}/items")]
-    public Task<OrderDto> AddItem(Guid id, OrderLineRequest line, CancellationToken ct) => _orders.AddItemAsync(id, line, UserId, ManagerUp, ct);
+    public async Task<ActionResult<OrderDto>> AddItem(Guid id, OrderLineRequest line, CancellationToken ct) =>
+        (await orders.AddItemAsync(id, line, ct)).ToActionResult();
 
     /// <summary>Replaces the line; note the line gets a new item id.</summary>
     [HttpPut("{id:guid}/items/{itemId:guid}")]
-    public Task<OrderDto> UpdateItem(Guid id, Guid itemId, OrderLineRequest line, CancellationToken ct) =>
-        _orders.UpdateItemAsync(id, itemId, line, UserId, ManagerUp, ct);
+    public async Task<ActionResult<OrderDto>> UpdateItem(Guid id, Guid itemId, OrderLineRequest line, CancellationToken ct) =>
+        (await orders.UpdateItemAsync(id, itemId, line, ct)).ToActionResult();
 
     [HttpDelete("{id:guid}/items/{itemId:guid}")]
-    public Task<OrderDto> RemoveItem(Guid id, Guid itemId, CancellationToken ct) => _orders.RemoveItemAsync(id, itemId, UserId, ManagerUp, ct);
+    public async Task<ActionResult<OrderDto>> RemoveItem(Guid id, Guid itemId, CancellationToken ct) =>
+        (await orders.RemoveItemAsync(id, itemId, ct)).ToActionResult();
 
     /// <summary>
     /// Pay and finalize. Requires an Idempotency-Key header (UUID recommended). Repeating the same key for the same order
@@ -56,18 +54,19 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<OrderDto>> Complete(Guid id, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
         CompleteOrderRequest req, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(idempotencyKey) || idempotencyKey.Length > 200)
-            throw ApiException.BadRequest("Idempotency-Key required", "Send an Idempotency-Key header (max 200 chars).");
-        var (order, replayed) = await _orders.CompleteAsync(id, idempotencyKey.Trim(), req, UserId, ManagerUp, ct);
-        if (replayed) Response.Headers["Idempotent-Replayed"] = "true";
-        return order;
+        var result = await orders.CompleteAsync(id, idempotencyKey, req, ct);
+        if (result.IsFailure) return result.Error!.ToProblem();
+        if (result.Value.Replayed) Response.Headers["Idempotent-Replayed"] = "true";
+        return result.Value.Order;
     }
 
     /// <summary>Cancel an OPEN order (before payment).</summary>
     [HttpPost("{id:guid}/cancel")]
-    public Task<OrderDto> Cancel(Guid id, CancellationToken ct) => _orders.CancelAsync(id, UserId, ManagerUp, ct);
+    public async Task<ActionResult<OrderDto>> Cancel(Guid id, CancellationToken ct) =>
+        (await orders.CancelAsync(id, ct)).ToActionResult();
 
     /// <summary>Receipt data for a completed order. The frontend renders/prints it.</summary>
     [HttpGet("{id:guid}/receipt")]
-    public Task<ReceiptDto> Receipt(Guid id, CancellationToken ct) => _orders.GetReceiptAsync(id, UserId, ManagerUp, ct);
+    public async Task<ActionResult<ReceiptDto>> Receipt(Guid id, CancellationToken ct) =>
+        (await orders.GetReceiptAsync(id, ct)).ToActionResult();
 }

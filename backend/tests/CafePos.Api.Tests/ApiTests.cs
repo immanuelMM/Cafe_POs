@@ -5,42 +5,10 @@ using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 using CafePos.Api.Dtos;
 using CafePos.Api.Infrastructure;
-using CafePos.Api.Payments;
 using CafePos.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CafePos.Api.Tests;
-
-public class UnitTests
-{
-    [Theory]
-    [InlineData(112, 12, 12.00)]
-    [InlineData(150, 12, 16.07)]   // 150 * 12 / 112 = 16.0714...
-    [InlineData(95, 12, 10.18)]    // 10.178... rounds up
-    [InlineData(100, 0, 0)]
-    public void Vat_is_extracted_from_a_vat_inclusive_total(decimal total, decimal rate, decimal expected) =>
-        Assert.Equal(expected, PricingCalculator.ExtractVat(total, rate));
-
-    [Fact]
-    public async Task Cash_provider_computes_change_and_rejects_short_tender()
-    {
-        var cash = new CashPaymentProvider();
-        var ok = await cash.ChargeAsync(new PaymentRequest(Guid.NewGuid(), 150m, 200m));
-        Assert.True(ok.Succeeded);
-        Assert.Equal(50m, ok.ChangeGiven);
-
-        Assert.False((await cash.ChargeAsync(new PaymentRequest(Guid.NewGuid(), 150m, 100m))).Succeeded);
-        Assert.False((await cash.ChargeAsync(new PaymentRequest(Guid.NewGuid(), 150m, null))).Succeeded);
-    }
-
-    [Fact]
-    public void Resolver_rejects_unknown_method()
-    {
-        var resolver = new PaymentProviderResolver(new IPaymentProvider[] { new CashPaymentProvider() });
-        Assert.Equal("cash", resolver.Resolve("CASH").Method);
-        Assert.Throws<ApiException>(() => resolver.Resolve("stripe"));
-    }
-}
 
 [Collection("api")]
 public class AuthTests

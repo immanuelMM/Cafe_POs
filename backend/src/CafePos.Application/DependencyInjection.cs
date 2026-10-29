@@ -1,8 +1,10 @@
 using CafePos.Application.Features.Catalog;
 using CafePos.Application.Features.Inventory;
 using CafePos.Application.Features.Locations;
+using CafePos.Application.Features.Orders;
 using CafePos.Application.Features.Users;
 using CafePos.Application.Features.VariationOverrides;
+using CafePos.Application.Payments;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +25,9 @@ public static class DependencyInjection
         services.AddScoped<IngredientService>();
         services.AddScoped<RecipeService>();
         services.AddScoped<CafePos.Application.Features.Inventory.StockService>();
+        services.AddScoped<OrderService>();
+        services.AddSingleton<IPaymentProvider, CashPaymentProvider>();
+        services.AddSingleton<IPaymentProviderResolver, PaymentProviderResolver>();
         services.AddScoped<LocationService>();
         services.AddScoped<UserService>();
         services.AddScoped<VariationOverrideService>();
