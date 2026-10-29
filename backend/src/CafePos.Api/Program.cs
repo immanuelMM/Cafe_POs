@@ -27,13 +27,7 @@ if (!BuildEnvironment.IsOpenApiGeneration)
     _ = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
     var database = app.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
     if (database.MigrateOnStartup)
-    {
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<CafeDbContext>();
-        await db.Database.MigrateAsync();
-        if (database.SeedDevData)
-            await DevDataSeeder.SeedAsync(scope.ServiceProvider);
-    }
+        await DatabaseStartup.MigrateAndSeedAsync(app.Services, database.SeedDevData, app.Logger);
 }
 
 // First, so every later component (HTTPS redirection, CORS, rate limiting, cookies) sees the client address and scheme set by a
