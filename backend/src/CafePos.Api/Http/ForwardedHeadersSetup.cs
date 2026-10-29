@@ -19,6 +19,13 @@ public sealed class ForwardedHeadersSettings
     /// <summary>Trusted proxy networks in CIDR notation, for example ["10.0.0.0/8"].</summary>
     public string[] KnownNetworks { get; set; } = [];
 
+    /// <summary>
+    /// How many proxy hops to unwind from X-Forwarded-For (ForwardedHeaders:ForwardLimit, default 1, minimum 1). Raise it when
+    /// requests pass through several trusted proxies (for example a static-site rewrite in front of the API). Every hop that is
+    /// unwound must itself be a KnownProxies/KnownNetworks address; an untrusted hop stops the walk, so spoofed entries are not honored.
+    /// </summary>
+    public int ForwardLimit { get; set; } = 1;
+
     public bool HasTrustedProxies => KnownProxies.Length > 0 || KnownNetworks.Length > 0;
 }
 
@@ -31,6 +38,7 @@ public sealed class ForwardedHeadersSettingsValidator : IValidateOptions<Forward
             if (!System.Net.IPAddress.TryParse(proxy, out _)) errors.Add($"ForwardedHeaders:KnownProxies contains an invalid address '{proxy}'.");
         foreach (var network in options.KnownNetworks)
             if (!System.Net.IPNetwork.TryParse(network, out _)) errors.Add($"ForwardedHeaders:KnownNetworks contains an invalid CIDR '{network}'.");
+        if (options.ForwardLimit < 1) errors.Add("ForwardedHeaders:ForwardLimit must be at least 1.");
         return errors.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(errors);
     }
 }
@@ -45,6 +53,7 @@ public static class ForwardedHeadersSetup
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             // The defaults trust loopback proxies; only what the deployment lists is trusted.
+            options.ForwardLimit = settings.Value.ForwardLimit;
             options.KnownProxies.Clear();
             options.KnownIPNetworks.Clear();
             foreach (var proxy in settings.Value.KnownProxies) options.KnownProxies.Add(System.Net.IPAddress.Parse(proxy));
