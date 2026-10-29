@@ -1,7 +1,8 @@
 import { isGradient, onBrand, paletteStops, type BrandPalette } from '../../lib/color'
 import { blankDoc, makeImage, makeMenu, makeShape, makeText } from './factory'
 import type { CanvasPreset } from './presets'
-import { FONTS } from './presets'
+import { DEFAULT_FONT, FONTS } from './presets'
+import { fitText } from './textMeasure'
 import type { DesignKind, Fill, ShapeElement, StudioDoc, StudioElement, TextElement } from './types'
 
 export interface TemplateCtx {
@@ -12,6 +13,22 @@ export interface TemplateCtx {
   hasLogo: boolean
   address: string | null
   phone: string | null
+  /** Every active catalog item grouped by category (for the photo menu template). */
+  menuSections: MenuSectionCtx[]
+}
+
+export interface MenuItemCtx {
+  name: string
+  description: string | null
+  /** photo path relative to the API origin, or null (a placeholder tile is drawn) */
+  path: string | null
+  /** one entry per variation; label is empty when the item has a single variation */
+  prices: { label: string; price: string }[]
+}
+
+export interface MenuSectionCtx {
+  name: string
+  items: MenuItemCtx[]
 }
 
 export interface TemplateDef {
@@ -57,7 +74,11 @@ function kit(doc: StudioDoc, ctx: TemplateCtx) {
   const menu = (x: number, y: number, w: number, h: number, patch: Partial<ReturnType<typeof makeMenu>> = {}) => {
     out.push({ ...makeMenu(doc, pal, accent), x, y, width: w, height: h, ...patch })
   }
-  return { out, shape, text, logo, menu, accent }
+  const photo = (path: string, x: number, y: number, w: number, h: number, name: string, cornerRadius = 0) => {
+    const el = makeImage({ type: 'api', path }, { w: 1, h: 1 }, doc, name)
+    out.push({ ...el, x, y, width: w, height: h, fit: 'cover', cornerRadius })
+  }
+  return { out, shape, text, logo, menu, photo, accent }
 }
 
 const solid = (color: string): Fill => ({ type: 'solid', color })
@@ -105,7 +126,8 @@ function logoWordmark(ctx: TemplateCtx): StudioDoc {
 
 const footerText = (ctx: TemplateCtx) => [ctx.address, ctx.phone].filter(Boolean).join('   |   ') || 'Visit us today'
 
-function bannerClassic(ctx: TemplateCtx): StudioDoc {
+/** Classic layout; `photos` shows each item's photo beside it in the menu block (auto-fit keeps it inside the block). */
+function bannerClassic(ctx: TemplateCtx, photos = false): StudioDoc {
   const doc = { ...blankDoc('banner', ctx.preset.id), background: solid(CREAM) }
   const { width: W, height: H } = doc
   const landscape = W > H
@@ -119,7 +141,7 @@ function bannerClassic(ctx: TemplateCtx): StudioDoc {
   const tx = ctx.hasLogo ? W * 0.05 + logoSize + W * 0.03 : W * 0.05
   k.text(ctx.brandName, tx, headH * (ctx.tagline ? 0.2 : 0.3), W - tx - W * 0.04, headH * 0.34, { fill: solid(ink), align: 'left' }, 'Brand name')
   if (ctx.tagline) k.text(ctx.tagline, tx, headH * 0.62, W - tx - W * 0.04, headH * 0.14, { fill: solid(ink), bold: false, align: 'left', opacity: 0.92 }, 'Tagline')
-  k.menu(W * 0.05, headH + H * 0.03, W * 0.9, H - headH - footH - H * 0.06, { columns: landscape ? 3 : 2, fontSize: Math.round(W * (landscape ? 0.0155 : 0.021)), accentColor: ctx.palette.primary, textColor: '#1f1410', priceColor: '#1f1410' })
+  k.menu(W * 0.05, headH + H * 0.03, W * 0.9, H - headH - footH - H * 0.06, { columns: landscape ? 3 : 2, fontSize: Math.round(W * (landscape ? 0.0155 : 0.021)), accentColor: ctx.palette.primary, textColor: '#1f1410', priceColor: '#1f1410', showPhotos: photos })
   k.shape('rect', 0, H - footH, W, footH, { fill: brandFill(ctx.palette) }, 'Footer')
   k.text(footerText(ctx), W * 0.04, H - footH + footH * 0.3, W * 0.92, footH * 0.36, { fill: solid(ink), bold: false, align: 'center' }, 'Address and phone')
   return { ...doc, elements: k.out }
@@ -178,13 +200,119 @@ function bannerMinimal(ctx: TemplateCtx): StudioDoc {
   return { ...doc, elements: k.out }
 }
 
+/**
+ * Every item as a card (photo or placeholder tile, name, description, each variation with its price), grouped by
+ * category; every part is a separate editable layer. Picks the fewest columns that make everything fit, then
+ * shrinks the cards if even the widest grid overflows.
+ */
+function bannerPhotoMenu(ctx: TemplateCtx): StudioDoc {
+  const doc = { ...blankDoc('banner', ctx.preset.id), background: solid(CREAM) }
+  const { width: W, height: H } = doc
+  const landscape = W > H
+  const ink = onBrand(ctx.palette)
+  const k = kit(doc, ctx)
+
+  const headH = H * (landscape ? 0.16 : 0.12)
+  const footH = H * 0.055
+  k.shape('rect', 0, 0, W, headH, { fill: brandFill(ctx.palette) }, 'Header')
+  const logoSize = headH * 0.66
+  if (ctx.hasLogo) k.logo(W * 0.04, (headH - logoSize) / 2, logoSize)
+  const tx = ctx.hasLogo ? W * 0.04 + logoSize + W * 0.025 : W * 0.04
+  k.text(ctx.brandName, tx, headH * (ctx.tagline ? 0.18 : 0.3), W - tx - W * 0.04, headH * 0.36, { fill: solid(ink), align: 'left' }, 'Brand name')
+  if (ctx.tagline) k.text(ctx.tagline, tx, headH * 0.62, W - tx - W * 0.04, headH * 0.15, { fill: solid(ink), bold: false, align: 'left', opacity: 0.92 }, 'Tagline')
+  k.shape('rect', 0, H - footH, W, footH, { fill: brandFill(ctx.palette) }, 'Footer')
+  k.text(footerText(ctx), W * 0.04, H - footH + footH * 0.3, W * 0.92, footH * 0.38, { fill: solid(ink), bold: false, align: 'center' }, 'Address and phone')
+
+  const sections = ctx.menuSections.filter((s) => s.items.length > 0)
+  const areaX = W * 0.04
+  const areaW = W * 0.92
+  const top = headH + H * 0.025
+  const areaH = H - footH - H * 0.025 - top
+  if (sections.length === 0) {
+    k.text('Add items in Catalog, then apply this template again.', areaX, top + areaH * 0.45, areaW, W * 0.03, { fill: solid('#5e4d43'), bold: false, align: 'center' }, 'Hint')
+    return { ...doc, elements: k.out }
+  }
+
+  // Card = square photo + name + optional description + one line per variation price. Text is measured (at a
+  // reference card width; every size scales with the card) so a wrapped name or description gets the room it needs
+  // instead of running into the next line. Every card gets the height of the tallest one so rows line up.
+  const all = sections.flatMap((s) => s.items)
+  const REF = 1000
+  const LINE_HEIGHT = 1.15 // TextElement.lineHeight from makeText
+  const PAD = 0.05
+  const TEXT_GAP = 0.025
+  type Piece = { text: string; size: number; h: number; bold: boolean; italic: boolean; tone: 'name' | 'desc' | 'price'; name: string }
+  const measure = (it: MenuItemCtx): Piece[] => {
+    const out: Piece[] = []
+    const add = (text: string, size: number, maxLines: number, bold: boolean, italic: boolean, tone: Piece['tone'], name: string, minScale: number) => {
+      const f = fitText(text, size * REF, (1 - PAD * 2) * REF, maxLines, { family: DEFAULT_FONT, bold, italic }, minScale)
+      out.push({ text, size: f.size / REF, h: (f.lines * f.size * LINE_HEIGHT) / REF, bold, italic, tone, name })
+    }
+    // Names shrink a little to stay on one line, then wrap; descriptions may take two lines before shrinking.
+    add(it.name, 0.105, 1, true, false, 'name', `${it.name} name`, 0.75)
+    if (it.description) add(it.description, 0.062, 2, false, true, 'desc', `${it.name} description`, 0.8)
+    for (const p of it.prices) add(p.label ? `${p.label}  ${p.price}` : p.price, 0.085, 1, true, false, 'price', `${it.name} ${p.label || 'price'}`, 0.7)
+    return out
+  }
+  const pieces = new Map(all.map((it) => [it, measure(it)]))
+  const contentH = (ps: Piece[]) => ps.reduce((h, p) => h + p.h, 0) + Math.max(0, ps.length - 1) * TEXT_GAP
+  const CARD_RATIO = 1 + PAD * 0.6 + Math.max(...[...pieces.values()].map(contentH)) + PAD
+  const GAP_RATIO = 0.08
+  const HEAD_RATIO = 0.34
+  const layoutHeight = (cols: number, cardW: number) => {
+    const gap = cardW * GAP_RATIO
+    return sections.reduce((h, s) => h + cardW * HEAD_RATIO + Math.ceil(s.items.length / cols) * (cardW * CARD_RATIO + gap), 0)
+  }
+  const widthFor = (cols: number) => areaW / (cols + (cols - 1) * GAP_RATIO)
+  const maxCols = landscape ? 10 : 8
+  let cols = landscape ? 3 : 2
+  while (cols < maxCols && layoutHeight(cols, widthFor(cols)) > areaH) cols++
+  let cardW = widthFor(cols)
+  const total = layoutHeight(cols, cardW)
+  if (total > areaH) cardW *= areaH / total
+  const gap = cardW * GAP_RATIO
+  const gridW = cols * cardW + (cols - 1) * gap
+  const x0 = areaX + (areaW - gridW) / 2
+  const tones = { name: '#1f1410', desc: '#5e4d43', price: ctx.palette.tertiary ?? k.accent }
+
+  let y = top
+  for (const s of sections) {
+    const headSize = cardW * 0.16
+    k.text(s.name.toUpperCase(), x0, y + cardW * 0.06, gridW, headSize, { fill: solid(ctx.palette.primary), align: 'left', letterSpacing: headSize * 0.08 }, s.name)
+    k.shape('rect', x0, y + cardW * 0.06 + headSize * 1.3, gridW, Math.max(2, cardW * 0.012), { fill: solid(k.accent) }, `${s.name} rule`)
+    y += cardW * HEAD_RATIO
+    s.items.forEach((it, i) => {
+      const cx = x0 + (i % cols) * (cardW + gap)
+      const cy = y + Math.floor(i / cols) * (cardW * CARD_RATIO + gap)
+      const pad = cardW * PAD
+      const inner = cardW - pad * 2
+      k.shape('roundRect', cx, cy, cardW, cardW * CARD_RATIO, { fill: solid('#ffffff'), stroke: null, cornerRadius: cardW * 0.06 }, `${it.name} card`)
+      if (it.path) k.photo(it.path, cx + pad, cy + pad, inner, inner, `${it.name} photo`, cardW * 0.045)
+      else {
+        // Placeholder tile in the brand colours; swap it for a real photo later by adding one in Catalog.
+        k.shape('roundRect', cx + pad, cy + pad, inner, inner, { fill: brandFill(ctx.palette), cornerRadius: cardW * 0.045 }, `${it.name} placeholder`)
+        k.shape('icon', cx + pad + inner * 0.28, cy + pad + inner * 0.24, inner * 0.44, inner * 0.44, { fill: solid(ink), icon: 'cup', opacity: 0.85 }, `${it.name} icon`)
+      }
+      let ty = cy + cardW + pad * 0.6
+      for (const p of pieces.get(it)!) {
+        k.text(p.text, cx + pad, ty, inner, p.size * cardW, { fill: solid(tones[p.tone]), bold: p.bold, italic: p.italic, align: 'center', height: p.h * cardW }, p.name)
+        ty += (p.h + TEXT_GAP) * cardW
+      }
+    })
+    y += Math.ceil(s.items.length / cols) * (cardW * CARD_RATIO + gap)
+  }
+  return { ...doc, elements: k.out }
+}
+
 export const TEMPLATES: TemplateDef[] = [
   { id: 'logo-badge', kind: 'logo', name: 'Circle badge', description: 'Round badge with your initials', build: logoBadge },
   { id: 'logo-emblem', kind: 'logo', name: 'Cup emblem', description: 'Rounded tile with a coffee cup', build: logoEmblem },
   { id: 'logo-wordmark', kind: 'logo', name: 'Wordmark', description: 'Brand name in large type', build: logoWordmark },
-  { id: 'banner-classic', kind: 'banner', name: 'Classic menu', description: 'Brand header, menu, contact footer', build: bannerClassic },
+  { id: 'banner-classic', kind: 'banner', name: 'Classic menu', description: 'Brand header, menu, contact footer', build: (ctx) => bannerClassic(ctx) },
+  { id: 'banner-classic-photos', kind: 'banner', name: 'Classic menu with photos', description: 'Classic layout with each item’s photo', build: (ctx) => bannerClassic(ctx, true) },
   { id: 'banner-bold', kind: 'banner', name: 'Bold poster', description: 'Brand-colour poster with big name', build: bannerBold },
   { id: 'banner-minimal', kind: 'banner', name: 'Minimal', description: 'White page, serif type', build: bannerMinimal },
+  { id: 'banner-photos', kind: 'banner', name: 'Photo menu', description: 'Every item as a card: photo, name, sizes and prices', build: bannerPhotoMenu },
 ]
 
 export const templatesFor = (kind: DesignKind) => TEMPLATES.filter((t) => t.kind === kind)

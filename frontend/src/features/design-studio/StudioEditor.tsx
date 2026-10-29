@@ -13,6 +13,8 @@ import { PrintSheet } from './PrintSheet'
 import { PropertiesPanel } from './PropertiesPanel'
 import { StudioCanvas, type DropPayload } from './StudioCanvas'
 import { TemplatePicker } from './TemplatePicker'
+import type { MenuSectionCtx } from './templates'
+import { formatMoney } from '../../lib/format'
 import { ItemPhotoPicker } from './ItemPhotoPicker'
 import { MAX_DESIGN_BYTES, WARN_DESIGN_BYTES, docBytes, formatBytes, useSaveDesign } from './designApi'
 import { clearDraft, readDraft, useDraftAutosave, useUnsavedGuard } from './draft'
@@ -232,7 +234,23 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
   const tagline = b?.tagline ?? null
   const address = location.data?.address ?? null
   const phone = location.data?.contactPhone ?? null
-  const tplCtx = useMemo(() => ({ brandName, tagline, palette, hasLogo: !!logoUrl, address, phone }), [brandName, tagline, palette, logoUrl, address, phone])
+  const menuSections = useMemo<MenuSectionCtx[]>(
+    () =>
+      buildSections(cats.data ?? [], items.data?.data ?? [], false).map((s) => ({
+        name: s.category.name,
+        items: s.items.map((i) => ({
+          name: i.name,
+          description: i.description?.trim() || null,
+          path: i.imageUrl,
+          prices: i.variations.map((v) => ({ label: i.variations.length > 1 ? v.name : '', price: formatMoney(v.effectivePrice ?? v.price) })),
+        })),
+      })),
+    [cats.data, items.data],
+  )
+  const tplCtx = useMemo(
+    () => ({ brandName, tagline, palette, hasLogo: !!logoUrl, address, phone, menuSections }),
+    [brandName, tagline, palette, logoUrl, address, phone, menuSections],
+  )
 
   if (!ready) return <Spinner label="Opening the studio…" />
 
