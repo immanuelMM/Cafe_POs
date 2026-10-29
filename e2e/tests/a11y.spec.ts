@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { LOCATIONS, USERS } from '../support/env'
-import { loginViaUi } from '../support/ui'
+import { loginViaUi, openPage } from '../support/ui'
 
 /**
  * Pre-existing violations the tablet redesign is expected to fix. Each rule is listed with the milestone that fixes
@@ -80,23 +80,23 @@ test.describe('accessibility (axe) @a11y', () => {
 
   test('inventory (manager)', async ({ page }) => {
     await loginViaUi(page, USERS.manager, { locationName: LOCATIONS.main.name })
-    await page.getByRole('link', { name: 'Inventory' }).click()
+    await openPage(page, 'Inventory')
     await expect(page.locator('.stock-row').first()).toBeVisible()
     await scan(page)
   })
 
   test('catalog (manager)', async ({ page }) => {
     await loginViaUi(page, USERS.manager, { locationName: LOCATIONS.main.name })
-    await page.getByRole('link', { name: 'Catalog' }).click()
-    await expect(page.getByRole('heading', { name: 'Catalog' })).toBeVisible()
+    await openPage(page, 'Catalog')
+    await expect(page.getByRole('main').getByRole('heading', { name: 'Catalog' })).toBeVisible()
     await expect(page.locator('.rows .row').first()).toBeVisible()
     await scan(page)
   })
 
   test('staff (owner)', async ({ page }) => {
     await loginViaUi(page, USERS.owner)
-    await page.getByRole('link', { name: 'Staff' }).click()
-    await expect(page.getByRole('heading', { name: 'Staff' })).toBeVisible()
+    await openPage(page, 'Staff')
+    await expect(page.getByRole('main').getByRole('heading', { name: 'Staff' })).toBeVisible()
     await expect(page.locator('.row-item').first()).toBeVisible()
     await scan(page)
   })

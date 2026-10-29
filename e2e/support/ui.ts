@@ -18,3 +18,17 @@ export async function loginViaUi(
 
 export const peso = (n: number) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n).replace(/ /g, ' ')
+
+/**
+ * Navigate to a page by its nav label the way the current viewport's user would: the rail/tab-bar link when it is
+ * visible, otherwise (phones, manage pages) through the More sheet. Wait for page content in `main`, never for nav text.
+ */
+export async function openPage(page: Page, label: string) {
+  const link = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: label })
+  if (await link.isVisible()) {
+    await link.click()
+    return
+  }
+  await page.getByRole('button', { name: 'More' }).click()
+  await page.getByRole('dialog', { name: 'More' }).getByRole('link', { name: label }).click()
+}
