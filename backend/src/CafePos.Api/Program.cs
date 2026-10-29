@@ -5,7 +5,12 @@ using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 using CafePos.Infrastructure.Identity;
+using CafePos.Api.Http;
 using CafePos.Api.Infrastructure;
+using CafePos.Api.OpenApi;
+using CafePos.Api.Validation;
+using CafePos.Application;
+using CafePos.Infrastructure;
 using CafePos.Api.Payments;
 using CafePos.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,10 +30,11 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 // ---- Data ----
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentLocation, HttpCurrentLocation>();
-builder.Services.AddDbContext<CafeDbContext>((sp, o) =>
-    o.UseNpgsql(sp.GetRequiredService<IConfiguration>().GetConnectionString("Default")
-                ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.")));
+builder.Services.AddScoped<HttpCurrentUser>();
+builder.Services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<HttpCurrentUser>());
+builder.Services.AddScoped<ICurrentLocation>(sp => sp.GetRequiredService<HttpCurrentUser>());
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure();
 
 // ---- Identity + JWT ----
 builder.Services.AddIdentityCore<ApplicationUser>(o =>
@@ -69,7 +75,7 @@ builder.Services.AddSingleton<IPaymentProvider, CashPaymentProvider>();
 builder.Services.AddSingleton<IPaymentProviderResolver, PaymentProviderResolver>();
 
 // ---- Web ----
-builder.Services.AddControllers()
+builder.Services.AddControllers(o => o.Filters.Add<FluentValidationFilter>())
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -87,6 +93,7 @@ builder.Services.AddOpenApi(o =>
     o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
     o.AddDocumentTransformer<OpenApiDocumentSetup>();
     o.AddSchemaTransformer<NumericSchemaTransformer>();
+    o.AddSchemaTransformer<ValidatorRulesSchemaTransformer>();
     o.AddOperationTransformer<MultipartUploadOperationTransformer>();
 });
 

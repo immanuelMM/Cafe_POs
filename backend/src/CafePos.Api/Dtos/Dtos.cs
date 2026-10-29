@@ -1,3 +1,4 @@
+using CafePos.Application.Features.Locations;
 using System.ComponentModel.DataAnnotations;
 using CafePos.Domain;
 
@@ -12,8 +13,6 @@ public record LoginRequest
     public Guid? LocationId { get; init; }
 }
 
-public record LocationRef(Guid Id, string Name);
-public record LocationRoleDto(Guid LocationId, string LocationName, string Role);
 /// <summary>Location is null for an Owner's cross-location session. Locations: assignments (all active locations for an Owner).</summary>
 public record UserInfoDto(Guid Id, string Email, string DisplayName, string Role, bool IsOwner, LocationRef? Location, IReadOnlyList<LocationRoleDto> Locations);
 public record AuthResponse(string AccessToken, DateTime ExpiresAt, UserInfoDto User);
@@ -51,11 +50,6 @@ public record PunchRequest
     [Required] public string Pin { get; init; } = "";
 }
 
-public record SetPinRequest
-{
-    [Required, RegularExpression(@"^[0-9]{4,6}$", ErrorMessage = "PIN must be 4 to 6 digits.")] public string Pin { get; init; } = "";
-}
-
 /// <summary>Design-studio document. Document is opaque JSON owned by the frontend editor.</summary>
 public record BrandDesignDto(string Kind, System.Text.Json.JsonElement Document, DateTime UpdatedAt);
 public record SaveBrandDesignRequest
@@ -64,79 +58,10 @@ public record SaveBrandDesignRequest
 }
 
 // ---- Locations ----
-public record LocationDto(Guid Id, string Name, string? Address, string TimeZone, string? ContactPhone, decimal VatRatePercent, bool Active,
-    string? StripeTerminalLocationId);
-
-public record CreateLocationRequest
-{
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [MaxLength(500)] public string? Address { get; init; }
-    [Required, MaxLength(100)] public string TimeZone { get; init; } = "Asia/Manila";
-    [MaxLength(50)] public string? ContactPhone { get; init; }
-    [Range(0, 100)] public decimal VatRatePercent { get; init; } = 12m;
-    [MaxLength(100)] public string? StripeTerminalLocationId { get; init; }
-}
-
-public record UpdateLocationRequest
-{
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [MaxLength(500)] public string? Address { get; init; }
-    [Required, MaxLength(100)] public string TimeZone { get; init; } = "Asia/Manila";
-    [MaxLength(50)] public string? ContactPhone { get; init; }
-    [Range(0, 100)] public decimal VatRatePercent { get; init; } = 12m;
-    /// <summary>Owner only (403 for others when sent). Omit to leave unchanged.</summary>
-    public bool? Active { get; init; }
-    /// <summary>Owner only (403 for others when sent). Omit to leave unchanged; empty string clears.</summary>
-    [MaxLength(100)] public string? StripeTerminalLocationId { get; init; }
-}
-
-public record AssignStaffByEmailRequest
-{
-    [Required, EmailAddress, MaxLength(256)] public string Email { get; init; } = "";
-    /// <summary>Cashier, Manager or Admin.</summary>
-    [Required] public string Role { get; init; } = Roles.Cashier;
-}
-
-public record StaffMemberDto(Guid UserId, string Email, string DisplayName, string Role, bool Active);
 
 // ---- Users ----
-public record UserDto(Guid Id, string Email, string DisplayName, bool Active, bool IsOwner, IReadOnlyList<LocationRoleDto> Locations);
-
-public record AssignmentRequest
-{
-    [Required] public Guid LocationId { get; init; }
-    /// <summary>Cashier, Manager or Admin.</summary>
-    [Required] public string Role { get; init; } = Roles.Cashier;
-}
-
-public record CreateUserRequest
-{
-    [Required, EmailAddress, MaxLength(256)] public string Email { get; init; } = "";
-    [Required, MaxLength(200)] public string DisplayName { get; init; } = "";
-    [Required, MinLength(8), MaxLength(100)] public string Password { get; init; } = "";
-    /// <summary>Owner callers only.</summary>
-    public bool IsOwner { get; init; }
-    public List<AssignmentRequest> Assignments { get; init; } = new();
-}
-
-public record UpdateUserRequest
-{
-    [Required, MaxLength(200)] public string DisplayName { get; init; } = "";
-    public bool? Active { get; init; }
-    /// <summary>Owner callers only (403 for others when sent).</summary>
-    public bool? IsOwner { get; init; }
-}
 
 // ---- Variation location overrides ----
-public record LocationOverrideDto(Guid VariationId, Guid LocationId, string LocationName, decimal? PriceOverride, bool? TrackInventoryOverride,
-    decimal? LowStockThresholdOverride, decimal EffectivePrice);
-
-public record UpsertLocationOverrideRequest
-{
-    [Range(0, 1_000_000)] public decimal? PriceOverride { get; init; }
-    public bool? TrackInventoryOverride { get; init; }
-    [Range(0, 1_000_000_000)] public decimal? LowStockThresholdOverride { get; init; }
-}
 
 // ---- Catalog ----
 public record CategoryDto(Guid Id, string Name, int SortOrder, bool Active);

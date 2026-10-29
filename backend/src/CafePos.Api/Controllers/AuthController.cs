@@ -3,6 +3,7 @@ using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 using CafePos.Infrastructure.Identity;
 using CafePos.Api.Dtos;
+using CafePos.Application.Features.Locations;
 using CafePos.Api.Infrastructure;
 using CafePos.Api.Services;
 using Microsoft.AspNetCore.Authorization;

@@ -67,18 +67,6 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
     }
 }
 
-public sealed class HttpCurrentLocation : ICurrentLocation
-{
-    private readonly IHttpContextAccessor _accessor;
-    public HttpCurrentLocation(IHttpContextAccessor accessor) => _accessor = accessor;
-
-    private ClaimsPrincipal? User => _accessor.HttpContext?.User;
-
-    public Guid? LocationId => Guid.TryParse(User?.FindFirstValue(AppClaims.LocationId), out var id) ? id : null;
-    public Guid? UserId => Guid.TryParse(User?.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
-    public bool IsOwner => User?.IsInRole(CafePos.Domain.Roles.Owner) == true;
-}
-
 public static class AppClaims
 {
     public const string LocationId = "location_id";

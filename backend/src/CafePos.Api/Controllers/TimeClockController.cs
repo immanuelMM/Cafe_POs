@@ -1,3 +1,4 @@
+using CafePos.Application.Features.Users;
 using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;

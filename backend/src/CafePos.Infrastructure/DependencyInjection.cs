@@ -1,5 +1,12 @@
 using CafePos.Application.Common;
+using CafePos.Application.Common.Identity;
+using CafePos.Application.Features.Auth;
+using CafePos.Application.Features.Locations;
+using CafePos.Application.Features.Users;
+using CafePos.Application.Features.VariationOverrides;
+using CafePos.Infrastructure.Identity;
 using CafePos.Infrastructure.Persistence;
+using CafePos.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +27,15 @@ public static class DependencyInjection
                 ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured."),
                 npgsql => npgsql.MigrationsAssembly(typeof(CafeDbContext).Assembly.GetName().Name)));
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<CafeDbContext>());
+
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IPinHasher, PinHasher>();
+
+        services.AddScoped<ILocationRepository, LocationRepository>();
+        services.AddScoped<IStaffAssignmentRepository, StaffAssignmentRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IVariationOverrideRepository, VariationOverrideRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         return services;
     }
 }
