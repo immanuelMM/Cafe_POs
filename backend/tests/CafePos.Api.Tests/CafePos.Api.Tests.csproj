@@ -19,6 +19,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="CafePos.Application.Features.Catalog" />
+    <Using Include="CafePos.Application.Features.Inventory" />
     <Using Include="CafePos.Application.Features.Locations" />
     <Using Include="CafePos.Application.Features.Users" />
     <Using Include="CafePos.Application.Features.VariationOverrides" />

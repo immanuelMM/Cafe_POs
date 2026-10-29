@@ -66,59 +66,6 @@ public record SaveBrandDesignRequest
 // ---- Catalog ----
 
 // ---- Inventory ----
-/// <summary>QuantityOnHand/IsLowStock are null only for the global catalog view of an Owner cross-location session (no location, no stock).</summary>
-public record IngredientDto(Guid Id, string Name, string Unit, decimal LowStockThreshold, bool Active, decimal? QuantityOnHand, bool? IsLowStock);
-
-public record CreateIngredientRequest
-{
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [Required, MaxLength(20)] public string Unit { get; init; } = "each";
-    [Range(0, 1_000_000_000)] public decimal LowStockThreshold { get; init; }
-    [Range(0, 1_000_000_000)] public decimal InitialQuantity { get; init; }
-}
-
-public record UpdateIngredientRequest
-{
-    [Required, MaxLength(200)] public string Name { get; init; } = "";
-    [Required, MaxLength(20)] public string Unit { get; init; } = "each";
-    [Range(0, 1_000_000_000)] public decimal LowStockThreshold { get; init; }
-    public bool Active { get; init; } = true;
-}
-
-public record StockMovementDto(Guid Id, Guid IngredientId, Guid LocationId, decimal QuantityDelta, string Reason, string? SourceDocumentRef,
-    string? Note, string? Supplier, decimal? UnitCost, DateTime CreatedAt, Guid? UserId);
-
-public record RestockRequest
-{
-    [Required] public Guid IngredientId { get; init; }
-    [Range(0.001, 1_000_000_000)] public decimal Quantity { get; init; }
-    [Range(0, 1_000_000_000)] public decimal? UnitCost { get; init; }
-    [MaxLength(200)] public string? Supplier { get; init; }
-    [MaxLength(500)] public string? Note { get; init; }
-}
-
-public record AdjustmentRequest
-{
-    /// <summary>Signed change. Non-zero.</summary>
-    public decimal QuantityDelta { get; init; }
-    /// <summary>"Adjustment" (default) or "Waste" (waste must be negative).</summary>
-    public string Reason { get; init; } = "Adjustment";
-    [Required, MaxLength(500)] public string Note { get; init; } = "";
-}
-
-public record RecipeLineDto(Guid IngredientId, string IngredientName, string Unit, decimal Quantity);
-public record RecipeDto(Guid VariationId, IReadOnlyList<RecipeLineDto> Lines);
-
-public record SetRecipeLine
-{
-    [Required] public Guid IngredientId { get; init; }
-    [Range(0.001, 1_000_000)] public decimal Quantity { get; init; }
-}
-
-public record SetRecipeRequest
-{
-    public List<SetRecipeLine> Lines { get; init; } = new();
-}
 
 // ---- Orders ----
 public record OrderLineRequest

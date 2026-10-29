@@ -1,4 +1,5 @@
 using CafePos.Application.Features.Catalog;
+using CafePos.Application.Features.Inventory;
 using CafePos.Application.Features.Locations;
 using CafePos.Application.Features.Users;
 using CafePos.Application.Features.VariationOverrides;
@@ -19,6 +20,9 @@ public static class DependencyInjection
         services.AddScoped<CategoryService>();
         services.AddScoped<ItemService>();
         services.AddScoped<ModifierListService>();
+        services.AddScoped<IngredientService>();
+        services.AddScoped<RecipeService>();
+        services.AddScoped<CafePos.Application.Features.Inventory.StockService>();
         services.AddScoped<LocationService>();
         services.AddScoped<UserService>();
         services.AddScoped<VariationOverrideService>();
