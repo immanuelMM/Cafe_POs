@@ -25,6 +25,7 @@ public static class DatabaseStartup
                 await db.Database.MigrateAsync(ct);
                 if (seedDevData)
                     await DevDataSeeder.SeedAsync(scope.ServiceProvider);
+                await OwnerBootstrapper.RunAsync(scope.ServiceProvider, logger, ct);
                 return;
             }
             catch (Exception ex) when (attempt < MaxAttempts && IsTransient(ex))

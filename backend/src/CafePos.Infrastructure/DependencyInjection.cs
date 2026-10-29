@@ -41,6 +41,7 @@ public static class DependencyInjection
             .BindConfiguration(DatabaseOptions.SectionName)
             .Configure<IConfiguration>((options, config) => options.ConnectionString = config.GetConnectionString("Default") ?? "")
             .ValidateDataAnnotations();
+        services.AddOptions<BootstrapOptions>().BindConfiguration(BootstrapOptions.SectionName);
         if (!BuildEnvironment.IsOpenApiGeneration) // build-time OpenAPI generation starts the host without secrets
         {
             jwt.ValidateOnStart();
