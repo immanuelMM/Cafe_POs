@@ -303,6 +303,89 @@ describe('PosPage', () => {
       expect(pay).toBeEnabled()
     })
 
+    it('enters the cash amount with the on-screen keypad, shows change and gates Complete', async () => {
+      const { user, dialog } = await openPayment() // total 100
+      const pad = within(dialog).getByRole('group', { name: 'Cash keypad' })
+      const input = within(dialog).getByLabelText(/Cash tendered/)
+      const pay = within(dialog).getByRole('button', { name: /Complete payment/ })
+      const press = async (...keys: string[]) => {
+        for (const k of keys) await user.click(within(pad).getByRole('button', { name: k }))
+      }
+      await press('9', '9')
+      expect(input).toHaveValue('99')
+      expect(pay).toBeDisabled()
+      expect(within(dialog).getByRole('alert')).toHaveTextContent('Tendered amount is less than the total.')
+      await press('Backspace', '.', '.', '5', '0', '9')
+      expect(input).toHaveValue('9.50') // one decimal point, two decimals max
+      await press('Backspace', 'Backspace', 'Backspace', 'Backspace')
+      expect(input).toHaveValue('')
+      await press('5', '0', '0')
+      expect(input).toHaveValue('500')
+      expect(within(dialog).getByText('Change').nextElementSibling).toHaveTextContent('₱400.00')
+      expect(pay).toBeEnabled()
+    })
+
+    it('starts a decimal with 0. and fills the amount from a quick-tender button', async () => {
+      const { user, dialog } = await openPayment()
+      const input = within(dialog).getByLabelText(/Cash tendered/)
+      await user.click(within(dialog).getByRole('button', { name: '.' }))
+      expect(input).toHaveValue('0.')
+      await user.click(within(dialog).getByRole('button', { name: /₱1,000/ }))
+      expect(input).toHaveValue('1000')
+      expect(within(dialog).getByText('Change').nextElementSibling).toHaveTextContent('₱900.00')
+      await user.click(within(dialog).getByRole('button', { name: 'Exact' }))
+      expect(input).toHaveValue('100')
+    })
+
+    it('after payment opens the print dialog exactly once, and New order resets the cart', async () => {
+      const print = vi.spyOn(window, 'print').mockImplementation(() => undefined)
+      const receipt = {
+        locationName: 'Main Branch',
+        locationAddress: null,
+        locationPhone: null,
+        orderNumber: 7,
+        orderId: 'order-print-1',
+        completedAt: '2026-01-01T02:01:00Z',
+        timeZone: 'Asia/Manila',
+        cashierName: 'Casey Cashier',
+        lines: [{ description: 'Iced Tea', modifiers: null, quantity: 1, unitPrice: 100, lineTotal: 100 }],
+        pricesIncludeVat: true,
+        vatRatePercent: 12,
+        vatableSales: 89.29,
+        vatAmount: 10.71,
+        total: 100,
+        paymentMethod: 'cash',
+        amountTendered: 200,
+        changeGiven: 100,
+        currency: 'PHP',
+      }
+      server.use(
+        http.post(url('/api/v1/orders'), async ({ request }) => {
+          const b = (await request.json()) as { id: string }
+          return HttpResponse.json(makeOrder({ id: b.id, status: 'Open' }), { status: 201 })
+        }),
+        http.post(url('/api/v1/orders/:id/complete'), () => HttpResponse.json(makeOrder({ id: 'order-print-1' }))),
+        http.get(url('/api/v1/orders/:id/receipt'), () => HttpResponse.json(receipt)),
+      )
+      const { user, dialog } = await openPayment()
+      await user.click(within(dialog).getByRole('button', { name: '₱500.00' }))
+      await user.click(within(dialog).getByRole('button', { name: /Complete payment/ }))
+      const paid = await screen.findByRole('dialog', { name: 'Order #00007 paid' })
+      expect(within(paid).getByRole('status')).toHaveTextContent('₱100.00')
+      expect(await within(paid).findByRole('article')).toHaveTextContent('Iced Tea')
+      await vi.waitFor(() => expect(print).toHaveBeenCalledTimes(1))
+      await new Promise((r) => setTimeout(r, 600)) // no second print from re-renders
+      expect(print).toHaveBeenCalledTimes(1)
+
+      await user.click(within(paid).getByRole('button', { name: 'Print again' }))
+      expect(print).toHaveBeenCalledTimes(2)
+
+      await user.click(within(paid).getByRole('button', { name: 'New order' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(useCartStore.getState().lines).toHaveLength(0)
+      print.mockRestore()
+    })
+
     it('creates then completes the order with an idempotency key and shows change due', async () => {
       const calls: string[] = []
       let created: { id: string; items: unknown[] } | undefined

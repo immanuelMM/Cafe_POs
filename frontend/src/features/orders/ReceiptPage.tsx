@@ -1,20 +1,23 @@
 import { Link, useParams } from 'react-router'
-import { PageHeader } from '../../components/ui'
 import { PrintableReceipt } from './ReceiptView'
 
+/** Large on-screen receipt with a sticky action bar. Print CSS (80mm / 58mm) is unchanged. */
 export function ReceiptPage() {
   const { id } = useParams()
   return (
-    <section className="page narrow">
-      <PageHeader title="Receipt">
-        <Link className="btn" to="/orders">
-          ‹ Orders
+    <section className="receipt-page" aria-label="Receipt">
+      <div className="receipt-page-scroll">
+        <h1 className="receipt-page-title">Receipt</h1>
+        {id && <PrintableReceipt orderId={id} />}
+      </div>
+      <div className="receipt-actions no-print">
+        <Link className="btn btn-lg" to="/orders">
+          ‹ Back to orders
         </Link>
-        <button className="btn btn-primary" onClick={() => window.print()}>
-          Print receipt
+        <button className="btn btn-primary btn-lg" onClick={() => window.print()}>
+          Print
         </button>
-      </PageHeader>
-      {id && <PrintableReceipt orderId={id} />}
+      </div>
     </section>
   )
 }

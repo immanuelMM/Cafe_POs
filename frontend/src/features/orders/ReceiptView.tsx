@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { formatDateTime, formatMoney, formatQty } from '../../lib/format'
 import type { Receipt } from '../../api/types'
@@ -82,9 +83,26 @@ export function ReceiptView({ r }: { r: Receipt }) {
   )
 }
 
-/** On-screen preview plus a portal copy into #print-root that is the only thing shown by the print stylesheet. */
-export function PrintableReceipt({ orderId }: { orderId: string }) {
+/** Orders already auto-printed in this page session: one print per completed order, however often it re-renders or remounts. */
+const autoPrinted = new Set<string>()
+
+/**
+ * On-screen preview plus a portal copy into #print-root that is the only thing shown by the print stylesheet.
+ * `autoPrint` opens the browser print dialog once when the receipt has rendered (the browser cannot print silently).
+ */
+export function PrintableReceipt({ orderId, autoPrint }: { orderId: string; autoPrint?: boolean }) {
   const { data, isLoading, error, refetch } = useReceipt(orderId)
+  const ready = !!data
+  useEffect(() => {
+    if (!autoPrint || !ready || autoPrinted.has(orderId)) return
+    // Marked inside the timer, so a StrictMode effect re-run (cleanup, then run again) still prints exactly once.
+    const t = window.setTimeout(() => {
+      if (autoPrinted.has(orderId)) return
+      autoPrinted.add(orderId)
+      window.print()
+    }, 250)
+    return () => window.clearTimeout(t)
+  }, [autoPrint, ready, orderId])
   if (isLoading) return <Spinner label="Loading receipt…" />
   if (error || !data) return <ErrorBox error={error} onRetry={() => void refetch()} />
   const printRoot = document.getElementById('print-root')
