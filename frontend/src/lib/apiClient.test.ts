@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { server } from '../test/server'
 import { useAuthStore } from '../features/auth/authStore'
-import { anonClient, API_ORIGIN, client, unwrap } from './apiClient'
+import { anonClient, API_ORIGIN, client, resolveApiBase, unwrap } from './apiClient'
 import { ApiError, NetworkError } from './errors'
 import type { AuthResponse } from '../api/types'
 
@@ -123,5 +123,108 @@ describe('typed api client', () => {
   it('rejects with NetworkError when the server is unreachable', async () => {
     server.use(http.get(CATEGORIES, () => HttpResponse.error()))
     await expect(client.GET('/api/v1/categories')).rejects.toBeInstanceOf(NetworkError)
+  })
+
+  const ok401 = () =>
+    http.get(CATEGORIES, ({ request }) =>
+      request.headers.get('authorization') === 'Bearer fresh'
+        ? HttpResponse.json([])
+        : new HttpResponse(null, { status: 401 }),
+    )
+
+  it.each([429, 500, 503])('keeps the session and surfaces the error when the refresh gets %i', async (status) => {
+    useAuthStore.getState().setSession(session('stale'))
+    server.use(
+      http.post(REFRESH, () => new HttpResponse(null, { status, headers: { 'Retry-After': '2' } })),
+      ok401(),
+    )
+    await expect(client.GET('/api/v1/categories')).rejects.toMatchObject({ status })
+    expect(useAuthStore.getState().accessToken).toBe('stale')
+  })
+
+  it('keeps the session when the refresh cannot reach the server', async () => {
+    useAuthStore.getState().setSession(session('stale'))
+    server.use(
+      http.post(REFRESH, () => HttpResponse.error()),
+      ok401(),
+    )
+    await expect(client.GET('/api/v1/categories')).rejects.toBeInstanceOf(NetworkError)
+    expect(useAuthStore.getState().accessToken).toBe('stale')
+  })
+
+  it('clears the session when the refresh is forbidden (403)', async () => {
+    useAuthStore.getState().setSession(session('stale'))
+    server.use(
+      http.post(REFRESH, () => new HttpResponse(null, { status: 403 })),
+      ok401(),
+    )
+    await expect(client.GET('/api/v1/categories')).rejects.toMatchObject({ status: 401 })
+    expect(useAuthStore.getState().accessToken).toBeNull()
+  })
+
+  it('runs the refresh inside the cafepos-refresh Web Lock', async () => {
+    useAuthStore.getState().setSession(session('stale'))
+    const names: string[] = []
+    let held = false
+    Object.defineProperty(navigator, 'locks', {
+      configurable: true,
+      value: {
+        request: async (name: string, cb: () => Promise<unknown>) => {
+          names.push(name)
+          held = true
+          try {
+            return await cb()
+          } finally {
+            held = false
+          }
+        },
+      },
+    })
+    let heldDuringRefresh = false
+    server.use(
+      http.post(REFRESH, () => {
+        heldDuringRefresh = held
+        return HttpResponse.json(session('fresh'))
+      }),
+      ok401(),
+    )
+    try {
+      await client.GET('/api/v1/categories')
+    } finally {
+      Reflect.deleteProperty(navigator, 'locks')
+    }
+    expect(names).toEqual(['cafepos-refresh'])
+    expect(heldDuringRefresh).toBe(true)
+    expect(useAuthStore.getState().accessToken).toBe('fresh')
+  })
+
+  it('falls back to a plain per-tab refresh when navigator.locks is unavailable', async () => {
+    expect('locks' in navigator).toBe(false)
+    useAuthStore.getState().setSession(session('stale'))
+    server.use(
+      http.post(REFRESH, () => HttpResponse.json(session('fresh'))),
+      ok401(),
+    )
+    await client.GET('/api/v1/categories')
+    expect(useAuthStore.getState().accessToken).toBe('fresh')
+  })
+})
+
+describe('resolveApiBase', () => {
+  it('accepts a base ending in /api/v1 and derives the origin', () => {
+    expect(resolveApiBase('http://localhost:5080/api/v1/')).toEqual({
+      base: 'http://localhost:5080/api/v1',
+      origin: 'http://localhost:5080',
+    })
+  })
+  it('keeps a gateway prefix in the origin used for asset URLs', () => {
+    expect(resolveApiBase('https://host/pos-api/api/v1').origin).toBe('https://host/pos-api')
+  })
+  it('defaults when unset', () => {
+    expect(resolveApiBase(undefined).base).toBe('http://localhost:5080/api/v1')
+  })
+  it('throws a clear error when the format is wrong', () => {
+    expect(() => resolveApiBase('https://host/pos-api')).toThrow(/VITE_API_BASE_URL must be/)
+    expect(() => resolveApiBase('/api/v1')).toThrow(/ending in \/api\/v1/)
   })
 })

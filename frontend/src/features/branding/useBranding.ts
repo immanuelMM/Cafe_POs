@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Branding } from '../../api/types'
 import type { components } from '../../api/schema'
-import { API_ORIGIN as ORIGIN, anonClient, client, fileBody, unwrap } from '../../lib/apiClient'
+import { API_ORIGIN, anonClient, client, fileBody, unwrap } from '../../lib/apiClient'
 import { HEX_RE, brandBackground, darken, isGradient, onBrand, type BrandPalette } from '../../lib/color'
 
 export type BrandingDto = Branding
@@ -38,8 +38,7 @@ const BRAND_VARS = [
 ]
 
 /** Branding asset URLs are relative to the API origin. */
-export const API_ORIGIN = ORIGIN
-export const assetUrl = (path: string | null | undefined) => (path ? `${ORIGIN}${path}` : null)
+export const assetUrl = (path: string | null | undefined) => (path ? `${API_ORIGIN}${path}` : null)
 
 /** Business branding (anonymous: the login screen needs it before sign-in). */
 export const useBranding = () =>

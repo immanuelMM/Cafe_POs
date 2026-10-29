@@ -4,9 +4,9 @@ import { client, unwrap } from '../../lib/apiClient'
 
 type S = components['schemas']
 
-export const useOrders = (key: unknown, query: NonNullable<paths['/api/v1/orders']['get']['parameters']['query']>) =>
+export const useOrders = (query: NonNullable<paths['/api/v1/orders']['get']['parameters']['query']>) =>
   useQuery({
-    queryKey: ['orders', key],
+    queryKey: ['orders', query],
     queryFn: () => unwrap(client.GET('/api/v1/orders', { params: { query } })),
     placeholderData: (prev) => prev,
   })

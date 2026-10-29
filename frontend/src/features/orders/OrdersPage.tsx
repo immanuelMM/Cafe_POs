@@ -33,17 +33,14 @@ export function OrdersPage() {
   // Without an active location and without a filter the server returns every location's orders.
   const spansLocations = owner && !locationId && !user?.location
 
-  const orders = useOrders(
-    { status, from, to, page, locationId },
-    {
-      status,
-      from: from ? dayStart(from) : undefined,
-      to: to ? dayEnd(to) : undefined,
-      locationId: owner ? locationId : undefined,
-      page,
-      pageSize: PAGE_SIZE,
-    },
-  )
+  const orders = useOrders({
+    status,
+    from: from ? dayStart(from) : undefined,
+    to: to ? dayEnd(to) : undefined,
+    locationId: owner ? locationId : undefined,
+    page,
+    pageSize: PAGE_SIZE,
+  })
 
   const cancel = useMutation({
     mutationFn: orderCalls.cancel,
