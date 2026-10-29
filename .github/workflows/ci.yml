@@ -149,6 +149,13 @@ jobs:
           echo "$out" | head -n 5
           test "$code" -ne 0
           echo "$out" | grep -q "Jwt:Key must be set"
+      # The single image Render deploys (deploy/Dockerfile: API + built SPA, context = repo root). Same build in CI as in production.
+      - name: Build single image (API + SPA)
+        run: docker build -f deploy/Dockerfile -t cafepos-single:ci .
+      - name: Single image runs as non-root
+        run: test "$(docker run --rm --entrypoint id cafepos-single:ci -u)" != "0"
+      - name: Single image smoke (DATABASE_URL, /health/ready, SPA, deep link, API 404)
+        run: bash deploy/smoke-single-image.sh cafepos-single:ci
 
   e2e:
     name: End-to-end (Playwright)

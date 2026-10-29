@@ -1,0 +1,19 @@
+# Context root = repo root (deploy/Dockerfile, the single-image Render build). Keep local build output and secrets out.
+.git
+.github
+**/node_modules
+**/bin
+**/obj
+**/dist
+**/TestResults
+**/.vs
+**/*.user
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+**/coverage
+e2e
+docs
+backend/tests
+backend/openapi

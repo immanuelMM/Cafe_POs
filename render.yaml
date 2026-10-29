@@ -1,66 +1,52 @@
-# Render Blueprint for the Cafe POS. Step-by-step guide: docs/deployment.md ("Render").
-# Free plan now; to go paid, change the `plan:` lines and follow "Upgrading to paid" in that guide.
+# Render Blueprint for the Cafe POS: ONE Docker web service (API + the built SPA, deploy/Dockerfile) and a Postgres database.
+# Guide: docs/deployment.md ("Render"). Free plan now; to go paid see "Upgrading to paid" there.
 #
-# NAMES MATTER. The service names become the URLs (https://cafe-pos-api.onrender.com, https://cafe-pos-web.onrender.com).
-# If a name is taken Render appends a suffix; then update, to the real URLs: Cors__Origins__0, the /api rewrite destination
-# and VITE_API_BASE_URL below (see the guide). Pick unique names up front (find/replace "cafe-pos-").
+# Why one service: the SPA and the API share one origin, so the SameSite=Lax refresh cookie is sent, and the API sees the real
+# client IP through Render's load balancer only (no second proxy that would hide visitors behind one address). No URL is
+# hard-coded anywhere; whatever name/URL Render assigns just works.
 
 databases:
   - name: cafe-pos-db
-    plan: free                  # free DBs expire after 30 days (14 days grace), 1 GB, one free DB per workspace
+    plan: free                  # free DBs expire after 30 days (14 days grace), 1 GB
     postgresMajorVersion: "16"  # keep major 16 (cannot be changed after creation)
     databaseName: cafepos
     user: cafepos
     region: oregon
+    ipAllowList: []             # internal connections only; no access from the internet (see the guide to allow your /32 temporarily)
 
 services:
-  # ---------------------------------------------------------------- API (Docker)
   - type: web
-    name: cafe-pos-api
+    name: cafe-pos
     runtime: docker
-    plan: free                  # sleeps after 15 min idle; ~1 min cold start
-    region: oregon              # same region as the database so the internal host works
-    dockerfilePath: ./deploy/render/api.Dockerfile
-    dockerContext: ./backend
-    healthCheckPath: /health/live   # liveness only: a DB hiccup must not make Render restart the API
+    plan: free                  # the whole app (page included) sleeps after 15 min idle; ~1 min cold start
+    region: oregon              # same region as the database so the internal URL works
+    dockerfilePath: ./deploy/Dockerfile
+    dockerContext: .            # repo root: the image builds both backend/ and frontend/
+    healthCheckPath: /health/live   # liveness only: a DB hiccup must not make Render restart the app
     autoDeployTrigger: checksPass   # deploy only after GitHub CI passes
     buildFilter:
       paths:
         - backend/**
-        - deploy/render/**
+        - frontend/**
+        - deploy/**
+        - .dockerignore
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
-      # Database: api.Dockerfile's entrypoint assembles ConnectionStrings__Default from these.
+      # postgresql:// URL; the API parses it (SSL required, GSS disabled by default). Used because ConnectionStrings__Default is unset.
       - key: DATABASE_URL
         fromDatabase:
           name: cafe-pos-db
           property: connectionString
-      - key: DB_USER
-        fromDatabase:
-          name: cafe-pos-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: cafe-pos-db
-          property: password
-      - key: DB_NAME
-        fromDatabase:
-          name: cafe-pos-db
-          property: database
       - key: Jwt__Key
         generateValue: true
-      # Free plan: apply migrations at startup (retries until the DB answers). On a paid plan set this to "false" and use a
-      # preDeployCommand instead (docs/deployment.md, "Upgrading to paid").
+      # Free plan: apply migrations at startup (retries until the DB answers). Paid: set "false" and use a preDeployCommand.
       - key: Database__MigrateOnStartup
         value: "true"
       - key: Database__SeedDevData
         value: "false"
-      # The browser talks to the static site's origin and /api/* is proxied to this service, so this only covers direct calls.
-      - key: Cors__Origins__0
-        value: https://cafe-pos-web.onrender.com
-      # Forwarded headers: TLS ends at Render's proxy. Trusted = private ranges only (the container is not reachable from the
-      # internet, so only Render's own proxy can connect from them). UNVERIFIED, confirm after first deploy (guide).
+      # Forwarded headers: TLS ends at Render's load balancer, the only proxy in front of the container. Trust private ranges only
+      # (the container is not reachable from the internet). Confirm after the first deploy (guide); never add a public/CDN range.
       - key: ForwardedHeaders__KnownNetworks__0
         value: 10.0.0.0/8
       - key: ForwardedHeaders__KnownNetworks__1
@@ -71,11 +57,9 @@ services:
         value: 100.64.0.0/10
       - key: ForwardedHeaders__KnownNetworks__4
         value: fc00::/7
-      # Hops to unwind: Render's load balancer + the static site's /api proxy = 2. A hop is only unwound if the address before
-      # it is trusted, so until the proxy's egress range is added (guide) this behaves like 1 and is never spoofable.
       - key: ForwardedHeaders__ForwardLimit
-        value: "2"
-      # First owner: type these in the dashboard when creating the Blueprint; remove them after the first login.
+        value: "1"
+      # First owner: prompted in the dashboard at Blueprint creation (never committed). REMOVE after the first login.
       - key: Bootstrap__OwnerEmail
         sync: false
       - key: Bootstrap__OwnerPassword
@@ -84,29 +68,7 @@ services:
         sync: false
       - key: Bootstrap__LocationName
         sync: false
-
-  # ---------------------------------------------------------------- Frontend (static site)
-  - type: web
-    name: cafe-pos-web
-    runtime: static
-    autoDeployTrigger: checksPass
-    buildFilter:
-      paths:
-        - frontend/**
-    buildCommand: cd frontend && npm ci && npm run build
-    staticPublishPath: ./frontend/dist
-    envVars:
-      - key: NODE_VERSION
-        value: "22"
-      # Absolute, must end in /api/v1. Same origin as the site: /api/* below is proxied to the API, which keeps the
-      # SameSite=Lax refresh cookie first-party (onrender.com is on the Public Suffix List, so web and api are different sites).
-      - key: VITE_API_BASE_URL
-        value: https://cafe-pos-web.onrender.com/api/v1
-    routes:
-      # Order matters (first match wins): API proxy before the SPA fallback.
-      - type: rewrite
-        source: /api/*
-        destination: https://cafe-pos-api.onrender.com/api/*
-      - type: rewrite
-        source: /*
-        destination: /index.html
+      - key: Bootstrap__LocationTimeZone
+        sync: false
+      - key: Bootstrap__LocationVatRatePercent
+        sync: false

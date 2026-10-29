@@ -1,7 +1,7 @@
 # Deployment sketch
 
 Status: **Render config is ready but not deployed; nothing has been run on a cloud host yet.** `render.yaml` (repo root) defines a
-free-plan Render Blueprint (see "Render" below, which the repo owner still has to connect in the Render dashboard). The rest of
+free-plan, single-service Render Blueprint (see "Render" below; the repo owner still has to connect it in the Render dashboard). The rest of
 this page is the hosting-agnostic reference (Azure Container Apps as the worked example, App Service as the alternative); nothing
 here has been run against Azure. Continuous delivery from this repo is not enabled: GitHub Actions only builds and tests
 (`.github/workflows/ci.yml`); on Render the deploy is triggered by Render itself after CI passes.
@@ -151,180 +151,173 @@ is a separate decision.
 
 ## Render (free plan now, paid later)
 
-`render.yaml` at the repo root is a Render Blueprint: one free Postgres 16, one Docker web service for the API, one static site
-for the SPA. It validates against Render's published JSON schema (`https://render.com/schema/render.yaml.json`). It has **not**
-been deployed; items marked "unverified" below must be checked on the first deploy.
+`render.yaml` at the repo root is a Render Blueprint: **one** Docker web service (`cafe-pos`: the API plus the built SPA) and one
+Postgres 16 database. It validates against Render's published JSON schema (`https://render.com/schema/render.yaml.json`) and the
+image was built and smoke-tested locally (below), but nothing has been deployed to Render yet. Items marked "unverified" must be
+checked on the first deploy.
 
 ```
-browser --https--> cafe-pos-web.onrender.com (static site, CDN)
-                     |  /api/*  rewrite (proxied) --https--> cafe-pos-api.onrender.com --http:8080--> API container
-                     |  everything else: files, then /index.html (SPA fallback)                           |
-                                                                          internal host, TLS, same region v
-                                                                                           cafe-pos-db (Postgres 16)
+browser --https--> Render load balancer (TLS ends here) --http:8080--> cafe-pos container
+                                                                        |  /api/*, /health/*  -> API
+                                                                        |  everything else    -> built SPA (index.html fallback)
+                                                                        +--internal URL (TLS)--> cafe-pos-db (Postgres 16)
 ```
 
-Files: `render.yaml`, `deploy/render/api.Dockerfile` (the API image for Render; keep it in sync with
-`backend/src/CafePos.Api/Dockerfile`), the stock `frontend/` build.
+Files: `render.yaml`, `deploy/Dockerfile` (single image, build context = repo root, `.dockerignore` at the root),
+`deploy/smoke-single-image.sh` (the smoke check CI also runs). The stock `backend/` and `frontend/` Dockerfiles and
+`docker-compose.yml` are unchanged and still used for local dev.
 
-### Design decisions
+### Why one service
 
-- **Same-origin API.** `onrender.com` is on the Public Suffix List, so `cafe-pos-api.onrender.com` and `cafe-pos-web.onrender.com`
-  are different sites and the `SameSite=Lax` refresh cookie (path `/api/v1/auth`) would never be sent. The static site therefore
-  has a rewrite `/api/*` -> `https://cafe-pos-api.onrender.com/api/*` (before the SPA fallback; first match wins) and the SPA is
-  built with `VITE_API_BASE_URL=https://cafe-pos-web.onrender.com/api/v1`, so the browser only ever talks to one origin.
-  Render documents a rewrite destination as "a path or a full, publicly accessible URL" and that it "does not redirect the
-  browser"; it does **not** document that method, body, cookies and `Set-Cookie` pass through. That is **unverified**: test it
-  first (checklist below). If login works but the session is lost on reload, or `POST` fails, use the fallback.
-- **Fallback if the rewrite does not proxy cookies/POST:** deploy `frontend/Dockerfile` (nginx) as a second free Docker *web
-  service* instead of the static site, add to `frontend/nginx.conf` a block
-  `location /api/ { proxy_pass https://cafe-pos-api.onrender.com; proxy_set_header Host cafe-pos-api.onrender.com; proxy_ssl_server_name on; proxy_set_header X-Forwarded-Proto $scheme; }`
-  (before `location /`), and build with `--build-arg VITE_API_BASE_URL=https://<web-service>.onrender.com/api/v1`. It needs a
-  small frontend change, so ask for it rather than editing by hand. The hop count for forwarded headers stays 2.
-- **Connection string.** Render exposes Postgres as a `postgresql://` URL, which Npgsql does not accept. The Blueprint passes
-  `DATABASE_URL` (host and port are only available inside that URL: the Blueprint spec has no separate `host`/`port` database
-  property), `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and the entrypoint in `deploy/render/api.Dockerfile` assembles
-  `ConnectionStrings__Default` with `SSL Mode=Require;Trust Server Certificate=true;GSS Encryption Mode=Disable` and `exec`s the
-  app. Render's internal Postgres certificates are self-signed and `verify-ca`/`verify-full` are unsupported there (Render docs),
-  so the private link is encrypted but not certificate-verified. A `dockerCommand` was not used because the stock image has an
-  `ENTRYPOINT`, and Render runs `dockerCommand` in place of the Dockerfile `CMD`, so it would become arguments to `dotnet`.
-  Tested locally against a TLS-enabled Postgres 16 with a self-signed certificate: the API connected, migrated, and
-  `/health/ready` returned 200.
-- **Health check:** `/health/live` (process only). `/health/ready` checks the database; using it would make Render restart the API
-  during a database blip.
-- **Region:** `oregon` for the database and API (change both together before the first deploy; it cannot be changed later).
-  Static sites have no region.
-- **Deploys:** `autoDeployTrigger: checksPass` on both web services: Render deploys a commit only when its GitHub checks
-  (the CI workflow) pass. `buildFilter` limits rebuilds to `backend/**` + `deploy/render/**` (API) and `frontend/**` (site).
+- **Same origin, so the refresh cookie works.** `onrender.com` is on the Public Suffix List: two services (`api-x.onrender.com`
+  and `web-x.onrender.com`) are different sites, and the `SameSite=Lax` refresh cookie (path `/api/v1/auth`) would not be sent
+  between them. The image builds the SPA with `VITE_API_BASE_URL=/api/v1` (root-relative, resolved against the page origin at
+  run time) and the API serves it (`Spa__RootPath=/app/wwwroot-spa`), so the browser talks to a single origin.
+- **Correct client IP, so rate limits work.** A separate static site proxying `/api` would put every visitor behind the proxy's
+  public egress address, and one anonymous attacker could exhaust the shared per-IP limits (login, refresh, time-clock punches)
+  for everyone. With one service the only proxy in front of the container is Render's load balancer.
+- **No host name is configured anywhere.** No `Cors__Origins__*` (same origin) and no hard-coded `onrender.com` URL, so there is
+  nothing to edit if Render appends a suffix to the service name, and no way to point the app at someone else's service. The URL
+  is whatever Render assigns (shown on the service page).
+
+### Other design decisions
+
+- **Image:** `deploy/Dockerfile` has three stages: Node (frontend build), .NET SDK (publish the API, same steps as
+  `backend/src/CafePos.Api/Dockerfile`), then the `aspnet` runtime with the non-root `app` user, port 8080 and the stock
+  `dotnet CafePos.Api.dll` entrypoint. Keep it in sync with the two stock Dockerfiles. CI builds and smoke-tests it on every push.
+- **Database connection:** Render exposes `postgresql://user:pw@host:port/db`; the Blueprint passes it as `DATABASE_URL` from
+  `fromDatabase.connectionString` and the API parses it (used only while `ConnectionStrings__Default` is empty; defaults to
+  SSL required and GSS disabled). Render's internal Postgres TLS is self-signed and `verify-ca`/`verify-full` are unsupported
+  there, so the link is encrypted but the certificate is not verified.
+- **Database is internal-only:** `ipAllowList: []` on the database (no connections from the internet). To use `psql` from your
+  machine, add your own address temporarily: database -> Settings (Access Control / Inbound IP rules) -> add `<your-ip>/32`, run
+  `psql` with the **External** connection string from the Connect menu, then remove the rule again. Do not edit the Blueprint
+  for this: a later Blueprint sync would reset a dashboard change to `[]`.
+- **Health check:** `/health/live` (process only). `/health/ready` checks the database; using it would make Render restart the
+  app during a database blip.
+- **Region:** `oregon` for the database and service (change both together before the first deploy; it cannot be changed later).
+  The internal database URL only works within one region.
+- **Deploys:** `autoDeployTrigger: checksPass`: Render deploys a commit only when its GitHub checks (the CI workflow) pass.
+  `buildFilter` rebuilds only for changes under `backend/**`, `frontend/**`, `deploy/**` or `.dockerignore`.
 
 ### Deploy it (click by click)
 
-1. **Pick unique names (recommended).** Service names become the URLs, and `onrender.com` names are global. Names like
-   `cafe-pos-api` may be taken. Before connecting, find/replace `cafe-pos-` in `render.yaml` with something unique (for example
-   `cafe-pos-<yourhandle>-`), commit and push. Names appear in: the database `name`, both service names, `fromDatabase.name`
-   (4 places), `Cors__Origins__0`, `VITE_API_BASE_URL` and the `/api/*` rewrite destination.
-2. Sign in at <https://dashboard.render.com> (GitHub login is simplest) and authorize the Render GitHub app for the
-   `immanuelMM/Cafe_POs` repository when asked.
-3. **New -> Blueprint.** Choose the `Cafe_POs` repo, branch `main`. Render reads `render.yaml` and lists the resources: database
-   `cafe-pos-db`, web services `cafe-pos-api` and `cafe-pos-web`.
-4. **Enter the prompted values** (the `sync: false` variables, asked only now, at creation; Render ignores them on later syncs):
+1. Sign in at <https://dashboard.render.com> (GitHub login is simplest) and authorize the Render GitHub app for the
+   `immanuelMM/Cafe_POs` repository when asked. Make sure the commit with `render.yaml` is pushed to `main` and CI is green.
+2. **New -> Blueprint.** Choose the `Cafe_POs` repo, branch `main`. Render reads `render.yaml` and lists: database `cafe-pos-db`
+   and web service `cafe-pos`.
+3. **Enter the prompted values** (the `sync: false` variables; asked only now, at creation, and ignored on later syncs):
 
    | Variable | Value |
    |---|---|
    | `Bootstrap__OwnerEmail` | the owner's email address (login name) |
-   | `Bootstrap__OwnerPassword` | a strong password (the bootstrap logs and skips a bad value instead of crashing, so check the API logs if no owner appears) |
+   | `Bootstrap__OwnerPassword` | a strong password |
    | `Bootstrap__OwnerName` | display name (optional, may be left empty) |
    | `Bootstrap__LocationName` | first location name (optional; default `Main`) |
+   | `Bootstrap__LocationTimeZone` | IANA time zone id of the cafe, for example `Asia/Manila` (optional; default `Asia/Manila`) |
+   | `Bootstrap__LocationVatRatePercent` | VAT rate for the first location, 0 to 100 (optional; default `12`) |
 
-   Everything else is pre-filled: `Jwt__Key` is generated by Render and the DB connection comes from the database. Do not put
-   these values in the repo.
-5. Click **Apply** (Deploy Blueprint). Render creates the database, then builds the API (Docker; several minutes) and the site
-   (`npm ci && npm run build`).
-6. If a name got a suffix (each service page shows its real URL), fix the three URL settings (next section).
-7. Open `https://<web-site>.onrender.com` and sign in with the owner email and password. The first API request after idle takes
-   about a minute (cold start); if the first attempt fails, reload once.
-8. **Remove the bootstrap secrets:** API service -> Environment -> delete the four `Bootstrap__*` variables -> Save (this
-   redeploys). The bootstrap only runs when no users exist, so leaving them is harmless but keeps a password in the dashboard.
-9. Run the checklist below once.
-
-### If Render added a suffix to a name
-
-Render shows the actual `https://...onrender.com` URL of each service. Set, to those real URLs:
-
-- API service -> Environment: `Cors__Origins__0` = the **site** origin (no trailing slash).
-- Static site -> Environment: `VITE_API_BASE_URL` = `https://<site>.onrender.com/api/v1` (a rebuild is required: Manual Deploy).
-- Static site -> Redirects/Rewrites: the `/api/*` rule destination = `https://<api>.onrender.com/api/*`.
+   `Jwt__Key` is generated by Render; the database connection comes from the database. Never put these values in the repo.
+4. Click **Apply** (Deploy Blueprint). Render creates the database, then builds the image (Node and .NET stages; several
+   minutes) and starts the service.
+5. Open the service's URL (top of the service page, `https://<service>.onrender.com`) and sign in with the owner email and
+   password. The first request after idle takes about a minute (cold start); reload once if the first attempt fails.
+6. **Remove the bootstrap variables (required):** service -> Environment -> delete all six `Bootstrap__*` variables -> Save (this
+   redeploys). Why: the bootstrap runs whenever they are set and no user exists, and the API logs a warning on every start while
+   the password is still set. A free database expires after 30 days; if you recreate it, an old `Bootstrap__OwnerPassword` would
+   silently recreate the owner with that old password. The bootstrap only creates the owner when no users exist, and never
+   crash-loops on a bad value (it logs and continues), so check the logs if no owner appears.
+7. Run the verification checklist below once.
 
 ### Forwarded headers on Render (read this)
 
-TLS ends at Render's proxy, so the API needs `ForwardedHeaders__*` or it loops on HTTPS redirects and rate-limits every user as
-one IP (see "Behind the ingress"). The Blueprint sets:
+TLS ends at Render's load balancer, so the API needs `ForwardedHeaders__*` or it loops on HTTPS redirects and rate-limits every
+user as one IP (see "Behind the ingress"). The Blueprint sets:
 
 ```
 ForwardedHeaders__KnownNetworks__0..4 = 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 100.64.0.0/10, fc00::/7
-ForwardedHeaders__ForwardLimit        = 2
+ForwardedHeaders__ForwardLimit        = 1     (one proxy hop: Render's load balancer)
 ```
 
-**Honest status: the exact address Render's proxy connects from is not published in Render's documentation, so this is an
-unverified assumption** that it is a private address. It is a safe one: Render states a web service "is not directly reachable
-via the public internet", so only Render's proxy (and your own private network) can connect from private ranges. It is not
-"trust everyone". If the guess is wrong, the symptom is a redirect loop (the site cannot log in; `curl -I https://<api>.onrender.com/api/v1/auth/login`
+**Honest status: the exact address Render's load balancer connects from is not published in Render's documentation, so "it is
+a private address" is an unverified assumption.** It is a safe one: Render states a web service "is not directly reachable via
+the public internet", so only Render's own proxy (and your own private network) can connect from private ranges. This is not
+"trust everyone". If the assumption is wrong the symptom is a redirect loop (login fails; `curl -I https://<service>.onrender.com/api/v1/auth/login`
 shows a 307/308 to https) or every user sharing one IP.
 
-`ForwardLimit = 2` reasoning: a browser request crosses up to two hops before the app: the static site's `/api` proxy and the
-API's own load balancer. An entry is only unwound when the address before it is trusted, so the second hop only counts once the
-static site's egress addresses are also trusted; until then it behaves like 1 and cannot be spoofed. Whether Render's rewrite
-proxy forwards the visitor's IP at all is **unverified**. Until it is confirmed, expect all browsers to appear as one IP: the
-per-IP+email login limit still separates accounts, but the per-IP limits (`LoginPerIp` 50/min, `Refresh` 30/min) are shared by
-everyone. For one cafe that is workable; raise them if needed (`RateLimiting__LoginPerIp__PermitLimit`,
-`RateLimiting__Refresh__PermitLimit`).
+**Rule: trust only the specific private address or CIDR the load balancer actually connects from. Never add a public or CDN
+range**: that would let any client behind it spoof `X-Forwarded-For` and dodge the rate limits.
 
 **One-time confirmation after the first deploy** (no code change needed; the refresh-token row stores the client IP):
 
 1. Sign in once from your own machine. Find your public IP (<https://ifconfig.me>).
-2. Database `cafe-pos-db` -> Connect -> External connection command (free DBs allow external connections), run in `psql`:
-   `SELECT "CreatedByIp", "CreatedAt" FROM "RefreshTokens" ORDER BY "CreatedAt" DESC LIMIT 3;`
-   (If the table or column names differ, `\d "RefreshTokens"` shows them.)
+2. Temporarily allow your /32 on the database (see "Database is internal-only"), connect with the External connection string and
+   run: `SELECT "CreatedByIp", "CreatedAt" FROM "RefreshTokens" ORDER BY "CreatedAt" DESC LIMIT 3;`
+   (`\d "RefreshTokens"` shows the real names if they differ.) Then remove the allow rule.
 3. Interpret:
-   - Your own IP: forwarded headers work end to end. Done.
-   - A private address (10.x, 172.x, 100.64.x) or an address from a range not listed: headers are not being honored for that
-     hop. Add its range as the next `ForwardedHeaders__KnownNetworks__N` and redeploy.
-   - A public address that is not yours (the static site proxy's egress): the first hop is trusted and the second is not. Add
-     that range as `ForwardedHeaders__KnownNetworks__5` (`<ip>/32`, or the provider range if it changes between requests);
-     `ForwardLimit=2` is already set. Repeat the check; it must now show your IP.
+   - Your own public IP: forwarded headers work. Done.
+   - A private address (for example `10.x.y.z`): the header was not honored, so that address is outside the trusted list. Replace
+     the five broad entries with exactly that address's network (for example `10.x.y.0/24`) in the dashboard's environment, then
+     repeat the check; it must now show your public IP.
+   - A public address that is not yours: do **not** trust it. Open an issue; something other than Render's load balancer is in
+     front of the container.
 
 ### First-deploy verification checklist
 
-1. `https://<api>.onrender.com/health/ready` returns `Healthy` (database reachable; migrations ran at startup).
-2. Open the site and sign in as the owner. Browser DevTools -> Network: the login request goes to
-   `https://<site>/api/v1/auth/login` (same origin) and the response has a `Set-Cookie` for the refresh token (`Secure`,
-   `HttpOnly`, `SameSite=Lax`).
-3. Reload the page: you stay signed in (this proves the cookie is sent back through the rewrite; if you are signed out, use the
-   nginx fallback above).
-4. Deep-link to a client route (for example `/orders`) and reload: the SPA loads (the fallback rewrite works).
+1. `https://<service>.onrender.com/health/ready` returns `Healthy` (database reachable; migrations ran at startup).
+2. The site loads at `/`, sign in as the owner. In DevTools -> Network the login request goes to the same origin
+   (`/api/v1/auth/login`) and the response sets a refresh `Set-Cookie` (`Secure`, `HttpOnly`, `SameSite=Lax`).
+3. Reload: you stay signed in. Deep-link to a client route (for example `/orders`) and reload: the SPA loads.
+4. `https://<service>.onrender.com/api/v1/nope` returns a 404 JSON problem, not the SPA.
 5. Run the forwarded-headers confirmation above.
 
 ### Free plan caveats
 
-- **The API sleeps after 15 minutes without traffic**; the next request waits about a minute while it starts (Render shows a
-  loading page to browsers). In-memory rate-limit counters reset on every restart. Not suitable for a live till.
-- **Free Postgres expires 30 days after creation** (14 days grace to upgrade to a paid plan, then the database and its data are
-  deleted), 1 GB storage, one free database per workspace. Upgrade the database to a paid plan before day 30 to keep the
-  data, and export with `pg_dump` (external connection) if the data matters.
-- 750 free instance hours per month per workspace (one always-awake API fits); static sites are free.
+- **The whole app sleeps after 15 minutes without traffic, the page included** (it is served by the same service); the next
+  request waits about a minute while it starts (Render shows a loading page). In-memory rate-limit counters reset on restart.
+  Not suitable for a live till.
+- **Free Postgres expires 30 days after creation** (14 days grace to upgrade it to a paid plan, then the database and its data
+  are deleted) and has 1 GB storage. Upgrade the database before day 30 to keep the data; export with `pg_dump` if it matters.
+  If you recreate it, remember the bootstrap variables (step 6).
+- 750 free instance hours per month per workspace (one always-awake service fits).
 - Free services: no `preDeployCommand`, no persistent disk, no scaling to several instances.
-- `Database__MigrateOnStartup=true` is on: the API applies pending EF migrations itself on every start. Safe with one instance;
+- `Database__MigrateOnStartup=true` is on: the app applies pending EF migrations itself on every start. Safe with one instance;
   not for several.
 
 ### Upgrading to paid
 
-1. **Plans:** in `render.yaml` change `plan: free` to a paid plan on the database and on the API service (plan IDs are in the
-   Blueprint spec's compute plan tables, for example `1c-2g` style for services and `0.5c-1g` style for Postgres), commit and
-   push so the Blueprint sync applies it, or change the plan in the dashboard (Settings). A paid database does not expire and
-   gets backups; a paid API does not sleep. The static site stays free. Do not change `postgresMajorVersion` or `region`
-   (immutable).
-2. **Migrations before deploy instead of at startup (paid only: `preDeployCommand`).** Optional (startup migration keeps working
-   on paid), recommended before you run more than one instance:
-   - Add an EF migration bundle to `deploy/render/api.Dockerfile`'s build stage (untested here; CI's `migration-bundle` job in
-     `.github/workflows/ci.yml` has the exact, known-good `dotnet ef migrations bundle` arguments, so copy those) and write it
-     to `/app/efbundle`, which the final stage already copies.
-   - In `render.yaml` on the API service add a `preDeployCommand` that runs `./efbundle --connection "<same keyword string the
-     entrypoint builds>"` (factor the entrypoint's string building into a script both use), and change
-     `Database__MigrateOnStartup` to `"false"`.
-   - Roll forward only. The first owner is still created by the `Bootstrap__*` variables on first start.
-3. **Replicas / rate limiting:** with more than one instance the in-memory rate limits are per instance (see "Rate limiting").
-4. Optional later: a custom domain, then set `Cors__Origins__0` and `VITE_API_BASE_URL` to it.
+1. **Plans:** in `render.yaml` change `plan: free` to a paid plan on the database and on the service (plan IDs are in the
+   Blueprint spec's compute-plan tables), commit and push so the Blueprint sync applies it, or change the plan in the dashboard.
+   A paid database does not expire and has backups; a paid service does not sleep. Do not change `postgresMajorVersion` or
+   `region` (immutable).
+2. **Migrate before deploy instead of at startup** (`preDeployCommand` is paid-only; recommended before running more than one
+   instance):
+   - In `deploy/Dockerfile`'s `build` stage, after `COPY backend/src/ src/`, build the bundle the way CI's `migration-bundle` job
+     does (restore tools and the RID-specific assets, then `dotnet ef migrations bundle --project src/CafePos.Infrastructure
+     --self-contained -r linux-x64 --force -o /app/efbundle`; this needs `backend/.config/dotnet-tools.json` and the solution
+     files in the stage). `/app` is copied into the runtime image, so `/app/efbundle` ships with it. Untested in the image; run
+     the smoke check after adding it.
+   - In `render.yaml` on the service add `preDeployCommand: ./efbundle --connection "<Npgsql connection string>"`. The bundle
+     takes a keyword connection string, not a URL; build it from the database's host, port, user, password and database (add them
+     as separate `fromDatabase` env vars, for example `PG_HOST`... , and run it via `sh -c`) with `SSL Mode=Require;Trust Server
+     Certificate=true;GSS Encryption Mode=Disable`.
+   - Set `Database__MigrateOnStartup` to `"false"`.
+   - The first-owner bootstrap does **not** depend on `MigrateOnStartup`: it runs whenever the `Bootstrap__*` variables are set and
+     no users exist, so it still works on paid. Remove the variables after the first login, as on free.
+3. **Several instances:** in-memory rate limits are then per instance (see "Rate limiting").
+4. Optional later: a custom domain; nothing in the app is tied to a host name, so no setting changes.
 
 ### Sources checked (Render docs, fetched 2026-10-29)
 
 Verified: Blueprint spec and JSON schema (`render.com/docs/blueprint-spec`, `render.com/schema/render.yaml.json`: the file
-validates; `fromDatabase` properties are `connectionString`, `user`, `password`, `database`; `sync: false` is prompted only at
-creation; `generateValue`; `autoDeployTrigger: checksPass`; static-site `routes` with `type: rewrite`; `staticPublishPath`
-relative to the repo root; `buildFilter`), static-site rewrites (`render.com/docs/redirects-rewrites`: full-URL destination
-allowed, first matching rule wins, existing files win over rules), free instances (`render.com/docs/free`: 15-minute sleep,
-about 1 minute spin-up, 30-day DB expiry with 14-day grace, 1 GB), Postgres connections
-(`render.com/docs/postgresql-creating-connecting`: internal URL needs the same region, self-signed internal TLS, `verify-*`
-unsupported), health checks (`render.com/docs/health-checks`: 2xx/3xx within 5 s, restart after 60 s of failures), Docker
-commands (`render.com/docs/docker`: a custom command is used instead of the Dockerfile `CMD`).
-Not documented, so unverified: that rewrites to an external URL pass method, body and `Set-Cookie`; Render's proxy source
-address and whether the static-site proxy forwards the visitor IP; "one free database per workspace" (from the task brief; not
-found on the pages above).
+validates with ajv; `fromDatabase.connectionString`; `sync: false` is prompted only at creation; `generateValue`;
+`autoDeployTrigger: checksPass`; `dockerfilePath`/`dockerContext`; database `ipAllowList` including `[]`; `buildFilter`), free
+instances (`render.com/docs/free`: 15-minute sleep, about 1 minute spin-up, 30-day DB expiry with 14-day grace, 1 GB),
+Postgres connections (`render.com/docs/postgresql-creating-connecting`: internal URL needs the same region, self-signed internal
+TLS, `verify-*` unsupported), health checks (`render.com/docs/health-checks`), web services (`render.com/docs/web-services`: the
+load balancer terminates TLS and forwards plain HTTP; the service is not directly reachable from the internet).
+Not documented, so unverified: the source address Render's load balancer connects from (hence the confirmation step); the exact
+dashboard labels for the database IP allow list.
+Verified locally (Docker, 2026-10-29): `deploy/Dockerfile` builds, runs as uid 1654 (non-root), and `deploy/smoke-single-image.sh`
+passes against a throwaway Postgres 16 via `DATABASE_URL`: `/health/ready` 200, `/` and `/orders` return `index.html`,
+`/api/v1/nope` is a 404 JSON problem.
