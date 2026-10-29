@@ -1,6 +1,6 @@
 import Konva from 'konva'
 import { formatMoney } from '../../lib/format'
-import type { Item } from '../../lib/types'
+import type { Item } from '../../api/types'
 import type { Section } from '../branding/menuSections'
 import type { MenuElement } from './types'
 

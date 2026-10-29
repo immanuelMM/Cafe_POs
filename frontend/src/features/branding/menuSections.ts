@@ -1,4 +1,4 @@
-import type { Category, Item } from '../../lib/types'
+import type { Category, Item } from '../../api/types'
 
 export interface Section {
   category: Category

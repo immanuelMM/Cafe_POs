@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { api } from '../../lib/api'
+import { orderCalls } from '../orders/useOrders'
 import { round2 } from '../../lib/format'
 import { uuid } from '../../lib/uuid'
 
@@ -55,7 +55,7 @@ const lineKey = (l: Omit<CartLine, 'key' | 'quantity'>) =>
 
 /** If an OPEN order was already created for the old cart contents, cancel it (best effort). */
 function abandon(c: Checkout | null) {
-  if (c?.created) void api(`/orders/${c.orderId}/cancel`, { method: 'POST' }).catch(() => undefined)
+  if (c?.created) void orderCalls.cancel(c.orderId).catch(() => undefined)
 }
 
 export const useCartStore = create<CartState>((set, get) => ({

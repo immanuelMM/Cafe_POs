@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
-import type { PunchResult, TimeClockStaff, TimeEntry } from '../../lib/types'
+import type { PunchResult, TimeClockStaff, TimeEntry } from '../../api/types'
 import { useAuthStore } from '../auth/authStore'
 
 /** Staff at the active location (400 without one, so callers must check `user.location`). */

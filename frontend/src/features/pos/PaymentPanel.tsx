@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Modal } from '../../components/Modal'
-import { ApiError, api, errorMessage } from '../../lib/api'
+import { ApiError, errorMessage } from '../../lib/errors'
 import { formatMoney, round2 } from '../../lib/format'
-import type { Order } from '../../lib/types'
+import type { Order } from '../../api/types'
 import { PrintableReceipt } from '../orders/ReceiptView'
+import { orderCalls } from '../orders/useOrders'
 import { cartTotal, useCartStore } from './cartStore'
 
 /** Quick tender buttons: exact, then the next common bill denominations above the total. */
@@ -38,22 +39,19 @@ export function PaymentPanel({ onClose }: { onClose: () => void }) {
     setError(null)
     try {
       // Idempotent: 201 when created, 200 with the existing order when retried with the same id.
-      await api<Order>('/orders', {
-        method: 'POST',
-        body: {
-          id: checkout.orderId,
-          items: lines.map((l) => ({
-            itemVariationId: l.variationId,
-            quantity: l.quantity,
-            modifierIds: l.modifiers.map((m) => m.id),
-            note: null,
-          })),
-        },
+      await orderCalls.create({
+        id: checkout.orderId,
+        items: lines.map((l) => ({
+          itemVariationId: l.variationId,
+          quantity: l.quantity,
+          modifierIds: l.modifiers.map((m) => m.id),
+          note: null,
+        })),
       })
       store.markCreated()
-      const order = await api<Order>(`/orders/${checkout.orderId}/complete`, {
-        method: 'POST',
-        headers: { 'Idempotency-Key': checkout.idempotencyKey },
+      const order = await orderCalls.complete({
+        orderId: checkout.orderId,
+        idempotencyKey: checkout.idempotencyKey,
         body: { paymentMethod: 'cash', amountTendered: amount },
       })
       void qc.invalidateQueries({ queryKey: ['orders'] })

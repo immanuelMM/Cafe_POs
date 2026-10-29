@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Modal } from '../../components/Modal'
 import { formatMoney, round2 } from '../../lib/format'
-import type { Item, ModifierList } from '../../lib/types'
+import type { Item, ModifierList } from '../../api/types'
 import { assetUrl } from '../branding/brandingApi'
 import { MAX_QTY, type CartLine } from './cartStore'
 

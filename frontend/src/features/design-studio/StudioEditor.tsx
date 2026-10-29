@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type Konva from 'konva'
 import { ErrorBox, Spinner } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import {
   DEFAULT_BRAND_NAME,
   assetUrl,

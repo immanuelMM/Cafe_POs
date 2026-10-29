@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { errorMessage } from '../../lib/api'
-import type { Item } from '../../lib/types'
+import type { Item } from '../../api/types'
 import { inkFor, makeImage, makeMenu, makeShape, makeText, type Palette, type TextPreset } from './factory'
 import type { StudioEnv } from './env'
 import { fileToEmbedded, loadImage, resolveSrc } from './images'

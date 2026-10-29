@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { paletteStops } from '../../lib/color'
 import { ColorField, GradientEditor, Section, Seg, Toggle } from './controls'
 import { useStudioEnv } from './env'

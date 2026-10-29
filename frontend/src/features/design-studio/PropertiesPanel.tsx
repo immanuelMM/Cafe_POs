@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { ColorField, FillEditor, NumField, Section, Seg, ShadowEditor, Toggle } from './controls'
 import { useStudioEnv } from './env'
 import { fileToEmbedded, IMAGE_ACCEPT } from './images'

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Modal } from '../../components/Modal'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 
 const VIEW = 320
 

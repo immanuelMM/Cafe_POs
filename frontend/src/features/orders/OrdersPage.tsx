@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ErrorBox, PageHeader, Pager, Spinner } from '../../components/ui'
-import { api, errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { formatDateTime, formatMoney } from '../../lib/format'
-import type { Order, OrderStatus, Paged } from '../../lib/types'
+import type { OrderStatus } from '../../api/types'
 import { useAuthStore } from '../auth/authStore'
 import { useCurrentLocation, useLocations } from '../locations/useLocations'
+import { orderCalls, useOrders } from './useOrders'
 
 const PAGE_SIZE = 15
 
@@ -32,24 +33,20 @@ export function OrdersPage() {
   // Without an active location and without a filter the server returns every location's orders.
   const spansLocations = owner && !locationId && !user?.location
 
-  const orders = useQuery({
-    queryKey: ['orders', { status, from, to, page, locationId }],
-    queryFn: () =>
-      api<Paged<Order>>('/orders', {
-        query: {
-          status,
-          from: from ? dayStart(from) : undefined,
-          to: to ? dayEnd(to) : undefined,
-          locationId: owner ? locationId : undefined,
-          page,
-          pageSize: PAGE_SIZE,
-        },
-      }),
-    placeholderData: (prev) => prev,
-  })
+  const orders = useOrders(
+    { status, from, to, page, locationId },
+    {
+      status,
+      from: from ? dayStart(from) : undefined,
+      to: to ? dayEnd(to) : undefined,
+      locationId: owner ? locationId : undefined,
+      page,
+      pageSize: PAGE_SIZE,
+    },
+  )
 
   const cancel = useMutation({
-    mutationFn: (id: string) => api<Order>(`/orders/${id}/cancel`, { method: 'POST' }),
+    mutationFn: orderCalls.cancel,
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['orders'] }),
   })
 

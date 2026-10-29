@@ -1,6 +1,6 @@
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Spinner } from '../../components/ui'
-import type { Item } from '../../lib/types'
+import type { Item } from '../../api/types'
 import { assetUrl } from '../branding/brandingApi'
 import { useItems } from '../catalog/useCatalog'
 

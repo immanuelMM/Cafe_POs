@@ -1,8 +1,8 @@
 import { createPortal } from 'react-dom'
 import { formatDateTime, formatMoney, formatQty } from '../../lib/format'
-import type { Receipt } from '../../lib/types'
+import type { Receipt } from '../../api/types'
 import { ErrorBox, Spinner } from '../../components/ui'
-import { useReceipt } from './receiptApi'
+import { useReceipt } from './useReceipt'
 
 /** The 80mm receipt layout. Prices are VAT-inclusive: VAT is shown as a portion of the total, never added. */
 export function ReceiptView({ r }: { r: Receipt }) {

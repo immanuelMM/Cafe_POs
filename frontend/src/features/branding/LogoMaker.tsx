@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Field } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { brandBackground, paletteStops, type BrandPalette } from '../../lib/color'
 import {
   FONTS,

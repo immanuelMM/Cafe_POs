@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../lib/api'
-import type { Receipt } from '../../lib/types'
+import { client, unwrap } from '../../lib/apiClient'
 
 export const useReceipt = (orderId: string | undefined) =>
   useQuery({
     queryKey: ['receipt', orderId],
-    queryFn: () => api<Receipt>(`/orders/${orderId}/receipt`),
+    queryFn: () => unwrap(client.GET('/api/v1/orders/{id}/receipt', { params: { path: { id: orderId! } } })),
     enabled: !!orderId,
     staleTime: Infinity,
   })
