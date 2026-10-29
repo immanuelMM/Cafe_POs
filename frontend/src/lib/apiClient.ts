@@ -8,14 +8,23 @@ const DEFAULT_API_BASE = 'http://localhost:5080/api/v1'
 /**
  * Validates `VITE_API_BASE_URL`. The generated paths already start with `/api/v1`, so the base must end with
  * `/api/v1`; everything before it (origin plus any gateway prefix) is what the client and asset URLs hang off.
+ *
+ * Two forms are accepted: an absolute http(s) URL, or a root-relative path (`/api/v1`, `/prefix/api/v1`) that is
+ * resolved against `pageOrigin` (the page's own origin at runtime) so one build works on any host.
  */
-export function resolveApiBase(raw: string | undefined): { base: string; origin: string } {
-  const base = (raw?.trim() || DEFAULT_API_BASE).replace(/\/+$/, '')
-  if (!/^https?:\/\/.+\/api\/v1$/.test(base)) {
+export function resolveApiBase(
+  raw: string | undefined,
+  pageOrigin: string = globalThis.location?.origin ?? 'http://localhost',
+): { base: string; origin: string } {
+  const configured = (raw?.trim() || DEFAULT_API_BASE).replace(/\/+$/, '')
+  const isAbsolute = /^https?:\/\/.+\/api\/v1$/.test(configured)
+  const isRootRelative = /^(\/[^/\s]+)*\/api\/v1$/.test(configured) // rejects //host and a bare api/v1
+  if (!isAbsolute && !isRootRelative) {
     throw new Error(
-      `VITE_API_BASE_URL must be an absolute URL ending in /api/v1 (e.g. ${DEFAULT_API_BASE} or https://host/prefix/api/v1); got "${raw ?? ''}".`,
+      `VITE_API_BASE_URL must end in /api/v1 and be either an absolute URL (e.g. ${DEFAULT_API_BASE} or https://host/prefix/api/v1) or a root-relative path (e.g. /api/v1 or /prefix/api/v1); got "${raw ?? ''}".`,
     )
   }
+  const base = isAbsolute ? configured : `${pageOrigin.replace(/\/+$/, '')}${configured}`
   return { base, origin: base.slice(0, -'/api/v1'.length) }
 }
 

@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { server } from '../test/server'
 import { useAuthStore } from '../features/auth/authStore'
+import { assetUrl } from '../features/branding/useBranding'
 import { anonClient, API_ORIGIN, client, resolveApiBase, unwrap } from './apiClient'
 import { ApiError, NetworkError } from './errors'
 import type { AuthResponse } from '../api/types'
@@ -224,7 +225,46 @@ describe('resolveApiBase', () => {
     expect(resolveApiBase(undefined).base).toBe('http://localhost:5080/api/v1')
   })
   it('throws a clear error when the format is wrong', () => {
-    expect(() => resolveApiBase('https://host/pos-api')).toThrow(/VITE_API_BASE_URL must be/)
-    expect(() => resolveApiBase('/api/v1')).toThrow(/ending in \/api\/v1/)
+    expect(() => resolveApiBase('https://host/pos-api')).toThrow(/VITE_API_BASE_URL must end/)
+    expect(() => resolveApiBase('https://host/pos-api')).toThrow(/absolute URL/)
+  })
+  it('resolves a root-relative /api/v1 against the page origin', () => {
+    expect(resolveApiBase('/api/v1', 'https://pos.example.com')).toEqual({
+      base: 'https://pos.example.com/api/v1',
+      origin: 'https://pos.example.com',
+    })
+    expect(resolveApiBase('/api/v1/', 'https://pos.example.com').base).toBe('https://pos.example.com/api/v1')
+  })
+  it('resolves a root-relative prefixed path and keeps the prefix in the origin', () => {
+    expect(resolveApiBase('/prefix/api/v1', 'https://pos.example.com')).toEqual({
+      base: 'https://pos.example.com/prefix/api/v1',
+      origin: 'https://pos.example.com/prefix',
+    })
+  })
+  it('defaults the page origin to window.location.origin', () => {
+    expect(resolveApiBase('/api/v1').origin).toBe(window.location.origin)
+  })
+  it.each([
+    '//host/api/v1',
+    'api/v1',
+    'prefix/api/v1',
+    '/api/v2',
+    '/api/v1/extra',
+    '/',
+    'ftp://host/api/v1',
+    '/a//api/v1',
+  ])('rejects %s', (bad) => {
+    expect(() => resolveApiBase(bad, 'https://pos.example.com')).toThrow(/VITE_API_BASE_URL must/)
+  })
+})
+
+describe('assetUrl in relative mode', () => {
+  it('builds a same-origin URL from a root-relative base', () => {
+    const { origin } = resolveApiBase('/api/v1')
+    expect(new URL(`${origin}/uploads/logo.png`).origin).toBe(window.location.origin)
+  })
+  it('uses the configured origin for asset paths', () => {
+    expect(assetUrl('/uploads/logo.png')).toBe(`${API_ORIGIN}/uploads/logo.png`)
+    expect(assetUrl(null)).toBeNull()
   })
 })

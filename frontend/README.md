@@ -20,8 +20,11 @@ npm install
 npm run dev                 # http://localhost:5173 (port is fixed: backend CORS only allows it)
 ```
 
-`VITE_API_BASE_URL` must be an absolute URL ending in `/api/v1` (a gateway prefix before it is fine); the app throws at startup otherwise. It is
-baked into the bundle, so never put secrets in `VITE_` variables.
+`VITE_API_BASE_URL` must end in `/api/v1` and be either an absolute URL (`http://localhost:5080/api/v1`, a gateway
+prefix before it is fine) or a root-relative path (`/api/v1`, `/prefix/api/v1`) that is resolved against the page's own
+origin at runtime. Use the relative form when the API serves the SPA from the same host, so the build does not hard-code
+a hostname. The app throws at startup for anything else. It is baked into the bundle, so never put secrets in `VITE_`
+variables.
 
 | Script                            | Purpose                                                            |
 | --------------------------------- | ------------------------------------------------------------------ |
