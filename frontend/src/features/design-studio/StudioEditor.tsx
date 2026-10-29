@@ -11,7 +11,7 @@ import {
   useUploadTarpaulin,
 } from '../branding/brandingApi'
 import { buildSections } from '../branding/menuSections'
-import { useCategories, useItems } from '../catalog/catalogApi'
+import { useCategories, useItems } from '../catalog/useCatalog'
 import { useCurrentLocation } from '../locations/useLocations'
 import { AddPanel } from './AddPanel'
 import { StudioEnvContext, type StudioEnv } from './env'

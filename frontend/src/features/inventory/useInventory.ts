@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../lib/api'
-import type { Ingredient, Paged, StockMovement } from '../../lib/types'
+import type { Ingredient } from '../../api/types'
+import type { components } from '../../api/schema'
+import { client, unwrap } from '../../lib/apiClient'
 
 /** Stock levels for `locationId`, or the active location when omitted. An Owner with no active location must pass one. */
 export const useIngredients = (locationId?: string, enabled = true) =>
   useQuery({
     queryKey: ['ingredients', { locationId: locationId ?? null }],
-    queryFn: () => api<Ingredient[]>('/ingredients', { query: { locationId } }),
+    queryFn: () => unwrap(client.GET('/api/v1/ingredients', { params: { query: { locationId } } })),
     enabled,
   })
 
@@ -14,7 +15,11 @@ export const useMovements = (id: string | undefined, page: number, locationId?: 
   useQuery({
     queryKey: ['movements', id, page, { locationId: locationId ?? null }],
     queryFn: () =>
-      api<Paged<StockMovement>>(`/ingredients/${id}/movements`, { query: { locationId, page, pageSize: 15 } }),
+      unwrap(
+        client.GET('/api/v1/ingredients/{id}/movements', {
+          params: { path: { id: id! }, query: { locationId, page, pageSize: 15 } },
+        }),
+      ),
     enabled: !!id,
     placeholderData: (prev) => prev,
   })
@@ -37,19 +42,28 @@ export const STATUS_LABEL: Record<StockStatus, string> = {
   ok: 'In stock',
 }
 
+type S = components['schemas']
+
 export const calls = {
   saveIngredient: (v: {
     id?: string
     body: { name: string; unit: string; lowStockThreshold: number; active?: boolean; initialQuantity?: number }
   }) =>
     v.id
-      ? api<Ingredient>(`/ingredients/${v.id}`, { method: 'PUT', body: v.body })
-      : api<Ingredient>('/ingredients', { method: 'POST', body: v.body }),
+      ? unwrap(
+          client.PUT('/api/v1/ingredients/{id}', {
+            params: { path: { id: v.id } },
+            body: v.body satisfies S['UpdateIngredientRequest'],
+          }),
+        )
+      : unwrap(client.POST('/api/v1/ingredients', { body: v.body satisfies S['CreateIngredientRequest'] })),
   restock: (body: { ingredientId: string; quantity: number; unitCost?: number; supplier?: string; note?: string }) =>
-    api<StockMovement>('/restocks', { method: 'POST', body }),
+    unwrap(client.POST('/api/v1/restocks', { body })),
   adjust: (v: { id: string; quantityDelta: number; reason: 'Adjustment' | 'Waste'; note: string }) =>
-    api<StockMovement>(`/ingredients/${v.id}/adjustments`, {
-      method: 'POST',
-      body: { quantityDelta: v.quantityDelta, reason: v.reason, note: v.note },
-    }),
+    unwrap(
+      client.POST('/api/v1/ingredients/{id}/adjustments', {
+        params: { path: { id: v.id } },
+        body: { quantityDelta: v.quantityDelta, reason: v.reason, note: v.note },
+      }),
+    ),
 }

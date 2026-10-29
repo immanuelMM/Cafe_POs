@@ -2,7 +2,7 @@ import { Modal } from '../../components/Modal'
 import { ErrorBox, Spinner } from '../../components/ui'
 import type { Item } from '../../lib/types'
 import { assetUrl } from '../branding/brandingApi'
-import { useItems } from '../catalog/catalogApi'
+import { useItems } from '../catalog/useCatalog'
 
 /** Pick a catalog item photo to place on the canvas. */
 export function ItemPhotoPicker({ onPick, onClose }: { onPick: (item: Item) => void; onClose: () => void }) {

@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Spinner } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { formatMoney } from '../../lib/format'
-import type { LocationOverride, Variation } from '../../lib/types'
+import type { LocationOverride, Variation } from '../../api/types'
 import { useAuthStore } from '../auth/authStore'
 import { useLocations } from '../locations/useLocations'
-import { saveOverride, useCatalogMutation, useLocationOverrides } from './catalogApi'
+import { saveOverride, useCatalogMutation, useLocationOverrides } from './useCatalog'
 
 const numOrNull = (s: string) => (s.trim() === '' ? null : Number(s))
 

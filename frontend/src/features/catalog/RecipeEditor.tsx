@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Spinner } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
-import type { Variation } from '../../lib/types'
-import { useIngredients } from '../inventory/inventoryApi'
-import { catalogCalls, useCatalogMutation, useRecipe } from './catalogApi'
+import { errorMessage } from '../../lib/errors'
+import type { Variation } from '../../api/types'
+import { useIngredients } from '../inventory/useInventory'
+import { catalogCalls, useCatalogMutation, useRecipe } from './useCatalog'
 
 interface Line {
   ingredientId: string

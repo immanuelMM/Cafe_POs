@@ -1,35 +1,13 @@
 import { useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Field, Spinner } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { formatMoney } from '../../lib/format'
-import type { ModifierList } from '../../lib/types'
-import { catalogCalls, useCatalogMutation, useModifierLists } from './catalogApi'
-
-const num = (msg = 'Enter a number') => z.number({ invalid_type_error: msg })
-
-const schema = z
-  .object({
-    name: z.string().trim().min(1, 'Name is required'),
-    minSelections: num().int().min(0),
-    maxSelections: num().int().min(1, 'At least 1'),
-    active: z.boolean(),
-    modifiers: z
-      .array(
-        z.object({
-          id: z.string().optional(),
-          name: z.string().trim().min(1, 'Name required'),
-          priceDelta: num(),
-          active: z.boolean(),
-        }),
-      )
-      .min(1, 'Add at least one modifier'),
-  })
-  .refine((v) => v.minSelections <= v.maxSelections, { path: ['minSelections'], message: 'Min cannot exceed max' })
-type Values = z.infer<typeof schema>
+import type { ModifierList } from '../../api/types'
+import { catalogCalls, useCatalogMutation, useModifierLists } from './useCatalog'
+import { modifierListSchema, type ModifierListValues } from './catalogSchema'
 
 function ModifierListForm({ list, onClose }: { list: ModifierList | null; onClose: () => void }) {
   const save = useCatalogMutation(catalogCalls.saveModifierList, ['recipe'])
@@ -38,8 +16,8 @@ function ModifierListForm({ list, onClose }: { list: ModifierList | null; onClos
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<Values>({
-    resolver: zodResolver(schema),
+  } = useForm<ModifierListValues>({
+    resolver: zodResolver(modifierListSchema),
     defaultValues: {
       name: list?.name ?? '',
       minSelections: list?.minSelections ?? 0,

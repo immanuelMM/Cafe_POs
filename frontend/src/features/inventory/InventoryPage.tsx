@@ -3,8 +3,8 @@ import { ErrorBox, PageHeader, Spinner } from '../../components/ui'
 import { useAuthStore } from '../auth/authStore'
 import { useLocations } from '../locations/useLocations'
 import { formatQty } from '../../lib/format'
-import type { Ingredient } from '../../lib/types'
-import { STATUS_LABEL, stockStatus, useIngredients } from './inventoryApi'
+import type { Ingredient } from '../../api/types'
+import { STATUS_LABEL, stockStatus, useIngredients } from './useInventory'
 import { AdjustForm, IngredientForm, MovementsModal, RestockForm } from './StockForms'
 
 type Dialog = { kind: 'new' } | { kind: 'edit' | 'restock' | 'adjust' | 'history'; ing: Ingredient } | null

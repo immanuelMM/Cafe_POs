@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
-import { errorMessage } from '../../lib/api'
-import type { Item } from '../../lib/types'
+import { errorMessage } from '../../lib/errors'
+import type { Item } from '../../api/types'
 import { assetUrl } from '../branding/brandingApi'
 import { LogoEditor } from '../branding/LogoEditor'
-import { catalogCalls, useCatalogMutation } from './catalogApi'
+import { catalogCalls, useCatalogMutation } from './useCatalog'
 
 const PHOTO_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 const MB = 1024 * 1024

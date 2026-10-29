@@ -2,15 +2,21 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { Field, Pager, Spinner, ErrorBox } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { formatDateTime, formatMoney, formatQty } from '../../lib/format'
-import type { Ingredient } from '../../lib/types'
-import { calls, useMovements } from './inventoryApi'
+import type { Ingredient } from '../../api/types'
+import { calls, useMovements } from './useInventory'
+import {
+  adjSchema,
+  ingSchema,
+  restockSchema,
+  type AdjValues,
+  type IngValues,
+  type RestockValues,
+} from './inventorySchema'
 
-const num = (msg = 'Enter a number') => z.number({ invalid_type_error: msg })
 const optNum = (v: string) => (v === '' ? undefined : Number(v))
 
 function useInvMutation<T, R>(fn: (v: T) => Promise<R>, onDone: () => void) {
@@ -24,15 +30,6 @@ function useInvMutation<T, R>(fn: (v: T) => Promise<R>, onDone: () => void) {
     },
   })
 }
-
-const ingSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required'),
-  unit: z.string().trim().min(1, 'Unit is required (e.g. ml, g, each)'),
-  lowStockThreshold: num().min(0, 'Must be 0 or more'),
-  initialQuantity: num().min(0, 'Must be 0 or more'),
-  active: z.boolean(),
-})
-type IngValues = z.infer<typeof ingSchema>
 
 export function IngredientForm({ ing, onClose }: { ing: Ingredient | null; onClose: () => void }) {
   const save = useInvMutation(calls.saveIngredient, onClose)
@@ -113,14 +110,6 @@ export function IngredientForm({ ing, onClose }: { ing: Ingredient | null; onClo
   )
 }
 
-const restockSchema = z.object({
-  quantity: num().positive('Must be greater than 0'),
-  unitCost: z.number().min(0).optional(),
-  supplier: z.string().trim().optional(),
-  note: z.string().trim().optional(),
-})
-type RestockValues = z.infer<typeof restockSchema>
-
 export function RestockForm({ ing, onClose }: { ing: Ingredient; onClose: () => void }) {
   const save = useInvMutation(calls.restock, onClose)
   const {
@@ -175,13 +164,6 @@ export function RestockForm({ ing, onClose }: { ing: Ingredient; onClose: () => 
     </Modal>
   )
 }
-
-const adjSchema = z.object({
-  kind: z.enum(['Adjustment+', 'Adjustment-', 'Waste']),
-  quantity: num().positive('Must be greater than 0'),
-  note: z.string().trim().min(1, 'Please add a note explaining why'),
-})
-type AdjValues = z.infer<typeof adjSchema>
 
 export function AdjustForm({ ing, onClose }: { ing: Ingredient; onClose: () => void }) {
   const save = useInvMutation(calls.adjust, onClose)

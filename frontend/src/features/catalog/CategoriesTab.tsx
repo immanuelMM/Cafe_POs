@@ -1,19 +1,12 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Field, Spinner } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
-import type { Category } from '../../lib/types'
-import { catalogCalls, useCatalogMutation, useCategories } from './catalogApi'
-
-const schema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(100),
-  sortOrder: z.number({ invalid_type_error: 'Enter a number' }).int('Whole number'),
-  active: z.boolean(),
-})
-type Values = z.infer<typeof schema>
+import { errorMessage } from '../../lib/errors'
+import type { Category } from '../../api/types'
+import { catalogCalls, useCatalogMutation, useCategories } from './useCatalog'
+import { categorySchema, type CategoryValues } from './catalogSchema'
 
 function CategoryForm({ cat, onClose }: { cat: Category | null; onClose: () => void }) {
   const save = useCatalogMutation(catalogCalls.saveCategory)
@@ -21,8 +14,8 @@ function CategoryForm({ cat, onClose }: { cat: Category | null; onClose: () => v
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Values>({
-    resolver: zodResolver(schema),
+  } = useForm<CategoryValues>({
+    resolver: zodResolver(categorySchema),
     defaultValues: { name: cat?.name ?? '', sortOrder: cat?.sortOrder ?? 0, active: cat?.active ?? true },
   })
   return (

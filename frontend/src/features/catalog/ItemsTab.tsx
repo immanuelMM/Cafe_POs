@@ -4,32 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { ErrorBox, Field, Spinner } from '../../components/ui'
-import { errorMessage } from '../../lib/api'
+import { errorMessage } from '../../lib/errors'
 import { formatMoney } from '../../lib/format'
-import type { Item, Variation } from '../../lib/types'
-import { catalogCalls, useCatalogMutation, useCategories, useItems, useModifierLists } from './catalogApi'
+import type { Item, Variation } from '../../api/types'
+import { catalogCalls, useCatalogMutation, useCategories, useItems, useModifierLists } from './useCatalog'
+import { itemSchema, variationSchema, type ItemValues } from './catalogSchema'
 import { ItemPhotoSection, ItemThumb } from './ItemPhotoSection'
 import { OverridesEditor } from './OverridesEditor'
 import { RecipeEditor } from './RecipeEditor'
-
-const num = (msg = 'Enter a number') => z.number({ invalid_type_error: msg })
-
-const variationSchema = z.object({
-  name: z.string().trim().min(1, 'Name required'),
-  sku: z.string().trim().min(1, 'SKU required'),
-  price: num().min(0, 'Must be 0 or more'),
-})
-
-const itemSchema = z.object({
-  categoryId: z.string().min(1, 'Choose a category'),
-  name: z.string().trim().min(1, 'Name is required'),
-  description: z.string().trim().optional(),
-  sortOrder: num().int(),
-  active: z.boolean(),
-  modifierListIds: z.array(z.string()),
-  variations: z.array(variationSchema),
-})
-type ItemValues = z.infer<typeof itemSchema>
 
 /** Edit one existing variation (PUT/DELETE /variations/{id}) and open its recipe. */
 function VariationRow({
