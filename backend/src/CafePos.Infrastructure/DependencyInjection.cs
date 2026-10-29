@@ -1,10 +1,12 @@
 using CafePos.Application.Common;
 using CafePos.Application.Common.Identity;
 using CafePos.Application.Features.Auth;
+using CafePos.Application.Features.Branding;
 using CafePos.Application.Features.Catalog;
 using CafePos.Application.Features.Inventory;
 using CafePos.Application.Features.Locations;
 using CafePos.Application.Features.Orders;
+using CafePos.Application.Features.TimeClock;
 using CafePos.Application.Features.Users;
 using CafePos.Application.Features.VariationOverrides;
 using CafePos.Infrastructure.Identity;
@@ -42,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<IRecipeRepository, RecipeRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderCatalogRepository, OrderCatalogRepository>();
+        services.AddScoped<IBrandingRepository, BrandingRepository>();
+        services.AddScoped<ITimeClockRepository, TimeClockRepository>();
         services.AddScoped<ILocationRepository, LocationRepository>();
         services.AddScoped<IStaffAssignmentRepository, StaffAssignmentRepository>();
         services.AddScoped<IUserRepository, UserRepository>();

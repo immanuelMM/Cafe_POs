@@ -42,7 +42,7 @@ public static class ValidationRules
         rule.Must(IsEmail).WithMessage("The {PropertyName} field is not a valid e-mail address.");
 
     public static IRuleBuilderOptions<T, string?> Pattern<T>(this IRuleBuilder<T, string?> rule, string regex, string message) =>
-        rule.Matches(regex).WithMessage(message);
+        rule.SetValidator(new PatternValidator<T>(regex)).WithMessage(message);
 
     public static IRuleBuilderOptions<T, decimal> Between<T>(this IRuleBuilder<T, decimal> rule, decimal from, decimal to) =>
         rule.InclusiveBetween(from, to).WithMessage(RangeMessage(from, to));
