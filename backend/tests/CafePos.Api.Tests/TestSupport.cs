@@ -86,6 +86,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     /// <summary>A DbContext scoped to a given location (null = system context with no location).</summary>
     public CafeDbContext NewDb(Guid? locationId)
     {
+        _ = Services; // boot the host first so the database exists (migrate-on-startup); otherwise this depends on test order
         var options = new DbContextOptionsBuilder<CafeDbContext>().UseNpgsql(ConnectionString).Options;
         return new CafeDbContext(options, new FixedLocation(locationId));
     }

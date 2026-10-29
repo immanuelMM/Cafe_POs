@@ -3,7 +3,7 @@
 Web-based point of sale and inventory system for a cafe business with one or more branches.
 
 - **Frontend**: React 19 + TypeScript (Vite), see [`frontend/README.md`](frontend/README.md)
-- **Backend**: .NET 8 Web API + EF Core + PostgreSQL, ASP.NET Core Identity + JWT, see [`backend/README.md`](backend/README.md)
+- **Backend**: .NET 10 Web API + EF Core + PostgreSQL, ASP.NET Core Identity + JWT, see [`backend/README.md`](backend/README.md)
 
 ## Status
 
@@ -32,7 +32,7 @@ The frontend container serves a production build, so re-run `docker compose up -
 
 ### Local dev (hot reload)
 
-Prerequisites: .NET SDK 8.0.x, Docker (running), Node 20+.
+Prerequisites: .NET SDK 10.0.x, Docker (running), Node 20+.
 
 ```bash
 # Database (from the repo root)

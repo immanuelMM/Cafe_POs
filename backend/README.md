@@ -1,10 +1,10 @@
 # Cafe POS backend (Phase 1 + Phase 2 multi-location)
 
-.NET 8 Web API (controllers, `/api/v1`), EF Core + **PostgreSQL** (Docker), ASP.NET Core Identity + JWT.
+.NET 10 Web API (controllers, `/api/v1`), EF Core + **PostgreSQL** (Docker), ASP.NET Core Identity + JWT.
 API contract for the frontend: [`../docs/api/phase1-api.md`](../docs/api/phase1-api.md), plus the multi-location changes in [`../docs/api/phase2-api.md`](../docs/api/phase2-api.md).
 
 ## Prerequisites
-- .NET SDK 8.0.x (pinned by `global.json`)
+- .NET SDK 10.0.x (pinned by `global.json`)
 - Docker (Docker Desktop must be running)
 
 ## Run
