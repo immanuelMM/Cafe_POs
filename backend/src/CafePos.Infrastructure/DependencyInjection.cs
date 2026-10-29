@@ -30,7 +30,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<CafeDbContext>((sp, o) =>
             o.UseNpgsql(
-                sp.GetRequiredService<IConfiguration>().GetConnectionString("Default")
+                ConnectionStringResolver.Resolve(sp.GetRequiredService<IConfiguration>())
                 ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured."),
                 npgsql => npgsql.MigrationsAssembly(typeof(CafeDbContext).Assembly.GetName().Name)));
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<CafeDbContext>());
@@ -39,7 +39,7 @@ public static class DependencyInjection
         var jwt = services.AddOptions<JwtOptions>().BindConfiguration(JwtOptions.SectionName).ValidateDataAnnotations();
         var database = services.AddOptions<DatabaseOptions>()
             .BindConfiguration(DatabaseOptions.SectionName)
-            .Configure<IConfiguration>((options, config) => options.ConnectionString = config.GetConnectionString("Default") ?? "")
+            .Configure<IConfiguration>((options, config) => options.ConnectionString = ConnectionStringResolver.Resolve(config) ?? "")
             .ValidateDataAnnotations();
         services.AddOptions<BootstrapOptions>().BindConfiguration(BootstrapOptions.SectionName);
         if (!BuildEnvironment.IsOpenApiGeneration) // build-time OpenAPI generation starts the host without secrets

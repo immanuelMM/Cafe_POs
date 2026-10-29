@@ -12,7 +12,7 @@ internal sealed class CafeDbContextFactory : IDesignTimeDbContextFactory<CafeDbC
 {
     public CafeDbContext CreateDbContext(string[] args)
     {
-        var connection = Environment.GetEnvironmentVariable("ConnectionStrings__Default")
+        var connection = ConnectionStringResolver.Resolve(Environment.GetEnvironmentVariable("ConnectionStrings__Default"), Environment.GetEnvironmentVariable("DATABASE_URL"))
                          ?? "Host=localhost;Database=cafepos_design_time";
         var options = new DbContextOptionsBuilder<CafeDbContext>()
             .UseNpgsql(connection, npgsql => npgsql.MigrationsAssembly(typeof(CafeDbContext).Assembly.GetName().Name))
