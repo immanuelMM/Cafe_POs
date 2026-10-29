@@ -116,21 +116,25 @@ public class TimeClockServiceTests
     }
 
     [Fact]
-    public async Task A_wrong_pin_is_403_counts_the_failure_and_locks_after_five()
+    public async Task A_wrong_pin_is_403_and_is_counted_atomically_by_the_identity_service()
     {
         _pins.Verify("hash", "0000").Returns(false);
-        var sut = Sut();
+        _identity.RecordClockPinFailureAsync(_staff.Id, TimeClockService.MaxFailedAttempts, TimeClockService.LockDuration, Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(false);
 
-        for (var i = 1; i <= 4; i++)
-        {
-            (await sut.PunchAsync(Punch("0000"), default)).ShouldFailWith(ErrorKind.Forbidden, "Forbidden");
-            Assert.Equal(i, _staff.ClockPinFailedCount);
-        }
-        (await sut.PunchAsync(Punch("0000"), default)).ShouldFailWith(ErrorKind.Forbidden);
+        (await Sut().PunchAsync(Punch("0000"), default)).ShouldFailWith(ErrorKind.Forbidden, "Forbidden");
 
-        Assert.Equal(0, _staff.ClockPinFailedCount);
-        Assert.NotNull(_staff.ClockPinLockedUntil);
-        (await sut.PunchAsync(Punch("1234"), default)).ShouldFailWith(ErrorKind.Locked, "PIN locked");
+        await _identity.Received(1).RecordClockPinFailureAsync(_staff.Id, 5, TimeSpan.FromMinutes(5), Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
+        _identity.DidNotReceiveWithAnyArgs().ApplyChanges(default!); // no read-modify-write of the counter
+    }
+
+    [Fact]
+    public async Task A_currently_locked_pin_is_423_without_counting_another_failure()
+    {
+        _staff.ClockPinLockedUntil = DateTime.UtcNow.AddMinutes(3);
+
+        (await Sut().PunchAsync(Punch("0000"), default)).ShouldFailWith(ErrorKind.Locked, "PIN locked");
+
+        await _identity.DidNotReceiveWithAnyArgs().RecordClockPinFailureAsync(default, default, default, default, default);
     }
 
     [Fact]

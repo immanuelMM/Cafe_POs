@@ -61,18 +61,12 @@ public sealed class TimeClockService(
 
         if (!pins.Verify(account.ClockPinHash, req.Pin))
         {
-            account.ClockPinFailedCount = (account.ClockPinLockedUntil is not null ? 0 : account.ClockPinFailedCount) + 1;
-            account.ClockPinLockedUntil = null;
-            if (account.ClockPinFailedCount >= MaxFailedAttempts)
-            {
-                account.ClockPinLockedUntil = now + LockDuration;
-                account.ClockPinFailedCount = 0;
+            // Atomic in the database: concurrent guesses each count, so parallel requests cannot dodge the lock.
+            var locked = await identity.RecordClockPinFailureAsync(userId, MaxFailedAttempts, LockDuration, now, ct);
+            if (locked)
                 logger.LogWarning("Time clock PIN locked for user {TargetUserId} at {LocationId}", userId, location.Value);
-            }
             else
                 logger.LogWarning("Time clock wrong PIN for user {TargetUserId} at {LocationId}", userId, location.Value);
-            identity.ApplyChanges(account);
-            await uow.SaveChangesAsync(ct);
             return Error.Forbidden("Incorrect PIN");
         }
 

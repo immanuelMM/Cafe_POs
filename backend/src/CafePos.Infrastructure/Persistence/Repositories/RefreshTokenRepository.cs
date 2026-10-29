@@ -11,6 +11,10 @@ internal sealed class RefreshTokenRepository(CafeDbContext db) : IRefreshTokenRe
 
     public void Add(RefreshToken token) => db.RefreshTokens.Add(token);
 
+    public async Task<bool> TryClaimForRotationAsync(string tokenHash, string replacedByHash, DateTime revokedAt, CancellationToken ct) =>
+        await db.RefreshTokens.Where(t => t.TokenHash == tokenHash && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, revokedAt).SetProperty(t => t.ReplacedByTokenHash, replacedByHash), ct) == 1;
+
     public Task RevokeByHashAsync(string tokenHash, Guid? userId, DateTime revokedAt, CancellationToken ct) =>
         db.RefreshTokens.Where(t => t.TokenHash == tokenHash && t.RevokedAt == null && (userId == null || t.UserId == userId))
             .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, revokedAt), ct);

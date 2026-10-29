@@ -131,15 +131,30 @@ public class AuthServiceTests
     [Fact]
     public async Task Refresh_rotates_the_token_revoking_the_old_one_and_linking_it_to_the_new()
     {
-        var old = StoredToken();
+        StoredToken();
+        _refresh.TryClaimForRotationAsync("hash-of-raw", "hash1", Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(true);
 
         var outcome = await Sut().RefreshAsync("raw", "10.0.0.2", default);
 
         Assert.True(outcome.IsSuccess);
-        Assert.NotNull(old.RevokedAt);
-        Assert.Equal("hash1", old.ReplacedByTokenHash);
+        await _refresh.Received(1).TryClaimForRotationAsync("hash-of-raw", "hash1", Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
         _refresh.Received(1).Add(Arg.Is<RefreshToken>(t => t.TokenHash == "hash1" && t.LocationId == Main && t.CreatedByIp == "10.0.0.2"));
         await _uow.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Losing_the_atomic_claim_to_a_concurrent_refresh_is_reuse_and_revokes_every_session()
+    {
+        StoredToken();
+        _refresh.TryClaimForRotationAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(false);
+
+        var outcome = await Sut().RefreshAsync("raw", null, default);
+
+        Assert.False(outcome.IsSuccess);
+        Assert.True(outcome.ClearRefreshCookie);
+        _refresh.DidNotReceiveWithAnyArgs().Add(default!);
+        await _uow.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _refresh.Received(1).RevokeAllForUserAsync(_cashier.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

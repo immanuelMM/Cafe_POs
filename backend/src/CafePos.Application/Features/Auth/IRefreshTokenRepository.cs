@@ -10,6 +10,13 @@ public interface IRefreshTokenRepository
     void Add(RefreshToken token);
 
     /// <summary>
+    /// Atomically claims an active refresh token for rotation: revokes it and links it to <paramref name="replacedByHash"/> in one
+    /// conditional UPDATE (applied immediately, not via the unit of work). Returns false when the token was no longer active
+    /// (already rotated by a concurrent request), which callers treat as reuse. Call inside a transaction with the insert of the replacement.
+    /// </summary>
+    Task<bool> TryClaimForRotationAsync(string tokenHash, string replacedByHash, DateTime revokedAt, CancellationToken ct);
+
+    /// <summary>
     /// Revokes the active token with this hash (applied immediately, not via the unit of work). When <paramref name="userId"/> is set
     /// the token must also belong to that user.
     /// </summary>

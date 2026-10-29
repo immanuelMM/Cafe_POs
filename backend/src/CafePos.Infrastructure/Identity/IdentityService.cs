@@ -1,12 +1,16 @@
 using System.Runtime.CompilerServices;
 using CafePos.Application.Common;
 using CafePos.Application.Common.Identity;
+using CafePos.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CafePos.Infrastructure.Identity;
 
 /// <summary>UserManager-backed implementation of <see cref="IIdentityService"/>. Accounts stay linked to their tracked entity.</summary>
-internal sealed class IdentityService(UserManager<ApplicationUser> users) : IIdentityService
+internal sealed class IdentityService(
+    UserManager<ApplicationUser> users, CafeDbContext db, IOptions<IdentityOptions> identityOptions, TimeProvider clock) : IIdentityService
 {
     private readonly ConditionalWeakTable<UserAccount, ApplicationUser> _entities = new();
 
@@ -59,11 +63,37 @@ internal sealed class IdentityService(UserManager<ApplicationUser> users) : IIde
     public async Task<bool> IsLockedOutAsync(UserAccount account, CancellationToken ct) =>
         await users.IsLockedOutAsync(await EntityAsync(account));
 
-    public async Task RecordAccessFailedAsync(UserAccount account, CancellationToken ct) =>
-        await users.AccessFailedAsync(await EntityAsync(account));
+    // UserManager.AccessFailedAsync is a read-modify-write guarded by the concurrency stamp: simultaneous bad passwords made it throw
+    // (a 500) or lose counts. The counter is therefore changed with atomic UPDATE statements, mirroring Identity's lockout rule.
+    public async Task RecordAccessFailedAsync(UserAccount account, CancellationToken ct)
+    {
+        var id = account.Id;
+        var lockout = identityOptions.Value.Lockout;
+        await db.Users.Where(u => u.Id == id && u.LockoutEnabled)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.AccessFailedCount, u => u.AccessFailedCount + 1), ct);
+        var until = clock.GetUtcNow().Add(lockout.DefaultLockoutTimeSpan);
+        var max = lockout.MaxFailedAccessAttempts;
+        await db.Users.Where(u => u.Id == id && u.LockoutEnabled && u.AccessFailedCount >= max)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.LockoutEnd, until).SetProperty(u => u.AccessFailedCount, 0), ct);
+    }
 
-    public async Task ResetAccessFailedAsync(UserAccount account, CancellationToken ct) =>
-        await users.ResetAccessFailedCountAsync(await EntityAsync(account));
+    public async Task ResetAccessFailedAsync(UserAccount account, CancellationToken ct)
+    {
+        var id = account.Id;
+        await db.Users.Where(u => u.Id == id && u.AccessFailedCount != 0)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.AccessFailedCount, 0), ct);
+    }
+
+    public async Task<bool> RecordClockPinFailureAsync(Guid userId, int maxAttempts, TimeSpan lockDuration, DateTime now, CancellationToken ct)
+    {
+        await db.Users.Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.ClockPinFailedCount, u => u.ClockPinFailedCount + 1), ct);
+        var lockedUntil = now + lockDuration;
+        // Only the failure that finds the count at the limit wins this UPDATE; the others see the reset count and match nothing.
+        var locked = await db.Users.Where(u => u.Id == userId && u.ClockPinFailedCount >= maxAttempts)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.ClockPinLockedUntil, lockedUntil).SetProperty(u => u.ClockPinFailedCount, 0), ct);
+        return locked > 0;
+    }
 
     private UserAccount Wrap(ApplicationUser user)
     {

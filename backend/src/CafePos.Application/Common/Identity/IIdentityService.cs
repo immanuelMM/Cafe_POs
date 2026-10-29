@@ -26,7 +26,15 @@ public interface IIdentityService
 
     Task<bool> IsLockedOutAsync(UserAccount account, CancellationToken ct);
 
+    /// <summary>Counts a failed password attempt and locks the account at the configured limit. Atomic: concurrent failures all count.</summary>
     Task RecordAccessFailedAsync(UserAccount account, CancellationToken ct);
+
+    /// <summary>
+    /// Atomically counts one wrong time clock PIN (applied immediately, not via the unit of work) and, when the count reaches
+    /// <paramref name="maxAttempts"/>, locks the PIN until <paramref name="now"/> + <paramref name="lockDuration"/> and resets the count.
+    /// Returns true when this failure triggered the lock. Concurrent wrong guesses cannot lose increments.
+    /// </summary>
+    Task<bool> RecordClockPinFailureAsync(Guid userId, int maxAttempts, TimeSpan lockDuration, DateTime now, CancellationToken ct);
 
     Task ResetAccessFailedAsync(UserAccount account, CancellationToken ct);
 }

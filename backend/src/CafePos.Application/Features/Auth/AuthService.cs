@@ -68,23 +68,26 @@ public sealed class AuthService(
         new(account.Id, account.Email, account.DisplayName, s.Role, account.IsOwner,
             s.Active is null ? null : new LocationRef(s.Active.Id, s.Active.Name), s.Locations);
 
-    /// <summary>Creates the access token and a new refresh token; <paramref name="replaces"/> is revoked and linked to the new one (rotation).</summary>
-    private async Task<AuthSession> IssueAsync(UserAccount account, Session session, string? ipAddress, RefreshToken? replaces, CancellationToken ct)
+    /// <summary>
+    /// Creates the access token and a new refresh token. When <paramref name="replaces"/> is set (rotation) it is claimed with one
+    /// conditional UPDATE in the same transaction as the insert of its successor, so two concurrent refreshes with the same token
+    /// cannot both succeed; the loser gets null and the caller treats it as reuse.
+    /// </summary>
+    private async Task<AuthSession?> IssueAsync(UserAccount account, Session session, string? ipAddress, RefreshToken? replaces, CancellationToken ct)
     {
         var access = tokens.CreateAccessToken(account, session.Active?.Id, session.Role);
         var refresh = tokens.CreateRefreshToken();
         var now = Now;
+        await using var transaction = await uow.BeginTransactionAsync(ct);
+        if (replaces is not null && !await refreshTokens.TryClaimForRotationAsync(replaces.TokenHash, refresh.Hash, now, ct))
+            return null;
         refreshTokens.Add(new RefreshToken
         {
             Id = Guid.NewGuid(), UserId = account.Id, LocationId = session.Active?.Id, TokenHash = refresh.Hash,
             CreatedAt = now, ExpiresAt = refresh.ExpiresAt, CreatedByIp = ipAddress
         });
-        if (replaces is not null)
-        {
-            replaces.RevokedAt = now;
-            replaces.ReplacedByTokenHash = refresh.Hash;
-        }
         await uow.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
         return new AuthSession(new AuthResponse(access.Value, access.ExpiresAt, BuildUserInfo(account, session)), refresh.Raw, refresh.ExpiresAt);
     }
 
@@ -112,7 +115,7 @@ public sealed class AuthService(
 
         var session = await BuildSessionAsync(account, req.LocationId, false, ct);
         if (session.IsFailure) return AuthOutcome.Fail(session.Error!);
-        var issued = await IssueAsync(account, session.Value, ipAddress, null, ct);
+        var issued = (await IssueAsync(account, session.Value, ipAddress, null, ct))!;
         logger.LogInformation("User {UserId} logged in at location {LocationId} as {Role}", account.Id, session.Value.Active?.Id, session.Value.Role);
         return AuthOutcome.Success(issued);
     }
@@ -124,13 +127,7 @@ public sealed class AuthService(
         var token = await refreshTokens.GetByHashAsync(tokens.Hash(rawRefreshToken), ct);
         if (token is null) return AuthOutcome.Fail(Unauthorized401());
 
-        if (token.RevokedAt is not null)
-        {
-            // A rotated-out token is being replayed: assume theft and kill every session of this user.
-            logger.LogWarning("Refresh token reuse detected for user {UserId}; revoking all sessions", token.UserId);
-            await refreshTokens.RevokeAllForUserAsync(token.UserId, Now, ct);
-            return AuthOutcome.Fail(Unauthorized401(), clearCookie: true);
-        }
+        if (token.RevokedAt is not null) return await ReuseDetectedAsync(token.UserId, ct);
         if (token.ExpiresAt <= Now) return AuthOutcome.Fail(Unauthorized401(), clearCookie: true);
 
         var account = await identity.FindByIdAsync(token.UserId, ct);
@@ -144,7 +141,17 @@ public sealed class AuthService(
                 ? AuthOutcome.Fail(Unauthorized401(), clearCookie: true)
                 : AuthOutcome.Fail(session.Error);
 
-        return AuthOutcome.Success(await IssueAsync(account, session.Value, ipAddress, token, ct));
+        var issued = await IssueAsync(account, session.Value, ipAddress, token, ct);
+        // Null: a concurrent request rotated this token between the check above and the claim, which is reuse as well.
+        return issued is null ? await ReuseDetectedAsync(token.UserId, ct) : AuthOutcome.Success(issued);
+    }
+
+    /// <summary>A rotated-out token is being replayed: assume theft and kill every session of this user.</summary>
+    private async Task<AuthOutcome> ReuseDetectedAsync(Guid userId, CancellationToken ct)
+    {
+        logger.LogWarning("Refresh token reuse detected for user {UserId}; revoking all sessions", userId);
+        await refreshTokens.RevokeAllForUserAsync(userId, Now, ct);
+        return AuthOutcome.Fail(Unauthorized401(), clearCookie: true);
     }
 
     /// <summary>
@@ -165,7 +172,7 @@ public sealed class AuthService(
 
         if (!string.IsNullOrEmpty(currentRefreshToken))
             await refreshTokens.RevokeByHashAsync(tokens.Hash(currentRefreshToken), account.Id, Now, ct);
-        var issued = await IssueAsync(account, session.Value, ipAddress, null, ct);
+        var issued = (await IssueAsync(account, session.Value, ipAddress, null, ct))!;
         logger.LogInformation("User {UserId} switched to location {LocationId} as {Role}", account.Id, session.Value.Active?.Id, session.Value.Role);
         return AuthOutcome.Success(issued);
     }
