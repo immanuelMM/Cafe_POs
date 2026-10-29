@@ -217,6 +217,8 @@ jobs:
             backend/Directory.Build.props
             backend/global.json
       - run: dotnet tool restore
+      # `migrations bundle -r` builds for the RID but does not restore, so a fresh runner needs RID-specific assets first.
+      - run: dotnet restore src/CafePos.Infrastructure -r linux-x64
       # The bundle is applied as a reviewed pre-deploy step. Building it never connects; the design-time factory only needs the
       # variable to exist, so a placeholder is enough (the real connection string is passed when the bundle runs).
       - name: Build the bundle (linux-x64, self-contained)

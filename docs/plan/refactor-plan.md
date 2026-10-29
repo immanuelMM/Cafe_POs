@@ -15,7 +15,7 @@ Decisions taken on the open questions: access token stays 30 min (Q2), refresh c
 
 - Add a `ForwardLimit` setting to `ForwardedHeadersSetup` for multi-proxy setups such as Azure Front Door in front of the ingress.
 - Add an E2E test (two tabs) for the cross-tab refresh Web Lock; today only the client unit tests cover it.
-- CI (`.github/workflows/ci.yml`) has not run on GitHub yet: the repo has no remote.
+- CI (`.github/workflows/ci.yml`) first ran on GitHub on 2026-10-29 (remote `origin`); keep it green before new feature work.
 - The modifier `active` toggle in the UI is dead: the backend ignores `active` on an individual modifier. Decide whether to honor it or remove the toggle.
 - Enum-like fields (roles, order status, stock movement reason, ...) are plain strings in the OpenAPI contract; model them as enums and regenerate.
 - 4xx responses (400, 401, 403, 404, 409, 422, 423, 429) are not documented in the OpenAPI contract.
