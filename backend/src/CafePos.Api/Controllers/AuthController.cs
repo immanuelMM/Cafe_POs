@@ -9,12 +9,12 @@ namespace CafePos.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
-public class AuthController(AuthService auth) : ControllerBase
+public class AuthController(AuthService auth, IWebHostEnvironment env) : ControllerBase
 {
     private const string RefreshCookie = "cafepos_refresh";
     private const string RefreshCookiePath = "/api/v1/auth";
 
-    private string? Ip => HttpContext.Connection.RemoteIpAddress?.ToString();
+    private string? Ip => ClientIp.Of(HttpContext);
 
     private string? CurrentRefreshToken => Request.Cookies.TryGetValue(RefreshCookie, out var raw) ? raw : null;
 
@@ -75,7 +75,8 @@ public class AuthController(AuthService auth) : ControllerBase
         Response.Cookies.Append(RefreshCookie, session.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = Request.IsHttps,
+            // Only Development (plain-http localhost) may send the cookie without Secure; every other environment sits behind TLS.
+            Secure = !env.IsDevelopment() || Request.IsHttps,
             SameSite = SameSiteMode.Lax,
             Path = RefreshCookiePath,
             Expires = session.RefreshTokenExpiresAt

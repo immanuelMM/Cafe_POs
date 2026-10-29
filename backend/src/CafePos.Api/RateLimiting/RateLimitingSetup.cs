@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
+using CafePos.Api.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
@@ -22,8 +23,15 @@ public static class RateLimitingSetup
             var logger = loggers.CreateLogger("CafePos.Api.RateLimiting");
             limiter.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+            // The global limiter runs before the endpoint policy: the coarse per-IP login budget sits next to the per-IP+email one.
+            limiter.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
+                HttpMethods.IsPost(http.Request.Method) && http.Request.Path.Equals("/api/v1/auth/login", StringComparison.OrdinalIgnoreCase)
+                    ? Partition(settings.Enabled, settings.LoginPerIp, $"login-ip:{Ip(http)}")
+                    : RateLimitPartition.GetNoLimiter("none"));
             limiter.AddPolicy(RateLimitPolicies.Login, http =>
-                Partition(settings.Enabled, settings.Login, $"login:{Ip(http)}|{http.Items[LoginEmailCaptureMiddleware.ItemKey]}"));
+                Partition(settings.Enabled, settings.Login, $"login:{Ip(http)}|{http.Items[RateLimitKeyCaptureMiddleware.LoginEmailItem]}"));
+            limiter.AddPolicy(RateLimitPolicies.TimeclockPunch, http =>
+                Partition(settings.Enabled, settings.TimeclockPunch, $"punch:{Ip(http)}|{http.Items[RateLimitKeyCaptureMiddleware.PunchUserItem]}"));
             limiter.AddPolicy(RateLimitPolicies.Refresh, http =>
                 Partition(settings.Enabled, settings.Refresh, $"refresh:{Ip(http)}"));
             limiter.AddPolicy(RateLimitPolicies.SwitchLocation, http =>
@@ -52,7 +60,7 @@ public static class RateLimitingSetup
         return services;
     }
 
-    private static string Ip(HttpContext http) => http.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    private static string Ip(HttpContext http) => ClientIp.Of(http) ?? "unknown";
 
     private static RateLimitPartition<string> Partition(bool enabled, RateLimitRule rule, string key) =>
         enabled

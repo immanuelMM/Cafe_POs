@@ -1,4 +1,5 @@
 using CafePos.Api;
+using CafePos.Api.Http;
 using CafePos.Api.RateLimiting;
 using CafePos.Application;
 using CafePos.Infrastructure;
@@ -35,8 +36,19 @@ if (!BuildEnvironment.IsOpenApiGeneration)
     }
 }
 
+// First, so every later component (HTTPS redirection, CORS, rate limiting, cookies) sees the client address and scheme set by a
+// trusted proxy. Not added when no proxy is configured: an empty trust list would mean "trust everyone".
+if (app.Services.GetRequiredService<IOptions<ForwardedHeadersSettings>>().Value.HasTrustedProxies)
+    app.UseForwardedHeaders();
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -45,7 +57,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("frontend");
-app.UseMiddleware<LoginEmailCaptureMiddleware>();
+app.UseMiddleware<RateLimitKeyCaptureMiddleware>();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();

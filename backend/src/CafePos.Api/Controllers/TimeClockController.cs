@@ -3,6 +3,8 @@ using CafePos.Application.Features.TimeClock;
 using CafePos.Application.Features.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using CafePos.Api.RateLimiting;
 
 namespace CafePos.Api.Controllers;
 
@@ -20,6 +22,7 @@ public class TimeClockController(TimeClockService timeClock) : ControllerBase
         (await timeClock.StaffAsync(ct)).ToActionResult();
 
     [HttpPost("punch")]
+    [EnableRateLimiting(RateLimitPolicies.TimeclockPunch)]
     public async Task<ActionResult<PunchResultDto>> Punch(PunchRequest req, CancellationToken ct) =>
         (await timeClock.PunchAsync(req, ct)).ToActionResult();
 

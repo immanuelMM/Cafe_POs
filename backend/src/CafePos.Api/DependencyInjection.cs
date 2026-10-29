@@ -44,9 +44,15 @@ public static class DependencyInjection
             });
         services.AddAuthorization(Policies.Register);
         services.AddAuthRateLimiting();
+        services.AddProxyTrust();
 
         services.AddControllers(o => o.Filters.Add<FluentValidationFilter>())
-            .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            .AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                // Bodies are bound case-insensitively; a repeated key (also "email" + "Email") is ambiguous, so refuse it with a 400.
+                o.JsonSerializerOptions.AllowDuplicateProperties = false;
+            });
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
