@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import type { components } from '../../api/schema'
 import type { AssignableRole } from '../../api/types'
 import { client, unwrap } from '../../lib/apiClient'
 
@@ -17,13 +18,7 @@ export const useUser = (id: string) =>
     queryFn: () => unwrap(client.GET('/api/v1/users/{id}', { params: { path: { id } } })),
   })
 
-export interface NewUserInput {
-  email: string
-  displayName: string
-  password: string
-  isOwner?: boolean
-  assignments: { locationId: string; role: AssignableRole }[]
-}
+export type NewUserInput = components['schemas']['CreateUserRequest']
 
 export const userCalls = {
   create: (body: NewUserInput) => unwrap(client.POST('/api/v1/users', { body })),
