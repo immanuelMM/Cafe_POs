@@ -109,8 +109,8 @@
     }
   }
   .tile {
-    min-height: max(var(--tile-min-h), 120px);
-    padding: var(--sp-3);
+    min-height: 140px;
+    padding: var(--sp-3) var(--sp-3) var(--sp-4);
     background: var(--surface);
     color: var(--ink);
     border: 2px solid var(--line);
@@ -160,7 +160,7 @@
     -webkit-touch-callout: none;
   }
   .tile-name {
-    font-size: var(--fs-lg);
+    font-size: var(--fs-xl);
     font-weight: 600;
     line-height: 1.25;
     display: -webkit-box;
@@ -168,11 +168,11 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
     overflow: hidden;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   .tile-price {
     color: var(--accent);
-    font-size: var(--fs-xl);
+    font-size: var(--fs-2xl);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
@@ -647,13 +647,13 @@
       display: block;
       grid-column: 2;
       grid-row: 1;
-      padding: var(--sp-3) var(--pad-page) 0;
+      padding: var(--sp-3) var(--sp-3) 0;
     }
     .pos-search .search {
       min-height: 56px;
     }
     .pos-search-clear {
-      right: calc(var(--pad-page) + var(--sp-1));
+      right: calc(var(--sp-3) + var(--sp-1));
     }
     .pos-search-toggle {
       display: none;
@@ -664,7 +664,14 @@
       min-height: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding: var(--sp-3) var(--pad-page) var(--pad-page);
+      padding: var(--sp-3) var(--sp-3) var(--sp-4);
+    }
+    .tiles {
+      gap: var(--sp-2);
+    }
+    .tile {
+      min-height: 164px;
+      padding-inline: 10px;
     }
     .cart-bar,
     .cart-close {
@@ -687,7 +694,7 @@
   }
   @media (min-width: 960px) and (min-height: 500px) {
     .pos {
-      --cats-w: 176px;
+      --cats-w: 144px;
       grid-template-columns: minmax(0, 1fr) var(--cart-w);
       grid-template-rows: minmax(0, 1fr);
     }
