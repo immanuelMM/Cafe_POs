@@ -23,7 +23,7 @@ Not built yet: `/reports/*` endpoints, a refund endpoint, enforcement of `lowSto
 Prerequisite: Docker (running). From the repo root:
 
 ```bash
-docker compose up -d --build   # frontend http://localhost:5173, API http://localhost:5080 (Swagger at /swagger), PostgreSQL localhost:5433
+docker compose up -d --build   # frontend http://localhost:5173, API http://localhost:5080 (Scalar API docs at /scalar/v1), PostgreSQL localhost:5433
 docker compose logs -f         # follow logs
 docker compose down            # stop (data kept); `docker compose down -v` also wipes the database
 ```
@@ -38,7 +38,7 @@ Prerequisites: .NET SDK 10.0.x, Docker (running), Node 20+.
 # Database (from the repo root)
 docker compose up -d --wait db
 
-# Backend (http://localhost:5080, Swagger at /swagger)
+# Backend (http://localhost:5080, Scalar at /scalar/v1)
 cd backend
 dotnet run --project src/CafePos.Api
 
@@ -81,4 +81,4 @@ Every session works in exactly one **active location**, carried in the access to
 
 - API contracts: [`docs/api/phase1-api.md`](docs/api/phase1-api.md) (base contract) and [`docs/api/phase2-api.md`](docs/api/phase2-api.md) (multi-location changes, applied on top of Phase 1)
 - Plan and decisions: [`docs/plan/cafe-pos-inventory-plan.md`](docs/plan/cafe-pos-inventory-plan.md)
-- Interactive API docs (Development): http://localhost:5080/swagger
+- Interactive API docs (Development): http://localhost:5080/scalar/v1 (OpenAPI 3.1 document at /openapi/v1.json; committed snapshot in `backend/openapi/v1.json`)

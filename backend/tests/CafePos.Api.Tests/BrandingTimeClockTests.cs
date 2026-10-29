@@ -107,9 +107,9 @@ public class BrandingTests
     }
 
     [Fact]
-    public async Task Swagger_document_generates()
+    public async Task OpenApi_document_generates()
     {
-        (await _f.CreateClient().GetAsync("/swagger/v1/swagger.json")).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await _f.CreateClient().GetAsync("/openapi/v1.json")).StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 }
 

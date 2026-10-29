@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using CafePos.Api.Data;
@@ -10,7 +11,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,28 +80,28 @@ builder.Services.AddCors(o => o.AddPolicy("frontend", p => p
     .AllowCredentials()
     .WithExposedHeaders("Idempotent-Replayed")));
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddOpenApi(o =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Cafe POS API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT", In = ParameterLocation.Header,
-        Description = "Paste the accessToken returned by POST /api/v1/auth/login."
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, Array.Empty<string>() }
-    });
+    o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
+    o.AddDocumentTransformer<OpenApiDocumentSetup>();
+    o.AddSchemaTransformer<NumericSchemaTransformer>();
+    o.AddOperationTransformer<MultipartUploadOperationTransformer>();
 });
 
 var app = builder.Build();
 
-var jwtKey = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value.Key;
-if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
-    throw new InvalidOperationException("Jwt:Key must be set (min 32 characters). Supply it via the Jwt__Key environment variable or user-secrets; it is never committed.");
+// Build-time OpenAPI generation (Microsoft.Extensions.ApiDescription.Server / GetDocument.Insider) runs this file up to
+// app.Run(); it must not need a signing key or touch the database.
+var isBuildTimeGeneration = Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider";
 
-if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+if (!isBuildTimeGeneration)
+{
+    var jwtKey = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value.Key;
+    if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+        throw new InvalidOperationException("Jwt:Key must be set (min 32 characters). Supply it via the Jwt__Key environment variable or user-secrets; it is never committed.");
+}
+
+if (!isBuildTimeGeneration && app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<CafeDbContext>();
@@ -113,8 +115,8 @@ app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi().AllowAnonymous();                                    // /openapi/v1.json
+    app.MapScalarApiReference(o => o.WithTitle("Cafe POS API")).AllowAnonymous(); // /scalar/v1
 }
 
 app.UseCors("frontend");

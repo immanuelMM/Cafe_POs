@@ -2,7 +2,7 @@
 
 Base URL (dev): `http://localhost:5080`  
 All routes are under `/api/v1`. JSON in and out, `camelCase` property names, enums as strings, GUIDs as strings.  
-Swagger UI (Development only): `http://localhost:5080/swagger`.  
+Interactive API docs (Development only): `http://localhost:5080/scalar/v1`; OpenAPI document: `http://localhost:5080/openapi/v1.json`.  
 CORS allows `http://localhost:5173` (Vite) with credentials. Response header `Idempotent-Replayed` is exposed to the browser.
 
 Phase 1 scope: one location, online only, cash only. Every location-scoped row already carries a `locationId`; the server derives it from the token (never send it from the client).

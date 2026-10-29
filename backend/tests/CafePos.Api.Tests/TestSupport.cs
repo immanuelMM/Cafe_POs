@@ -129,7 +129,7 @@ internal static class PostgresContainer
         // ("client version 1.44 is too new"). Pin an older, universally supported API version unless the caller chose one.
         if (Environment.GetEnvironmentVariable("DOCKER_API_VERSION") is null)
             Environment.SetEnvironmentVariable("DOCKER_API_VERSION", "1.43");
-        var c = new PostgreSqlBuilder().WithImage("postgres:16-alpine").Build();
+        var c = new PostgreSqlBuilder("postgres:16-alpine").Build();
         c.StartAsync().GetAwaiter().GetResult();
         AppDomain.CurrentDomain.ProcessExit += (_, _) => { try { c.DisposeAsync().AsTask().GetAwaiter().GetResult(); } catch { } };
         return c;

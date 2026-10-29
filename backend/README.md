@@ -13,7 +13,7 @@ docker compose up -d --wait db          # from the repo root: PostgreSQL 16 on l
 cd backend
 dotnet run --project src/CafePos.Api    # http://localhost:5080  (Development)
 ```
-In Development the app applies migrations and seeds dev data on startup (empty DB only). Swagger: http://localhost:5080/swagger
+In Development the app applies migrations and seeds dev data on startup (empty DB only). Scalar API docs: http://localhost:5080/scalar/v1
 
 ### Seeded dev accounts
 Created by `Data/DevDataSeeder.cs` on an empty database. Passwords are dev-only seed values.
@@ -79,3 +79,13 @@ tests/CafePos.Api.Tests
 - **Roles**: `Cashier`/`Manager`/`Admin` are per-location roles stored as staff assignments; `Owner` is a flag on the user (no assignments, all locations). Admins are confined to their active location.
 - **Access token revocation**: access tokens (30 min) are not re-checked against the database per request. After a user is deactivated or an assignment is removed, an already-issued access token keeps working until it expires. Lockout is enforced at `login`, `refresh`, `switch-location` and `GET /auth/me`, and the user's refresh tokens (for an Admin's location-scoped removal, those bound to that location) are revoked. This window is accepted.
 - **Orders**: client-generated order GUIDs; `Idempotency-Key` header on `POST /orders/{id}/complete`.
+
+## OpenAPI contract
+
+The API contract is `backend/openapi/v1.json` (OpenAPI 3.1, committed; the frontend generates its types from it). Regenerate it after changing routes or DTOs:
+
+```
+cd backend && dotnet build src/CafePos.Api -p:OpenApiGenerateDocuments=true
+```
+
+`ContractTests` fail when the live document differs from the committed file, and also pin the access-token claims and refresh-cookie attributes. Build-time generation skips the JWT key check, migrations and seeding, so it needs no database or secrets.
