@@ -71,6 +71,20 @@ test.describe('accessibility (axe) @a11y', () => {
     await scan(page)
   })
 
+  test('POS done state (paid, receipt shown)', async ({ page }) => {
+    await loginViaUi(page, USERS.cashier)
+    await page.locator('button.tile', { hasText: 'Butter Croissant' }).click()
+    const bar = page.getByRole('button', { name: 'Open current order' })
+    if (await bar.isVisible()) await bar.click()
+    await page.getByRole('button', { name: /^Charge/ }).click()
+    const pay = page.getByRole('dialog', { name: 'Cash payment' })
+    await pay.getByRole('button', { name: 'Exact' }).click()
+    await pay.getByRole('button', { name: /Complete payment/ }).click()
+    const paid = page.getByRole('dialog', { name: /Order #\d+ paid/ })
+    await expect(paid.getByRole('article')).toBeVisible()
+    await scan(page)
+  })
+
   test('order history', async ({ page }) => {
     await loginViaUi(page, USERS.cashier)
     await page.getByRole('link', { name: 'Orders' }).click()
