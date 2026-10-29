@@ -1,3 +1,4 @@
+using CafePos.Application.Common;
 using CafePos.Api.Dtos;
 using CafePos.Api.Infrastructure;
 using CafePos.Api.Services;

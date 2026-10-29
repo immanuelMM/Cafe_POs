@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace CafePos.Api.Data.Migrations
+namespace CafePos.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class BrandSettings : Migration

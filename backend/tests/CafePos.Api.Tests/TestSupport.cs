@@ -1,7 +1,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CafePos.Api.Data;
+using CafePos.Application.Common;
+using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 using CafePos.Infrastructure.Identity;
 using CafePos.Api.Dtos;
@@ -25,19 +26,31 @@ namespace CafePos.Api.Tests;
 /// </summary>
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
-    private readonly string _dbName = "cafepos_test_" + Guid.NewGuid().ToString("N");
+    private readonly string _dbName;
+    private readonly bool _seedDevData;
     private readonly NpgsqlConnectionStringBuilder _csb;
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
-    public ApiFactory()
+    public ApiFactory() : this("cafepos_test_" + Guid.NewGuid().ToString("N"), true)
     {
+    }
+
+    /// <summary>Boots the API against an existing database (for example one restored from a pre-refactor dump).</summary>
+    internal ApiFactory(string databaseName, bool seedDevData)
+    {
+        _dbName = databaseName;
+        _seedDevData = seedDevData;
         var baseCs = Environment.GetEnvironmentVariable("TEST_PG_CONNECTION")
                      ?? PostgresContainer.ConnectionString;
         _csb = new NpgsqlConnectionStringBuilder(baseCs) { Database = _dbName };
     }
 
     public string ConnectionString => _csb.ConnectionString;
+
+    /// <summary>Connection string of the shared server (database "postgres"), for tests that manage their own databases.</summary>
+    internal static string AdminConnectionString =>
+        new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("TEST_PG_CONNECTION") ?? PostgresContainer.ConnectionString) { Database = "postgres", Pooling = false }.ConnectionString;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -47,7 +60,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
             ["ConnectionStrings:Default"] = ConnectionString,
             ["Jwt:Key"] = "test-signing-key-test-signing-key-test-signing-key",
             ["Database:MigrateOnStartup"] = "true",
-            ["Database:SeedDevData"] = "true"
+            ["Database:SeedDevData"] = _seedDevData ? "true" : "false"
         }));
     }
 

@@ -2,7 +2,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using CafePos.Api.Data;
+using CafePos.Application.Common;
+using CafePos.Infrastructure.Persistence;
 
 namespace CafePos.Api.Tests;
 

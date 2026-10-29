@@ -1,5 +1,6 @@
 using System.Security.Claims;
-using CafePos.Api.Data;
+using CafePos.Application.Common;
+using CafePos.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -104,17 +105,4 @@ public static class ClaimsExtensions
             : user.IsOwner()
                 ? throw new ApiException(400, "Location required", "This Owner session has no active location. Call POST /api/v1/auth/switch-location first.")
                 : throw new ApiException(401, "Unauthorized", "Token has no active location.");
-}
-
-/// <summary>Offset pagination envelope.</summary>
-public record PagedResult<T>(IReadOnlyList<T> Data, int Page, int PageSize, int TotalCount)
-{
-    public int TotalPages => PageSize == 0 ? 0 : (int)Math.Ceiling(TotalCount / (double)PageSize);
-}
-
-public static class Paging
-{
-    public const int MaxPageSize = 100;
-    public static (int page, int pageSize) Normalize(int? page, int? pageSize) =>
-        (Math.Max(1, page ?? 1), Math.Clamp(pageSize ?? 20, 1, MaxPageSize));
 }

@@ -2,8 +2,9 @@ using CafePos.Domain;
 using CafePos.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CafePos.Api.Data;
+namespace CafePos.Infrastructure.Persistence;
 
 /// <summary>
 /// Development seed data (runs only when Database:SeedDevData is true, and only on an empty database).

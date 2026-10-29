@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CafePos.Api.Data.Migrations
+namespace CafePos.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class BrandingAssetsAndTimeClock : Migration
