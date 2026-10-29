@@ -13,7 +13,7 @@ Decisions taken on the open questions: access token stays 30 min (Q2), refresh c
 
 ### Known follow-ups (not scheduled)
 
-- Add a `ForwardLimit` setting to `ForwardedHeadersSetup` for multi-proxy setups such as Azure Front Door in front of the ingress.
+- ~~Add a `ForwardLimit` setting to `ForwardedHeadersSetup`~~ done (`ForwardedHeaders__ForwardLimit`, default 1); the Render Blueprint uses 2 (see `docs/deployment.md`, "Render").
 - Add an E2E test (two tabs) for the cross-tab refresh Web Lock; today only the client unit tests cover it.
 - CI (`.github/workflows/ci.yml`) first ran on GitHub on 2026-10-29 (remote `origin`); keep it green before new feature work.
 - The modifier `active` toggle in the UI is dead: the backend ignores `active` on an individual modifier. Decide whether to honor it or remove the toggle.

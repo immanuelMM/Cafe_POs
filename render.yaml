@@ -1,0 +1,112 @@
+# Render Blueprint for the Cafe POS. Step-by-step guide: docs/deployment.md ("Render").
+# Free plan now; to go paid, change the `plan:` lines and follow "Upgrading to paid" in that guide.
+#
+# NAMES MATTER. The service names become the URLs (https://cafe-pos-api.onrender.com, https://cafe-pos-web.onrender.com).
+# If a name is taken Render appends a suffix; then update, to the real URLs: Cors__Origins__0, the /api rewrite destination
+# and VITE_API_BASE_URL below (see the guide). Pick unique names up front (find/replace "cafe-pos-").
+
+databases:
+  - name: cafe-pos-db
+    plan: free                  # free DBs expire after 30 days (14 days grace), 1 GB, one free DB per workspace
+    postgresMajorVersion: "16"  # keep major 16 (cannot be changed after creation)
+    databaseName: cafepos
+    user: cafepos
+    region: oregon
+
+services:
+  # ---------------------------------------------------------------- API (Docker)
+  - type: web
+    name: cafe-pos-api
+    runtime: docker
+    plan: free                  # sleeps after 15 min idle; ~1 min cold start
+    region: oregon              # same region as the database so the internal host works
+    dockerfilePath: ./deploy/render/api.Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health/live   # liveness only: a DB hiccup must not make Render restart the API
+    autoDeployTrigger: checksPass   # deploy only after GitHub CI passes
+    buildFilter:
+      paths:
+        - backend/**
+        - deploy/render/**
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      # Database: api.Dockerfile's entrypoint assembles ConnectionStrings__Default from these.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cafe-pos-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: cafe-pos-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: cafe-pos-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: cafe-pos-db
+          property: database
+      - key: Jwt__Key
+        generateValue: true
+      # Free plan: apply migrations at startup (retries until the DB answers). On a paid plan set this to "false" and use a
+      # preDeployCommand instead (docs/deployment.md, "Upgrading to paid").
+      - key: Database__MigrateOnStartup
+        value: "true"
+      - key: Database__SeedDevData
+        value: "false"
+      # The browser talks to the static site's origin and /api/* is proxied to this service, so this only covers direct calls.
+      - key: Cors__Origins__0
+        value: https://cafe-pos-web.onrender.com
+      # Forwarded headers: TLS ends at Render's proxy. Trusted = private ranges only (the container is not reachable from the
+      # internet, so only Render's own proxy can connect from them). UNVERIFIED, confirm after first deploy (guide).
+      - key: ForwardedHeaders__KnownNetworks__0
+        value: 10.0.0.0/8
+      - key: ForwardedHeaders__KnownNetworks__1
+        value: 172.16.0.0/12
+      - key: ForwardedHeaders__KnownNetworks__2
+        value: 192.168.0.0/16
+      - key: ForwardedHeaders__KnownNetworks__3
+        value: 100.64.0.0/10
+      - key: ForwardedHeaders__KnownNetworks__4
+        value: fc00::/7
+      # Hops to unwind: Render's load balancer + the static site's /api proxy = 2. A hop is only unwound if the address before
+      # it is trusted, so until the proxy's egress range is added (guide) this behaves like 1 and is never spoofable.
+      - key: ForwardedHeaders__ForwardLimit
+        value: "2"
+      # First owner: type these in the dashboard when creating the Blueprint; remove them after the first login.
+      - key: Bootstrap__OwnerEmail
+        sync: false
+      - key: Bootstrap__OwnerPassword
+        sync: false
+      - key: Bootstrap__OwnerName
+        sync: false
+      - key: Bootstrap__LocationName
+        sync: false
+
+  # ---------------------------------------------------------------- Frontend (static site)
+  - type: web
+    name: cafe-pos-web
+    runtime: static
+    autoDeployTrigger: checksPass
+    buildFilter:
+      paths:
+        - frontend/**
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Absolute, must end in /api/v1. Same origin as the site: /api/* below is proxied to the API, which keeps the
+      # SameSite=Lax refresh cookie first-party (onrender.com is on the Public Suffix List, so web and api are different sites).
+      - key: VITE_API_BASE_URL
+        value: https://cafe-pos-web.onrender.com/api/v1
+    routes:
+      # Order matters (first match wins): API proxy before the SPA fallback.
+      - type: rewrite
+        source: /api/*
+        destination: https://cafe-pos-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
