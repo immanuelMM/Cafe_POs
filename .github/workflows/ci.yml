@@ -175,6 +175,7 @@ jobs:
           npx playwright install --with-deps chromium
       # The E2E override uses its own DB volume and turns the auth rate limiter off (many fresh logins from one IP).
       - name: Start the stack (db + api + web)
+        id: stack
         run: docker compose -f docker-compose.yml -f e2e/docker-compose.e2e.yml up -d --build --wait --wait-timeout 300
       # Projects run in sequence (plan section 6): the functional suite on tablet-landscape (1180x820), then only the
       # @layout/@a11y specs on the other viewports. Each step writes its own report/output dir so none is overwritten.
@@ -192,7 +193,8 @@ jobs:
             npm run test:e2e
           fi
       - name: Run Playwright layout + a11y on the other viewports
-        if: ${{ !cancelled() }}
+        # Still runs after a functional failure, but not when the stack never came up.
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
         working-directory: e2e
         env:
           CI: "true"
