@@ -1,0 +1,23 @@
+{
+  "name": "cafe-pos-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "stack:up": "docker compose -f ../docker-compose.yml -f docker-compose.e2e.yml up -d --build --wait",
+    "stack:down": "docker compose -f ../docker-compose.yml -f docker-compose.e2e.yml down",
+    "stack:reset": "docker compose -f ../docker-compose.yml -f docker-compose.e2e.yml down -v",
+    "install:browsers": "playwright install chromium",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:a11y": "playwright test --grep @a11y",
+    "test:e2e:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^20.19.43",
+    "typescript": "~5.6"
+  }
+}

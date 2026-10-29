@@ -1,0 +1,14 @@
+# Overrides for E2E runs only (never for production):
+#   docker compose -f docker-compose.yml -f e2e/docker-compose.e2e.yml up -d --build --wait
+# - Uses its OWN database volume, so the suite always starts from the pristine DevDataSeeder data and never
+#   touches (or depends on) your hand-edited dev database. `docker compose down -v` with this override only
+#   deletes the E2E volume.
+# - Turns off the login/refresh/switch-location rate limiter so many fresh logins from one IP do not trip 429.
+# It reuses the same ports/container names as the dev stack, so stop the dev stack first (`docker compose down`).
+services:
+  api:
+    environment:
+      RateLimiting__Enabled: 'false'
+volumes:
+  cafepos-pgdata:
+    name: cafepos-e2e-pgdata
