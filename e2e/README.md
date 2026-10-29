@@ -39,3 +39,7 @@ export E2E_BASE_URL=http://localhost:15173 E2E_API_URL=http://localhost:15080
 node visual.mjs capture   # writes e2e/.visual-baseline-m1/*.png (git-ignored, Windows-rendered, same machine only)
 node visual.mjs compare   # re-captures to _current/, writes _diff/*.png and prints % differing pixels per screenshot
 ```
+
+## Projects (viewports)
+
+`playwright.config.ts` defines tablet-landscape 1180x820 (full functional suite), large 1366x1024, small-landscape 1133x744, tablet-portrait 820x1180 and phone 390x844 (only specs tagged `@layout` / `@a11y`). Run one at a time: `npx playwright test --project=phone`. `npm run test:e2e` = tablet-landscape; `npm run test:e2e:layout` = the other four. Layout helpers live in `support/layout.ts`; axe known-violation allowlist is in `tests/a11y.spec.ts`.

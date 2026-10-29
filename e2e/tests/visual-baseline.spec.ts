@@ -21,6 +21,9 @@ const VIEWPORTS = [
 const FIXED_ISO = '2026-01-15T03:30:00.000Z'
 const PIN = '4821'
 
+test.beforeEach(({}, testInfo) => {
+  test.skip(testInfo.project.name !== 'tablet-landscape', 'uses its own viewports; run on one project')
+})
 test.skip(!VISUAL_MODE, 'set VISUAL_MODE=capture|compare (node visual.mjs) to run the M1 visual baseline')
 
 /** Stable data for the endpoints whose real content changes from run to run. */

@@ -8,11 +8,12 @@
     "stack:down": "docker compose -f ../docker-compose.yml -f docker-compose.e2e.yml down",
     "stack:reset": "docker compose -f ../docker-compose.yml -f docker-compose.e2e.yml down -v",
     "install:browsers": "playwright install chromium",
-    "test:e2e": "playwright test",
-    "test:e2e:smoke": "playwright test --grep @smoke",
-    "test:e2e:a11y": "playwright test --grep @a11y",
+    "test:e2e": "playwright test --project=tablet-landscape",
+    "test:e2e:smoke": "playwright test --project=tablet-landscape --grep @smoke",
+    "test:e2e:a11y": "playwright test --project=tablet-landscape --project=phone --grep @a11y",
     "test:e2e:ui": "playwright test --ui",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e:layout": "playwright test --project=large --project=small-landscape --project=tablet-portrait --project=phone --grep \"@layout|@a11y\""
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
