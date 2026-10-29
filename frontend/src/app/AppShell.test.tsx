@@ -81,15 +81,30 @@ describe('AppShell navigation', () => {
     expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument()
   })
 
-  it('moves the account details and location switcher into the Account popover', async () => {
+  it('keeps the location switcher always visible and puts account details in the Account popover', async () => {
     const user = userEvent.setup()
     signIn({ displayName: 'Casey Cashier' })
     renderShell()
+    // Location is directly on screen (not inside a popover) ...
+    expect(screen.getByText(/Main Branch/)).toBeInTheDocument()
     expect(screen.queryByText('Casey Cashier')).not.toBeInTheDocument()
 
+    // ... while name, role and Full screen live in the popover.
     await user.click(screen.getByRole('button', { name: 'Account' }))
     const pop = screen.getByRole('dialog', { name: 'Account' })
     expect(within(pop).getByText('Casey Cashier')).toBeInTheDocument()
-    expect(within(pop).getByText(/Main Branch/)).toBeInTheDocument()
+    expect(within(pop).queryByText(/Main Branch/)).not.toBeInTheDocument()
+  })
+
+  it('shows the Active location combobox for multi-location staff without opening anything', () => {
+    signIn({
+      role: 'Manager',
+      locations: [
+        { locationId: 'loc-main', locationName: 'Main Branch', role: 'Manager' },
+        { locationId: 'loc-up', locationName: 'Uptown Branch', role: 'Manager' },
+      ],
+    })
+    renderShell()
+    expect(screen.getByRole('combobox', { name: 'Active location' })).toBeInTheDocument()
   })
 })

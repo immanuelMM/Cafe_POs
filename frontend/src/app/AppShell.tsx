@@ -86,7 +86,6 @@ function AccountPopover({ onClose }: { onClose: () => void }) {
         <strong>{user?.displayName}</strong>
         <small>{user?.role}</small>
       </p>
-      <LocationSwitcher />
       {fs.available && (
         <button type="button" className="btn btn-sm btn-block" onClick={fs.toggle}>
           <IconMaximize size={20} />
@@ -190,11 +189,16 @@ export function AppShell() {
         </div>
         <span className="appbar-title">{title}</span>
       </header>
-      <main className="main">
-        <Suspense fallback={<Spinner label="Loading…" />}>
-          <Outlet />
-        </Suspense>
-      </main>
+      <div className="content">
+        <div className="context-bar">
+          <LocationSwitcher />
+        </div>
+        <main className="main">
+          <Suspense fallback={<Spinner label="Loading…" />}>
+            <Outlet />
+          </Suspense>
+        </main>
+      </div>
       {accountOpen && <AccountPopover onClose={() => setAccountOpen(false)} />}
       {moreOpen && (
         <Modal title="More" onClose={() => setMoreOpen(false)}>

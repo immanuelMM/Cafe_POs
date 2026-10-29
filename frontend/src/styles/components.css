@@ -503,19 +503,28 @@
   .key:disabled {
     opacity: 0.45;
   }
-  /* Location switcher inside the Account popover (light surface, not the brand bar) */
-  .account-pop .loc-switch,
-  .account-pop .loc-label {
+  /* Location switcher in the context bar: light surface on tablets, brand bar on compact */
+  .context-bar .loc-switch,
+  .context-bar .loc-label {
     color: var(--ink);
   }
-  .account-pop .loc-switch select {
-    flex: 1;
-    max-width: none;
-    min-height: var(--tap);
+  .context-bar .loc-switch select {
+    min-height: var(--tap-min);
+    max-width: 320px;
     border: 2px solid var(--line-strong);
   }
-  .account-pop .loc-switch {
-    width: 100%;
+  @media (max-width: 599px), (max-height: 499px) {
+    .context-bar .loc-switch,
+    .context-bar .loc-label {
+      color: var(--on-brand);
+    }
+    .context-bar .loc-switch select,
+    .context-bar .loc-label {
+      max-width: 160px;
+    }
+    .context-bar .loc-switch select {
+      border-color: transparent;
+    }
   }
   .loc-switch,
   .loc-label {

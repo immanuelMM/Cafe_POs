@@ -26,7 +26,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 64px;
+    min-height: 48px;
     font-size: 1.6rem;
   }
   .rail-brand .brand-logo {
@@ -38,7 +38,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     padding: 0 4px;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -60,13 +60,14 @@
   }
   .rail-link {
     flex: none;
-    min-height: 72px;
-    padding: 6px 2px;
+    /* 72px on tall screens; shrinks (never below 56px) so an owner's nine links and the footer fit at 744px */
+    min-height: clamp(56px, 7.8dvh, 72px);
+    padding: 2px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
     border: 0;
     border-radius: var(--r-md);
     background: transparent;
@@ -78,6 +79,15 @@
     text-align: center;
     text-decoration: none;
     cursor: pointer;
+  }
+  .rail-link .icon {
+    width: 22px;
+    height: 22px;
+  }
+  @media (max-height: 800px) {
+    .rail-brand {
+      display: none;
+    }
   }
   .rail-link:not(.active) {
     opacity: 0.85;
@@ -104,9 +114,30 @@
   .appbar {
     display: none;
   }
-  .main {
+  .content {
     grid-column: 2;
     grid-row: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Always-visible context row (active location). Tablets: slim bar above the page; compact: inside the app bar. */
+  .context-bar {
+    flex: none;
+    min-height: 56px;
+    padding: 4px var(--pad-page);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .context-bar:empty {
+    display: none;
+  }
+  .main {
+    flex: 1;
     min-width: 0;
     min-height: 0;
     overflow-y: auto;
@@ -248,16 +279,28 @@
       align-items: center;
       gap: 12px;
       min-height: calc(var(--appbar-h) + env(safe-area-inset-top));
-      padding: env(safe-area-inset-top) calc(2 * var(--tap-min) + 12px) 0 calc(12px + env(safe-area-inset-left));
+      padding: env(safe-area-inset-top) calc(2 * var(--tap-min) + 176px) 0 calc(12px + env(safe-area-inset-left));
       background: var(--nav-bg);
       color: var(--nav-fg);
     }
     .appbar .brand-name {
       display: none;
     }
-    .main {
+    .content {
       grid-column: 1;
       grid-row: 2;
+    }
+    .context-bar {
+      position: fixed;
+      z-index: 21;
+      top: env(safe-area-inset-top);
+      right: calc(env(safe-area-inset-right) + 2 * var(--tap-min) + 8px);
+      height: var(--appbar-h);
+      min-height: 0;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      color: var(--nav-fg);
     }
     .account-pop {
       left: auto;

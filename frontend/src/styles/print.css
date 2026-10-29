@@ -30,6 +30,7 @@
   }
   body.print-banner .rail,
   body.print-banner .appbar,
+  body.print-banner .context-bar,
   body.print-banner .no-print {
     display: none !important;
   }
