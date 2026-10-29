@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router'
 import { ErrorBox, Spinner } from '../../components/ui'
-import { useDesign } from './designApi'
+import { useDesign } from './useDesign'
 import { StudioEditor } from './StudioEditor'
 import { useStudio } from './store'
 import type { DesignKind } from './types'

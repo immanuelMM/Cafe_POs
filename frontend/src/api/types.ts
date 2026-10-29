@@ -33,6 +33,7 @@ export type Payment = S['PaymentDto']
 export type Receipt = S['ReceiptDto']
 
 export type Branding = S['BrandingDto']
+export type BrandDesign = S['BrandDesignDto']
 export type TimeClockStaff = S['TimeClockStaffDto']
 export type TimeEntry = S['TimeEntryDto']
 export type PunchResult = S['PunchResultDto']

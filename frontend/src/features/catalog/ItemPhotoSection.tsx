@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { errorMessage } from '../../lib/errors'
 import type { Item } from '../../api/types'
-import { assetUrl } from '../branding/brandingApi'
+import { assetUrl } from '../branding/useBranding'
 import { LogoEditor } from '../branding/LogoEditor'
 import { catalogCalls, useCatalogMutation } from './useCatalog'
 

@@ -1,3 +1,4 @@
+import type { BrandDesign } from '../../api/types'
 /** Design studio document model. Stored as opaque JSON by the API (PUT /branding/designs/{kind}). */
 export const DOC_VERSION = 1
 
@@ -130,8 +131,5 @@ export interface StudioDoc {
   elements: StudioElement[]
 }
 
-export interface SavedDesign {
-  kind: DesignKind
-  document: unknown
-  updatedAt: string
-}
+/** A saved design as the API returns it: `document` is opaque to the contract and is validated by `parseDoc` on load. */
+export type SavedDesign = BrandDesign

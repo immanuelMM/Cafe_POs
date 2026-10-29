@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { ErrorBox, PageHeader, Spinner } from '../../components/ui'
-import { ApiError, errorMessage } from '../../lib/api'
+import { ApiError, errorMessage } from '../../lib/errors'
 import { formatTime } from '../../lib/format'
 import type { TimeClockStaff } from '../../api/types'
 import { useAuthStore } from '../auth/authStore'
 import { useCurrentLocation } from '../locations/useLocations'
 import { PinModal } from './PinModal'
-import { usePunch, useSetMyPin, useTimeClockStaff } from './timeclockApi'
+import { usePunch, useSetMyPin, useTimeClockStaff } from './useTimeClock'
 
 const punchError = (e: unknown) => {
   if (e instanceof ApiError) {

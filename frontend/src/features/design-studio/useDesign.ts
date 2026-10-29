@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, api } from '../../lib/api'
-import type { DesignKind, SavedDesign, StudioDoc } from './types'
+import { client, unwrap } from '../../lib/apiClient'
+import { ApiError } from '../../lib/errors'
+import type { DesignKind, StudioDoc } from './types'
 
 /** Server limit for a saved design document, including embedded images. */
 export const MAX_DESIGN_BYTES = 8 * 1024 * 1024
@@ -14,7 +15,7 @@ export const useDesign = (kind: DesignKind) =>
     queryKey: designKey(kind),
     queryFn: async () => {
       try {
-        return await api<SavedDesign>(`/branding/designs/${kind}`)
+        return await unwrap(client.GET('/api/v1/branding/designs/{kind}', { params: { path: { kind } } }))
       } catch (e) {
         if (e instanceof ApiError && e.status === 404) return null
         throw e
@@ -29,7 +30,7 @@ export function useSaveDesign(kind: DesignKind) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (doc: StudioDoc) =>
-      api<SavedDesign>(`/branding/designs/${kind}`, { method: 'PUT', body: { document: doc } }),
+      unwrap(client.PUT('/api/v1/branding/designs/{kind}', { params: { path: { kind } }, body: { document: doc } })),
     onSuccess: (saved) => qc.setQueryData(designKey(kind), saved),
   })
 }

@@ -9,7 +9,7 @@ import { errorMessage } from '../../lib/errors'
 import { useAuthStore } from '../auth/authStore'
 import { StaffList } from '../locations/StaffList'
 import { useCurrentLocation } from '../locations/useLocations'
-import { useBranding } from '../branding/brandingApi'
+import { useBranding } from '../branding/useBranding'
 import { BrandSettings } from '../branding/BrandSettings'
 import { locationSettingsSchema, type LocationSettingsValues } from './settingsSchema'
 

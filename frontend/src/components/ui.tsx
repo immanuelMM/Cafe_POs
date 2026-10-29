@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { errorMessage } from '../lib/api'
+import { errorMessage } from '../lib/errors'
 
 export function Spinner({ label = 'Loading…' }: { label?: string }) {
   return (

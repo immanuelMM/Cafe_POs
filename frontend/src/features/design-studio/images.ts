@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { assetUrl } from '../branding/brandingApi'
+import { assetUrl } from '../branding/useBranding'
 import type { ImageSrc } from './types'
 
 /** Longest side (px) an uploaded image is downscaled to before it is embedded in the document. */

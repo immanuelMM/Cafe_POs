@@ -5,7 +5,7 @@ import { formatDate, formatTime } from '../../lib/format'
 import { addDays, startOfDayUtc, todayIn, weekdayIndex } from '../../lib/zonedTime'
 import { isManager, useAuthStore } from '../auth/authStore'
 import { useCurrentLocation } from '../locations/useLocations'
-import { useTimeClockStaff, useTimeEntries } from './timeclockApi'
+import { useTimeClockStaff, useTimeEntries } from './useTimeClock'
 
 type Preset = 'today' | 'week' | '7d' | 'month' | 'custom'
 const PRESETS: { id: Preset; label: string }[] = [

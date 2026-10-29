@@ -1,20 +1,11 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { API_BASE, api } from '../../lib/api'
+import type { Branding } from '../../api/types'
+import type { components } from '../../api/schema'
+import { API_ORIGIN as ORIGIN, anonClient, client, fileBody, unwrap } from '../../lib/apiClient'
 import { HEX_RE, brandBackground, darken, isGradient, onBrand, type BrandPalette } from '../../lib/color'
 
-export interface BrandingDto {
-  brandName: string
-  tagline: string | null
-  primaryColor: string
-  secondaryColor: string | null
-  tertiaryColor: string | null
-  gradient: boolean
-  gradientAngle: number
-  logoUrl: string | null
-  tarpaulinUrl: string | null
-  tarpaulinContentType: string | null
-}
+export type BrandingDto = Branding
 
 export const DEFAULT_BRAND_NAME = 'Brew & Bean'
 export const DEFAULT_BRAND_COLOR = '#3b2417'
@@ -46,15 +37,15 @@ const BRAND_VARS = [
   '--login-bg',
 ]
 
-/** API origin (API_BASE without the trailing /api/v1); branding asset URLs are relative to it. */
-export const API_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '')
-export const assetUrl = (path: string | null | undefined) => (path ? `${API_ORIGIN}${path}` : null)
+/** Branding asset URLs are relative to the API origin. */
+export const API_ORIGIN = ORIGIN
+export const assetUrl = (path: string | null | undefined) => (path ? `${ORIGIN}${path}` : null)
 
 /** Business branding (anonymous: the login screen needs it before sign-in). */
 export const useBranding = () =>
   useQuery({
     queryKey: ['branding'],
-    queryFn: () => api<BrandingDto>('/branding', { anonymous: true }),
+    queryFn: () => unwrap(anonClient.GET('/api/v1/branding')),
     staleTime: 5 * 60_000,
   })
 
@@ -117,15 +108,7 @@ export function useApplyBranding() {
   }, [logo])
 }
 
-export interface BrandingInput {
-  brandName: string
-  tagline: string | null
-  primaryColor: string
-  secondaryColor: string | null
-  tertiaryColor: string | null
-  gradient: boolean
-  gradientAngle: number
-}
+export type BrandingInput = components['schemas']['UpdateBrandingRequest']
 
 function useBrandingMutation<T>(fn: (v: T) => Promise<BrandingDto>) {
   const qc = useQueryClient()
@@ -133,15 +116,16 @@ function useBrandingMutation<T>(fn: (v: T) => Promise<BrandingDto>) {
 }
 
 export const useUpdateBranding = () =>
-  useBrandingMutation((body: BrandingInput) => api<BrandingDto>('/branding', { method: 'PUT', body }))
+  useBrandingMutation((body: BrandingInput) => unwrap(client.PUT('/api/v1/branding', { body })))
 
-const upload = (path: string) => (file: Blob | File) => {
-  const fd = new FormData()
-  fd.append('file', file, file instanceof File ? file.name : 'logo.png')
-  return api<BrandingDto>(path, { method: 'PUT', body: fd })
-}
-export const useUploadLogo = () => useBrandingMutation(upload('/branding/logo'))
-export const useDeleteLogo = () => useBrandingMutation(() => api<BrandingDto>('/branding/logo', { method: 'DELETE' }))
-export const useUploadTarpaulin = () => useBrandingMutation(upload('/branding/tarpaulin'))
-export const useDeleteTarpaulin = () =>
-  useBrandingMutation(() => api<BrandingDto>('/branding/tarpaulin', { method: 'DELETE' }))
+const filename = (file: Blob | File) => (file instanceof File ? file.name : 'logo.png')
+export const useUploadLogo = () =>
+  useBrandingMutation((file: Blob | File) =>
+    unwrap(client.PUT('/api/v1/branding/logo', fileBody(file, filename(file)))),
+  )
+export const useDeleteLogo = () => useBrandingMutation(() => unwrap(client.DELETE('/api/v1/branding/logo')))
+export const useUploadTarpaulin = () =>
+  useBrandingMutation((file: Blob | File) =>
+    unwrap(client.PUT('/api/v1/branding/tarpaulin', fileBody(file, filename(file)))),
+  )
+export const useDeleteTarpaulin = () => useBrandingMutation(() => unwrap(client.DELETE('/api/v1/branding/tarpaulin')))

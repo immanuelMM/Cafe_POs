@@ -9,7 +9,7 @@ import {
   useBranding,
   useUploadLogo,
   useUploadTarpaulin,
-} from '../branding/brandingApi'
+} from '../branding/useBranding'
 import { buildSections } from '../branding/menuSections'
 import { useCategories, useItems } from '../catalog/useCatalog'
 import { useCurrentLocation } from '../locations/useLocations'
@@ -23,7 +23,7 @@ import { TemplatePicker } from './TemplatePicker'
 import type { MenuSectionCtx } from './templates'
 import { formatMoney } from '../../lib/format'
 import { ItemPhotoPicker } from './ItemPhotoPicker'
-import { MAX_DESIGN_BYTES, WARN_DESIGN_BYTES, docBytes, formatBytes, useSaveDesign } from './designApi'
+import { MAX_DESIGN_BYTES, WARN_DESIGN_BYTES, docBytes, formatBytes, useSaveDesign } from './useDesign'
 import { clearDraft, readDraft, useDraftAutosave, useUnsavedGuard } from './draft'
 import { blankDoc, parseDoc } from './factory'
 import { downloadBlob, exportBanner, exportDownload, exportLogo, exportPrint } from './exporter'

@@ -7,7 +7,7 @@ import type { Item } from '../../api/types'
 import { isAdmin, useAuthStore } from '../auth/authStore'
 import { useCategories, useItems } from '../catalog/useCatalog'
 import { BrandLogo } from './BrandLogo'
-import { DEFAULT_BRAND_NAME, assetUrl, useBranding } from './brandingApi'
+import { DEFAULT_BRAND_NAME, assetUrl, useBranding } from './useBranding'
 import { buildSections } from './menuSections'
 
 interface SizePreset {
