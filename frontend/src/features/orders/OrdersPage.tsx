@@ -8,6 +8,7 @@ import type { OrderStatus } from '../../api/types'
 import { useAuthStore } from '../auth/authStore'
 import { useCurrentLocation, useLocations } from '../locations/useLocations'
 import { orderCalls, useOrders } from './useOrders'
+import './orders.css'
 
 const PAGE_SIZE = 15
 

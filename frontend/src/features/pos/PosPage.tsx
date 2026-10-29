@@ -11,6 +11,7 @@ import { CartPanel } from './CartPanel'
 import { ModifierSheet } from './ModifierSheet'
 import { PaymentPanel } from './PaymentPanel'
 import { cartCount, cartTotal, useCartStore } from './cartStore'
+import './pos.css'
 
 /** Owner "All locations" session: orders are location-scoped, so ask for a location first. */
 function PickLocationPrompt() {

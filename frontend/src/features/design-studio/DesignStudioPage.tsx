@@ -4,6 +4,8 @@ import { useDesign } from './useDesign'
 import { StudioEditor } from './StudioEditor'
 import { useStudio } from './store'
 import type { DesignKind } from './types'
+import '../branding/branding.css'
+import './design-studio.css'
 
 const KINDS: { kind: DesignKind; label: string }[] = [
   { kind: 'logo', label: 'Logo' },

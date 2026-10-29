@@ -3,6 +3,7 @@ import { PageHeader } from '../../components/ui'
 import { CategoriesTab } from './CategoriesTab'
 import { ItemsTab } from './ItemsTab'
 import { ModifiersTab } from './ModifiersTab'
+import './catalog.css'
 
 const TABS = [
   { id: 'items', label: 'Items' },

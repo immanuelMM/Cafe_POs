@@ -3,6 +3,7 @@ import { formatDateTime, formatMoney, formatQty } from '../../lib/format'
 import type { Receipt } from '../../api/types'
 import { ErrorBox, Spinner } from '../../components/ui'
 import { useReceipt } from './useReceipt'
+import './orders.css'
 
 /** The 80mm receipt layout. Prices are VAT-inclusive: VAT is shown as a portion of the total, never added. */
 export function ReceiptView({ r }: { r: Receipt }) {

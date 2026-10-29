@@ -8,6 +8,7 @@ import { useAuthStore } from '../auth/authStore'
 import { useCurrentLocation } from '../locations/useLocations'
 import { PinModal } from './PinModal'
 import { usePunch, useSetMyPin, useTimeClockStaff } from './useTimeClock'
+import './timeclock.css'
 
 const punchError = (e: unknown) => {
   if (e instanceof ApiError) {

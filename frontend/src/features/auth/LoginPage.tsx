@@ -9,6 +9,7 @@ import { useBrandName } from '../branding/useBranding'
 import { BrandLogo } from '../branding/BrandLogo'
 import { ApiError, errorMessage } from '../../lib/errors'
 import { Field } from '../../components/ui'
+import './auth.css'
 
 /** Shape of the `locations` extension on the 400 "Location required" login response. */
 interface LocChoice {

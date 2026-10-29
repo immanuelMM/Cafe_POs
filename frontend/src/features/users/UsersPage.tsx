@@ -17,6 +17,7 @@ import {
   type EditValues,
   type ExistingValues,
 } from './userSchema'
+import './users.css'
 
 /** Locations the current actor may assign people to: Owner = all active, Admin = own active location. */
 function useAssignableLocations() {

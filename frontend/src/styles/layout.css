@@ -1,0 +1,165 @@
+@layer layout {
+  /* Shell */
+  .shell {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  .topbar {
+    background: var(--brand-bg);
+    color: var(--on-brand);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 6px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .brand {
+    font-weight: 800;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .brand-logo {
+    height: 32px;
+    width: auto;
+    max-width: 96px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .nav {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    order: 3;
+    width: 100%;
+  }
+  .nav a {
+    color: var(--on-brand);
+    text-decoration: none;
+    min-height: var(--tap);
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .nav a:not(.active) {
+    opacity: 0.85;
+  }
+  .nav a.active {
+    background: var(--on-brand);
+    color: var(--brand);
+    box-shadow: inset 0 -4px 0 var(--brand-highlight);
+  }
+  .userbox {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .user-meta {
+    display: none;
+    flex-direction: column;
+    text-align: right;
+    line-height: 1.2;
+  }
+  .user-meta small {
+    opacity: 0.75;
+  }
+  .main {
+    flex: 1;
+    min-height: 0;
+  }
+  .page {
+    padding: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .page.narrow {
+    max-width: 720px;
+  }
+  .page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .page-head-actions {
+    display: flex;
+    gap: 8px;
+  }
+  /* Modal: bottom sheet on phone, centered card on tablet+ */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 10, 5, 0.55);
+    z-index: 50;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal {
+    background: #fff;
+    width: 100%;
+    max-height: 92dvh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 18px 18px 0 0;
+    outline: none;
+  }
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px 10px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .modal-body {
+    padding: 16px 18px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .modal-foot {
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  @media (min-width: 768px) {
+    .topbar {
+      flex-wrap: nowrap;
+      padding: 4px 20px;
+    }
+    .nav {
+      order: 0;
+      width: auto;
+    }
+    .user-meta {
+      display: flex;
+    }
+  }
+  @media (min-width: 768px) {
+    .modal-backdrop {
+      align-items: center;
+    }
+    .modal {
+      max-width: 560px;
+      border-radius: 18px;
+      max-height: 90dvh;
+    }
+    .modal-wide {
+      max-width: 760px;
+    }
+  }
+}

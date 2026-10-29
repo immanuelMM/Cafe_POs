@@ -9,6 +9,7 @@ import { useCategories, useItems } from '../catalog/useCatalog'
 import { BrandLogo } from './BrandLogo'
 import { DEFAULT_BRAND_NAME, assetUrl, useBranding } from './useBranding'
 import { buildSections } from './menuSections'
+import './branding.css'
 
 interface SizePreset {
   id: string

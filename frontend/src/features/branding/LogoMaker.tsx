@@ -13,6 +13,7 @@ import {
   saveLogoSettings,
   type LogoSettings,
 } from './logoDraw'
+import './branding.css'
 
 const MAX_LOGO_BYTES = 1024 * 1024
 

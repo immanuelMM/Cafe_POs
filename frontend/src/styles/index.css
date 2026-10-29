@@ -1,0 +1,15 @@
+/*
+ * Cascade layers, lowest to highest priority. This statement must come first so the order is fixed
+ * regardless of which feature stylesheet (lazy route chunk) loads first.
+ * Feature CSS (src/features/<feature>/<feature>.css) is imported by the feature's components and
+ * is wrapped in @layer features. print.css is intentionally unlayered (it uses !important).
+ */
+@layer reset, tokens, base, layout, components, features, utilities;
+
+@import './reset.css';
+@import './tokens.css';
+@import './base.css';
+@import './layout.css';
+@import './components.css';
+@import './utilities.css';
+@import './print.css';

@@ -4,6 +4,7 @@ import { useStudioEnv } from './env'
 import { cssFill } from './geometry'
 import { DEFAULT_SHADOW } from './factory'
 import type { Fill, Shadow } from './types'
+import '../branding/branding.css'
 
 const fmt = (n: number) => String(Math.round(n * 100) / 100)
 

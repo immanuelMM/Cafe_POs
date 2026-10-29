@@ -18,6 +18,7 @@ import {
   toPalette,
   type BrandingDto,
 } from './useBranding'
+import './branding.css'
 
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 const TARP_TYPES = [...LOGO_TYPES, 'application/pdf']

@@ -6,6 +6,7 @@ import { formatQty } from '../../lib/format'
 import type { Ingredient } from '../../api/types'
 import { STATUS_LABEL, stockStatus, useIngredients } from './useInventory'
 import { AdjustForm, IngredientForm, MovementsModal, RestockForm } from './StockForms'
+import './inventory.css'
 
 type Dialog = { kind: 'new' } | { kind: 'edit' | 'restock' | 'adjust' | 'history'; ing: Ingredient } | null
 

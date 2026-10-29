@@ -6,6 +6,7 @@ import { addDays, startOfDayUtc, todayIn, weekdayIndex } from '../../lib/zonedTi
 import { isManager, useAuthStore } from '../auth/authStore'
 import { useCurrentLocation } from '../locations/useLocations'
 import { useTimeClockStaff, useTimeEntries } from './useTimeClock'
+import './timeclock.css'
 
 type Preset = 'today' | 'week' | '7d' | 'month' | 'custom'
 const PRESETS: { id: Preset; label: string }[] = [

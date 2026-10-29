@@ -1,0 +1,106 @@
+@layer features {
+  .item-thumb {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--line);
+  }
+  .item-thumb-empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    opacity: 0.6;
+  }
+  .photo-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .photo-preview {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  .photo-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted, #777);
+    background: var(--line);
+  }
+  .photo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    flex: 1 1 200px;
+  }
+  /* Catalog forms */
+  .var-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: end;
+    padding: 12px;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+  }
+  .var-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    grid-column: 1 / -1;
+  }
+  .var-err {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .var-new {
+    background: var(--bg);
+  }
+  .mod-row,
+  .recipe-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+  .override-row {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin: 0 0 12px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .override-row legend {
+    font-weight: 700;
+    padding: 0 6px;
+  }
+  .override-row .var-actions {
+    align-items: center;
+  }
+  @media (min-width: 768px) {
+    .var-row {
+      grid-template-columns: 2fr 1.2fr 1.2fr auto;
+    }
+    .var-actions {
+      grid-column: auto;
+    }
+  }
+  @media (min-width: 768px) {
+    .override-row {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .override-row .var-actions {
+      grid-column: 1 / -1;
+    }
+  }
+}

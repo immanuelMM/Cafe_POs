@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Modal } from '../../components/Modal'
 import { errorMessage } from '../../lib/errors'
+import './branding.css'
 
 const VIEW = 320
 

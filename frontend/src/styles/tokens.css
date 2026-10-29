@@ -1,0 +1,132 @@
+/*
+ * Design tokens (tablet-ui-plan section 2.1). Feature CSS should use the semantic tokens; raw colour
+ * values live only here.
+ *
+ * Runtime branding (features/branding/useBranding.ts) writes --brand, --brand-2, --on-brand, --brand-bg,
+ * --brand-secondary, --brand-tertiary and --brand-highlight as inline styles on <html>. Inline styles beat
+ * every @layer rule, so those names are kept exactly and the tokens below only REFERENCE them.
+ *
+ * Size classes (literal values, mirrored in src/lib/breakpoints.ts later):
+ *   compact  (max-width: 599px), (max-height: 499px)
+ *   medium   (min-width: 600px) and (max-width: 959px) and (min-height: 500px)
+ *   expanded (min-width: 960px) and (min-height: 500px)
+ *   large    (min-width: 1300px) and (min-height: 500px)
+ */
+@layer tokens {
+  :root {
+    /* Colour: existing names kept */
+    --bg: #f7f1e8;
+    --surface: #ffffff;
+    --ink: #1f1410;
+    --muted: #5e4d43;
+    /* decorative dividers only (about 1.5:1 on white) */
+    --line: #d9cbbb;
+    /* input, select and checkbox borders (about 4.1:1 on white) */
+    --line-strong: #8c7a6b;
+    --brand: #3b2417;
+    --brand-2: #5a3418;
+    /* text/icons on --brand backgrounds; recomputed with --brand at runtime */
+    --on-brand: #ffffff;
+    /* extra brand colours and the surface fill (solid primary or gradient); recomputed at runtime */
+    --brand-secondary: var(--brand-2);
+    --brand-tertiary: var(--accent);
+    --brand-bg: var(--brand);
+    --brand-highlight: transparent;
+    --login-bg: linear-gradient(160deg, var(--brand), var(--brand-secondary));
+    --accent: #b4561f;
+    --ok: #1b6b36;
+    --ok-bg: #dff3e4;
+    --warn: #8a5a00;
+    --warn-bg: #fff0c9;
+    --bad: #a31d1d;
+    --bad-bg: #fde3e1;
+
+    /* Colour: semantic aliases (reference the brand variables, never copy their values) */
+    /* --brand-bg may be a gradient: use only with background:, never background-color or border-color */
+    --nav-bg: var(--brand-bg);
+    --nav-fg: var(--on-brand);
+    --nav-active-bg: var(--brand-highlight, rgb(255 255 255 / 0.18));
+    --selected-bg: var(--brand);
+    --selected-fg: var(--on-brand);
+    --focus-ring: 0 0 0 2px var(--surface), 0 0 0 5px var(--ink);
+
+    /* Radii */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+    --r-pill: 999px;
+    --radius: var(--r-md); /* legacy alias */
+
+    /* Elevation */
+    --shadow-1: 0 1px 3px rgb(0 0 0 / 0.12);
+    --shadow-sheet: 0 -8px 30px rgb(0 0 0 / 0.3);
+    --scrim: rgb(0 0 0 / 0.45);
+
+    /* Motion */
+    --dur-fast: 100ms;
+    --dur: 200ms;
+
+    /* Spacing (4px scale) */
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 24px;
+    --sp-6: 32px;
+    --sp-7: 48px;
+    --gap-touch: 8px;
+    --form-max: 760px;
+
+    /* Touch targets (compact values; larger on tablets below). --tap stays 48px until the tablet milestones. */
+    --tap-min: 48px;
+    --tap: 48px;
+    --tap-lg: 64px;
+    --tap-xl: 64px;
+    --tile-min-w: 140px;
+    --tile-min-h: 104px;
+    --pad-page: 12px;
+
+    /* Type scale (compact values) */
+    --fs-xs: 13px;
+    --fs-sm: 15px;
+    --fs-md: 16px;
+    --fs-lg: 18px;
+    --fs-xl: 20px;
+    --fs-2xl: 24px;
+    --fs-3xl: 32px;
+    --fs-4xl: 44px;
+  }
+
+  /* medium, expanded and large */
+  @media (min-width: 600px) and (min-height: 500px) {
+    :root {
+      --tap-xl: 80px;
+      --tile-min-w: 160px;
+      --tile-min-h: 120px;
+      --pad-page: 16px;
+      --fs-xs: 14px;
+      --fs-sm: 16px;
+      --fs-md: 18px;
+      --fs-lg: 20px;
+      --fs-xl: 24px;
+      --fs-2xl: 30px;
+      --fs-3xl: 40px;
+      --fs-4xl: 56px;
+    }
+  }
+
+  /* expanded and large */
+  @media (min-width: 960px) and (min-height: 500px) {
+    :root {
+      --pad-page: 20px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dur-fast: 0ms;
+      --dur: 0ms;
+    }
+  }
+}
