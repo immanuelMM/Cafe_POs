@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
-    "@tanstack/react-query": "^5.104.3",
+    "@tanstack/react-query": "^5.104.5",
     "konva": "^9.3.22",
     "openapi-fetch": "^0.17.0",
     "react": "^19.3.1",
