@@ -1,7 +1,7 @@
 # Cafe POS backend (Phase 1 + Phase 2 multi-location)
 
 .NET 10 Web API (controllers, `/api/v1`), EF Core + **PostgreSQL** (Docker), ASP.NET Core Identity + JWT.
-API contract for the frontend: [`../docs/api/phase1-api.md`](../docs/api/phase1-api.md), plus the multi-location changes in [`../docs/api/phase2-api.md`](../docs/api/phase2-api.md).
+API contract for the frontend: `openapi/v1.json` (source of truth), with narrative notes in [`../docs/api/`](../docs/api/README.md). How the layers fit together: [`../docs/architecture.md`](../docs/architecture.md); decisions: [`../docs/adr/`](../docs/adr/README.md).
 
 ## Prerequisites
 - .NET SDK 10.0.x (pinned by `global.json`)
@@ -46,12 +46,11 @@ Reset the database (repo root): `docker compose down -v`.
 
 ## Tests
 ```bash
-docker compose up -d --wait db          # from the repo root
 cd backend
 dotnet build
 dotnet test
 ```
-Integration tests boot the real API against a throwaway PostgreSQL database (created from the migrations, dropped afterwards). A PostgreSQL 16 container is started automatically with Testcontainers, so only a running Docker engine is needed (the compose db does not have to be up). Set `TEST_PG_CONNECTION` to use an existing server instead (the `Database=` part is replaced). The suite has 115 tests, including tenant-isolation tests for cross-location access.
+Integration tests boot the real API against a throwaway PostgreSQL database (created from the migrations, dropped afterwards). A PostgreSQL 16 container is started automatically with Testcontainers, so only a running Docker engine is needed (the compose db does not have to be up). Set `TEST_PG_CONNECTION` to use an existing server instead (the `Database=` part is replaced). Current counts: Domain 10, Application 129 (NSubstitute, no database), Api.IntegrationTests 139 (including tenant-isolation tests for cross-location access, contract drift and auth tests). Run one project with `dotnet test tests/CafePos.Application.Tests`.
 
 ## Migrations
 EF tool is a local tool (`dotnet tool restore`).
@@ -87,6 +86,8 @@ tests/CafePos.Domain.Tests  tests/CafePos.Application.Tests (NSubstitute)  tests
 - **Inventory**: per-location `IngredientStock` + append-only `StockMovement` ledger; sale decrement is a conditional `UPDATE ... WHERE QuantityOnHand >= n` inside the order-completion transaction.
 - **Roles**: `Cashier`/`Manager`/`Admin` are per-location roles stored as staff assignments; `Owner` is a flag on the user (no assignments, all locations). Admins are confined to their active location.
 - **Access token revocation**: access tokens (30 min) are not re-checked against the database per request. After a user is deactivated or an assignment is removed, an already-issued access token keeps working until it expires. Lockout is enforced at `login`, `refresh`, `switch-location` and `GET /auth/me`, and the user's refresh tokens (for an Admin's location-scoped removal, those bound to that location) are revoked. This window is accepted.
+- **Refresh token**: HttpOnly cookie `cafepos_refresh` (path `/api/v1/auth`, `SameSite=Lax`, `Secure` outside Development, 7 days), rotated with an atomic claim and reuse detection. Lockout and time clock PIN failure counters are atomic. PINs stay 4-6 digits (rate limit plus lockout mitigate guessing).
+- **Request hardening**: JSON bodies with duplicate property names get `400` (`AllowDuplicateProperties=false`); outside Development HSTS and HTTPS redirection are on; health endpoints are `/health`, `/health/live`, `/health/ready`.
 - **Orders**: client-generated order GUIDs; `Idempotency-Key` header on `POST /orders/{id}/complete`.
 
 ## OpenAPI contract

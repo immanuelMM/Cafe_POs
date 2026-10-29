@@ -5,7 +5,7 @@ React Hook Form + Zod. Plain CSS, mobile-first (breakpoints 768px and 1100px). T
 
 ## Run
 
-Prerequisites: Node 20+, the backend running at http://localhost:5080.
+Prerequisites: Node 22 (what CI and the Docker image use), the backend running at http://localhost:5080.
 
 ```bash
 # 1. Backend (from repo root)
@@ -20,7 +20,23 @@ npm install
 npm run dev                 # http://localhost:5173 (port is fixed: backend CORS only allows it)
 ```
 
-Other scripts: `npm run build` (type-check + production build), `npm run lint`, `npm run preview`.
+`VITE_API_BASE_URL` must be an absolute URL ending in `/api/v1` (a gateway prefix before it is fine); the app throws at startup otherwise. It is
+baked into the bundle, so never put secrets in `VITE_` variables.
+
+| Script | Purpose |
+|---|---|
+| `npm run dev` / `preview` | Vite dev server / serve the production build |
+| `npm run build` | `tsc --noEmit` then `vite build` |
+| `npm run lint` / `typecheck` | ESLint / `tsc --noEmit` |
+| `npm run format` / `format:check` | Prettier write / check (CI runs the check) |
+| `npm test` / `test:watch` | Vitest + React Testing Library + MSW (80 tests) |
+| `npm run gen:api` | Regenerate `src/api/schema.d.ts` from `../backend/openapi/v1.json` |
+
+### API types
+
+`src/api/schema.d.ts` is generated from the committed backend contract and must not be edited. After a backend contract change, regenerate the
+snapshot in the backend (`dotnet build src/CafePos.Api -p:OpenApiGenerateDocuments=true`), run `npm run gen:api` and commit both files; CI fails when
+either is stale. `src/api/types.ts` holds short aliases of the schema types. End-to-end tests live in [`../e2e`](../e2e/README.md).
 
 Dev logins (seeded by the backend, dev only): `admin@cafe.local` / `Admin#Dev12345` (Owner), `manager@cafe.local` / `Manager#Dev12345` (Manager at Main and Uptown), `cashier@cafe.local` / `Cashier#Dev12345` (Main), `cashier.uptown@cafe.local` / `Cashier#Dev12345` (Uptown).
 
@@ -53,7 +69,11 @@ Owners pass every role check; the Locations screen is Owner only.
 ## Contract notes
 
 - Access token is kept in memory only (Zustand, never localStorage). The HttpOnly refresh cookie is used on app load and
-  on any 401 (single-flight refresh, then one retry). All requests use `credentials: 'include'`.
+  on any 401 (single-flight refresh, then one retry). The refresh runs under the Web Lock `cafepos-refresh`, so several tabs
+  never present the same rotating cookie at once. The session is cleared only when the refresh answers 401/403; 429, 5xx and
+  network errors keep it. All requests use `credentials: 'include'`.
+- All calls go through the typed `openapi-fetch` clients in `src/lib/apiClient.ts` (`client` with bearer + refresh, `anonClient`
+  for login/logout/refresh/public branding). They reject with `ApiError` (non-2xx) or `NetworkError`.
 - Checkout: the order UUID is generated on the client; `POST /orders` is safe to repeat. One `Idempotency-Key` is
   generated per checkout attempt and reused on network errors/5xx; a fresh key is used after a definitive 4xx. Editing
   the cart after a failed attempt (e.g. 409 insufficient stock) cancels the abandoned open order (best effort) and
@@ -72,7 +92,10 @@ Owners pass every role check; the Locations screen is Owner only.
 
 ```
 src/
-  lib/         api client (auth refresh, ProblemDetails), types, money/date formatting, uuid
-  components/  AppShell, Modal, shared ui bits
-  features/    auth, pos, orders, catalog, inventory, settings, locations, users
+  app/         App, router (lazy routes), providers, query client, AppShell, LocationSwitcher
+  api/         schema.d.ts (generated), types.ts (aliases of schema types)
+  lib/         apiClient (typed client, auth refresh), errors (ApiError), money/date formatting, uuid
+  components/  Modal, shared ui bits
+  features/    auth, pos, orders, catalog, inventory, settings, locations, users, timeclock, branding, design-studio
+  test/        Vitest setup, MSW server, fixtures
 ```

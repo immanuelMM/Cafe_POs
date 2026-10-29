@@ -5,6 +5,22 @@
 - **Written:** 2026-10-29 by research-planner. Scope approved by the user: FULL refactor (backend, frontend, devops/QA/docs). Nothing is implemented by this plan.
 - **Standards followed:** `full-stack-agent/CLAUDE.md`, `~/.claude/skills/dotnet-backend-standards/SKILL.md` (note: it lives at user level, not in `full-stack-agent/.claude/skills/`), `full-stack-agent/.claude/skills/react-frontend-standards/SKILL.md`.
 
+## Status (updated 2026-10-29)
+
+All milestones are **done** except M10, which was **skipped** (the user's default: rich domain entities are deferred). M0-M9, F0-F7, QA-T2, M11, M12, D1, D2 and M13 are complete. Outputs: [`../architecture.md`](../architecture.md), [`../adr/`](../adr/README.md), [`../deployment.md`](../deployment.md).
+
+Decisions taken on the open questions: access token stays 30 min (Q2), refresh cookie stays `SameSite=Lax` (Q3), 4-digit time clock PINs are kept with rate limiting and atomic lockout as the mitigation (ADR 0007).
+
+### Known follow-ups (not scheduled)
+
+- Add a `ForwardLimit` setting to `ForwardedHeadersSetup` for multi-proxy setups such as Azure Front Door in front of the ingress.
+- Add an E2E test (two tabs) for the cross-tab refresh Web Lock; today only the client unit tests cover it.
+- CI (`.github/workflows/ci.yml`) has not run on GitHub yet: the repo has no remote.
+- The modifier `active` toggle in the UI is dead: the backend ignores `active` on an individual modifier. Decide whether to honor it or remove the toggle.
+- Enum-like fields (roles, order status, stock movement reason, ...) are plain strings in the OpenAPI contract; model them as enums and regenerate.
+- 4xx responses (400, 401, 403, 404, 409, 422, 423, 429) are not documented in the OpenAPI contract.
+- Recommended: optional M10 (rich domain entities) if the team wants it later.
+
 ## 0. Hard constraint and how it is enforced
 
 **Existing API behavior and features must be preserved** (multi-location scoping, auth, payments, branding, timeclock, design studio). Enforcement mechanisms, built in the first milestones so every later milestone is checked automatically:

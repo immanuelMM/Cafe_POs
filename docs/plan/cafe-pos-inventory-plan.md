@@ -1,7 +1,7 @@
 # Cafe POS + Inventory Management System — Research & Implementation Plan
 
 Status: Draft for review. Produced by research-planner agent on 2026-10-16. **Revised 2026-10-16** to incorporate the project owner's answers on payments, multi-location, offline support, and receipts — see the new Decisions Log (Section 8). These four answers meaningfully expand scope beyond the original single-café, record-only-payment, online-only MVP; Section 6 (Phased Roadmap) replaces the original MVP/Later split accordingly.
-Stack (decided): React (SPA) frontend, .NET 8 Web API + EF Core backend.
+Stack (decided): React (SPA) frontend, .NET Web API + EF Core backend. **Update 2026-10-29:** the backend now runs on .NET 10 in a Clean Architecture solution (the "no repositories" advice below was superseded, see `docs/adr/0001-repositories-and-unit-of-work.md`); see `docs/plan/refactor-plan.md` and `docs/architecture.md`.
 
 This document is the single source of truth other agents (frontend, backend, QA, docs) should build against. Where a claim could not be verified against current, credible sources, it is explicitly flagged as a judgment call rather than presented as fact.
 

@@ -32,6 +32,7 @@ Validation failures (400) use `ValidationProblemDetails` with an `errors` object
 | 409 | State conflict: insufficient stock, order not open, duplicate SKU/name, order id used by someone else |
 | 422 | Business rule failure: payment failed (cash tendered too low), invalid modifier selection, item not for sale, reused idempotency key on a different order |
 | 423 | Account temporarily locked (5 failed logins -> 5 minutes) |
+| 429 | Rate limit hit (login, refresh, switch-location, time clock punch); `Retry-After` header, ProblemDetails body |
 
 ### Pagination (offset)
 Query `?page=1&pageSize=20` (pageSize max 100). Paged responses:
@@ -49,7 +50,7 @@ Query `?page=1&pageSize=20` (pageSize max 100). Paged responses:
 3. On 401 (or shortly before `expiresAt`), call `POST /api/v1/auth/refresh` (no body, cookie sent automatically). Returns a new `AuthResponse` and rotates the cookie. Reusing an old cookie revokes all of that user's sessions.
 4. `POST /api/v1/auth/logout` revokes the cookie (204).
 
-The browser client must use `fetch(..., { credentials: "include" })` (axios: `withCredentials: true`) for the auth calls so the cookie is stored/sent. Keep the access token in memory, not localStorage. If you serve the SPA from a different registrable domain in production, the cookie needs `SameSite=None; Secure` (configure then); on localhost `:5173` -> `:5080` it works as is.
+The browser client must use `fetch(..., { credentials: "include" })` (axios: `withCredentials: true`) for the auth calls so the cookie is stored/sent. Keep the access token in memory, not localStorage. The cookie is `SameSite=Lax` (and `Secure` outside Development), so in production serve the SPA and the API on the same site (for example `app.example.com` and `api.example.com`); a different site would not send it. On localhost `:5173` -> `:5080` it works as is. The browser client also serialises refreshes across tabs (see `docs/architecture.md`).
 
 ### Dev credentials (seeded in Development only)
 | Role | Email | Password |
@@ -117,6 +118,8 @@ Cashiers only ever see active records; Manager/Admin can pass `includeInactive=t
 { "id": "guid", "name": "Milk Type", "minSelections": 0, "maxSelections": 1, "active": true,
   "modifiers": [ { "id": "guid", "name": "Oat Milk", "priceDelta": 30.00, "active": true } ] }
 ```
+Known issue: the backend ignores a client-sent `active` on an individual modifier (omitting a modifier from the PUT is what deactivates it), so a per-modifier `active` toggle in a client has no effect; a decision on this is open (see the refactor plan follow-ups).
+
 Modifier selection rules enforced when ordering: each chosen modifier must belong to a list linked to the item, and the count per linked list must be within `[minSelections, maxSelections]` (a list with `minSelections > 0` is required).
 
 ## Inventory (stock is per location)

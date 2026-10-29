@@ -56,7 +56,24 @@ npm run dev
 
 In Development the backend migrates and seeds an empty database on startup. Dev logins are listed in [`backend/README.md`](backend/README.md#seeded-dev-accounts).
 
-Tests: `cd backend && dotnet test` (needs a running Docker engine; a PostgreSQL container is started automatically, see the backend README).
+### Tests
+
+```bash
+cd backend && dotnet test        # Domain 10, Application 129, Api.IntegrationTests 139; needs a running Docker engine (Testcontainers starts PostgreSQL)
+cd frontend && npm test          # Vitest, 80 tests (also: npm run lint, npm run typecheck, npm run format:check)
+cd e2e && npm install --legacy-peer-deps && npm run install:browsers   # one-time
+cd e2e && npm run stack:up && npm run test:e2e                         # Playwright, 39 tests incl. axe a11y; see e2e/README.md
+```
+
+### Changing the API contract
+
+Change the backend, then `cd backend && dotnet build src/CafePos.Api -p:OpenApiGenerateDocuments=true`, then `cd frontend && npm run gen:api`, and
+commit `backend/openapi/v1.json` and `frontend/src/api/schema.d.ts` with the code. Details: [`docs/architecture.md`](docs/architecture.md#contract-first-workflow).
+
+### CI
+
+`.github/workflows/ci.yml` runs jobs `backend`, `contract`, `frontend`, `docker`, `e2e` (smoke on PRs, full suite on main and nightly) and
+`migration-bundle` (main only). It has not run on GitHub yet because the repo has no remote.
 
 ## Roles and locations
 
@@ -84,6 +101,9 @@ Every session works in exactly one **active location**, carried in the access to
 
 ## Documentation
 
-- API contracts: [`docs/api/phase1-api.md`](docs/api/phase1-api.md) (base contract) and [`docs/api/phase2-api.md`](docs/api/phase2-api.md) (multi-location changes, applied on top of Phase 1)
-- Plan and decisions: [`docs/plan/cafe-pos-inventory-plan.md`](docs/plan/cafe-pos-inventory-plan.md)
+- Architecture (layers, request flow, auth/refresh, multi-location isolation, contract workflow): [`docs/architecture.md`](docs/architecture.md)
+- Decision records: [`docs/adr/`](docs/adr/README.md)
+- API docs: [`docs/api/README.md`](docs/api/README.md) (index; `backend/openapi/v1.json` is the source of truth), with [`phase1-api.md`](docs/api/phase1-api.md) (base contract), [`phase2-api.md`](docs/api/phase2-api.md) (multi-location changes, applied on top of Phase 1) and [`branding-timeclock-api.md`](docs/api/branding-timeclock-api.md)
+- Deployment sketch: [`docs/deployment.md`](docs/deployment.md)
+- Plans: [`docs/plan/cafe-pos-inventory-plan.md`](docs/plan/cafe-pos-inventory-plan.md) (product), [`docs/plan/refactor-plan.md`](docs/plan/refactor-plan.md) (refactor, status and follow-ups)
 - Interactive API docs (Development): http://localhost:5080/scalar/v1 (OpenAPI 3.1 document at /openapi/v1.json; committed snapshot in `backend/openapi/v1.json`)
