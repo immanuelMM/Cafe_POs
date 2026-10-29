@@ -596,7 +596,52 @@
     font-variant-numeric: tabular-nums;
   }
   .modal-pay .key {
-    min-height: clamp(48px, 7.5dvh, 64px);
+    min-height: clamp(48px, 7dvh, 64px);
+  }
+  /* Phones: everything fits above the pinned Complete button. Total and change sit side by side, quick tender is one row of 4. */
+  .modal-pay .modal-body,
+  .modal-paid .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .modal-pay .modal-body {
+    padding: var(--sp-3);
+  }
+  .modal-pay .pay-layout,
+  .modal-pay .pay-right {
+    gap: var(--sp-2);
+  }
+  .modal-pay .pay-left {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-2);
+  }
+  .modal-pay .pay-left > :nth-child(1) {
+    grid-area: 1 / 1;
+  }
+  .modal-pay .pay-left > :nth-child(3) {
+    grid-area: 1 / 2;
+  }
+  .modal-pay .pay-left > :nth-child(2),
+  .modal-pay .pay-left > :nth-child(n + 4) {
+    grid-column: 1 / -1;
+  }
+  .modal-pay .pay-block > div {
+    padding: var(--sp-2) var(--sp-3);
+  }
+  .modal-pay .big {
+    font-size: var(--fs-2xl);
+  }
+  .modal-pay .pay-input {
+    min-height: var(--tap);
+  }
+  .modal-pay .quick-amounts {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .modal-pay .quick-amounts .btn {
+    min-width: 0;
+    min-height: var(--tap);
+    font-size: var(--fs-md);
   }
   .paid-layout {
     display: flex;
@@ -778,11 +823,30 @@
       gap: var(--sp-5);
       align-items: start;
     }
-    .quick-amounts {
-      grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    .modal-pay .modal-body {
+      padding: var(--sp-4) var(--sp-5);
     }
-    .quick-amounts .btn {
-      font-size: var(--fs-md);
+    .modal-pay .pay-layout {
+      gap: var(--sp-5);
+    }
+    .modal-pay .pay-left {
+      display: flex;
+      gap: var(--sp-3);
+    }
+    .modal-pay .pay-right {
+      gap: var(--sp-3);
+    }
+    .modal-pay .pay-block > div {
+      padding: var(--sp-3) var(--sp-4);
+    }
+    .modal-pay .big {
+      font-size: var(--fs-3xl);
+    }
+    .modal-pay .pay-input {
+      min-height: var(--tap-lg);
+    }
+    .modal-pay .quick-amounts .btn {
+      min-height: var(--tap-lg);
     }
     .modal-pay .key {
       min-height: clamp(56px, 9dvh, 80px);

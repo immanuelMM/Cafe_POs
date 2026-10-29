@@ -20,6 +20,9 @@ function quickAmounts(total: number): number[] {
   return [...out].sort((a, b) => a - b).slice(0, 4)
 }
 
+/** Whole-peso label for a quick-tender note, e.g. ₱500 or ₱1,000 (short enough for four across on a phone). */
+const tenderLabel = (a: number) => `₱${a.toLocaleString('en-PH', { maximumFractionDigits: 2 })}`
+
 export function PaymentPanel({ onClose }: { onClose: () => void }) {
   const lines = useCartStore((s) => s.lines)
   const total = cartTotal(lines)
@@ -177,7 +180,7 @@ export function PaymentPanel({ onClose }: { onClose: () => void }) {
           <div className="quick-amounts">
             {quickAmounts(total).map((a) => (
               <button key={a} type="button" className="btn btn-lg" onClick={() => setTendered(String(a))}>
-                {a === total ? 'Exact' : formatMoney(a)}
+                {a === total ? 'Exact' : tenderLabel(a)}
               </button>
             ))}
           </div>

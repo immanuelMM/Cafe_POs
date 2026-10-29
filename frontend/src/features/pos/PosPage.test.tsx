@@ -330,7 +330,7 @@ describe('PosPage', () => {
       const input = within(dialog).getByLabelText(/Cash tendered/)
       await user.click(within(dialog).getByRole('button', { name: '.' }))
       expect(input).toHaveValue('0.')
-      await user.click(within(dialog).getByRole('button', { name: /₱1,000/ }))
+      await user.click(within(dialog).getByRole('button', { name: '₱1,000' }))
       expect(input).toHaveValue('1000')
       expect(within(dialog).getByText('Change').nextElementSibling).toHaveTextContent('₱900.00')
       await user.click(within(dialog).getByRole('button', { name: 'Exact' }))
@@ -368,7 +368,7 @@ describe('PosPage', () => {
         http.get(url('/api/v1/orders/:id/receipt'), () => HttpResponse.json(receipt)),
       )
       const { user, dialog } = await openPayment()
-      await user.click(within(dialog).getByRole('button', { name: '₱500.00' }))
+      await user.click(within(dialog).getByRole('button', { name: '₱500' }))
       await user.click(within(dialog).getByRole('button', { name: /Complete payment/ }))
       const paid = await screen.findByRole('dialog', { name: 'Order #00007 paid' })
       expect(within(paid).getByRole('status')).toHaveTextContent('₱100.00')
