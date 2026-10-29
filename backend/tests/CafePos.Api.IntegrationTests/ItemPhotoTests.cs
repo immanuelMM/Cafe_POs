@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 [Collection("api")]
 public class ItemPhotoTests

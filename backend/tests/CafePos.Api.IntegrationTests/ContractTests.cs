@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 /// <summary>
 /// Guards the API contract the frontend generates its types from (backend/openapi/v1.json) and the auth

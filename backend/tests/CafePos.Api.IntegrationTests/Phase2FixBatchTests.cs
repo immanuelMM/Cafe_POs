@@ -4,7 +4,7 @@ using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 /// <summary>Contract changes of the Phase 2 fix batch: Admin scoping, email-based assignment, cross-location ingredients, 400 vs 404.</summary>
 [Collection("api")]

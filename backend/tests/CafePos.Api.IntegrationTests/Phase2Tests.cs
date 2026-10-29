@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 internal static class Phase2Helpers
 {

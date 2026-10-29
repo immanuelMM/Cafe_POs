@@ -17,8 +17,24 @@ dotnet_sort_system_directives_first = true
 csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 dotnet_diagnostic.CA1707.severity = none   # test names use underscores
+# Structured logging uses message templates (the workspace standard); LoggerMessage source generation is not required.
+dotnet_diagnostic.CA1848.severity = suggestion
+dotnet_diagnostic.CA1873.severity = suggestion
+# Error is the deliberate name of the application error type (workspace standard: Result / Error).
+dotnet_diagnostic.CA1716.severity = none
 
 # EF migrations are generated code
 [**/Migrations/*.cs]
 generated_code = true
 dotnet_analyzer_diagnostic.severity = none
+
+# Test code: relax style/perf analyzers that add noise without value.
+[tests/**.cs]
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1310.severity = none
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1869.severity = none
+dotnet_diagnostic.CA2201.severity = none

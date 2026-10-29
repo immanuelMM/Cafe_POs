@@ -16,7 +16,7 @@ dotnet run --project src/CafePos.Api    # http://localhost:5080  (Development)
 In Development the app applies migrations and seeds dev data on startup (empty DB only). Scalar API docs: http://localhost:5080/scalar/v1
 
 ### Seeded dev accounts
-Created by `Data/DevDataSeeder.cs` on an empty database. Passwords are dev-only seed values.
+Created by `src/CafePos.Infrastructure/Persistence/DevDataSeeder.cs` on an empty database. Passwords are dev-only seed values.
 
 > A database first seeded in Phase 1 is **not** re-seeded (the seeder skips when any location exists), so it won't get the Uptown branch or the Phase 2 accounts. Either drop and recreate the dev database (from the repo root: `docker compose down -v && docker compose up -d`), or create them as the Owner via `POST /locations` and `POST /users`.
 
@@ -52,24 +52,29 @@ Integration tests boot the real API against a throwaway PostgreSQL database (cre
 ## Migrations
 EF tool is a local tool (`dotnet tool restore`).
 
-Phase 2 added the `Phase2MultiLocation` migration (`Data/Migrations/20261018040804_Phase2MultiLocation`): the `IsOwner` flag on users, `StripeTerminalLocationId` on locations, the `ItemVariationLocationOverrides` table (per-location price/tracking/threshold overrides), and a nullable `RefreshTokens.LocationId` (for Owner cross-location sessions). Its data step promotes the sole Admin, if there is exactly one, to Owner. Orders, stock and the ledger already carried `LocationId` from Phase 1, so no backfill is needed. It applies automatically in Development; elsewhere run `dotnet ef database update`.
+Phase 2 added the `Phase2MultiLocation` migration (`src/CafePos.Infrastructure/Persistence/Migrations/20261018040804_Phase2MultiLocation`): the `IsOwner` flag on users, `StripeTerminalLocationId` on locations, the `ItemVariationLocationOverrides` table (per-location price/tracking/threshold overrides), and a nullable `RefreshTokens.LocationId` (for Owner cross-location sessions). Its data step promotes the sole Admin, if there is exactly one, to Owner. Orders, stock and the ledger already carried `LocationId` from Phase 1, so no backfill is needed. It applies automatically in Development; elsewhere run `dotnet ef database update`.
 
-The `BrandingAssetsAndTimeClock` migration (`Data/Migrations/*_BrandingAssetsAndTimeClock`) adds tagline, primary color and logo/tarpaulin image columns (`bytea`) to `BrandSettings`, the clock PIN columns on users, and the `TimeEntries` table (with a partial unique index allowing one open entry per user and location). See `docs/api/branding-timeclock-api.md`.
+The `BrandingAssetsAndTimeClock` migration (`src/CafePos.Infrastructure/Persistence/Migrations/*_BrandingAssetsAndTimeClock`) adds tagline, primary color and logo/tarpaulin image columns (`bytea`) to `BrandSettings`, the clock PIN columns on users, and the `TimeEntries` table (with a partial unique index allowing one open entry per user and location). See `docs/api/branding-timeclock-api.md`.
 ```bash
-dotnet ef migrations add <Name> --project src/CafePos.Api --output-dir Data/Migrations
-dotnet ef database update --project src/CafePos.Api     # or just run the app in Development
+# migrations live in CafePos.Infrastructure (a design-time factory means no startup project is needed)
+dotnet ef migrations add <Name> --project src/CafePos.Infrastructure
+dotnet ef migrations has-pending-model-changes --project src/CafePos.Infrastructure   # must report no changes
+dotnet ef database update --project src/CafePos.Infrastructure --connection "<connection string>"   # or run the app in Development
 ```
+Never edit or renumber an existing migration. `RefreshTokenReplacementAndIp` (plan C5) is the only migration added by the refactor.
 
 ## Layout
+Clean Architecture, `Api -> Infrastructure -> Application -> Domain` (solution `CafePos.slnx`, central package management in `Directory.Packages.props`).
 ```
-src/CafePos.Api
-  Controllers/    Auth, Catalog, Inventory (+ Locations, Recipes), Orders
-  Domain/         Entities
-  Data/           CafeDbContext (global query filters), migrations, dev seeder
-  Services/       OrderService, StockService, TokenService, PricingCalculator
-  Payments/       IPaymentProvider + Cash implementation
-  Infrastructure/ ProblemDetails exception handler, current-location, paging
-tests/CafePos.Api.Tests
+src/CafePos.Domain          entities (one per file), Roles, enums, PricingCalculator. No package dependencies.
+src/CafePos.Application     Common/ (Result, Error, ICurrentUser, IUnitOfWork, validation helpers, uploads)
+                            Features/{Auth,Locations,Users,VariationOverrides,Catalog,Inventory,Orders,Branding,TimeClock}/
+                              (DTO records, FluentValidation validators, I*Repository ports, *Service), Payments/
+src/CafePos.Infrastructure  Persistence/ (CafeDbContext + unit of work, Configurations/, Migrations/, Repositories/, DevDataSeeder),
+                            Identity/ (ApplicationUser, IdentityService, PinHasher), Auth/ (JwtTokenService, JwtOptions)
+src/CafePos.Api            thin Controllers, Http/ (current user, problem results), Validation/ (FluentValidation filter),
+                            OpenApi/, RateLimiting/, Auth/ (policies), DependencyInjection.cs, Program.cs
+tests/CafePos.Domain.Tests  tests/CafePos.Application.Tests (NSubstitute)  tests/CafePos.Api.IntegrationTests (Testcontainers)
 ```
 
 ## Key design points
@@ -88,4 +93,4 @@ The API contract is `backend/openapi/v1.json` (OpenAPI 3.1, committed; the front
 cd backend && dotnet build src/CafePos.Api -p:OpenApiGenerateDocuments=true
 ```
 
-`ContractTests` fail when the live document differs from the committed file, and also pin the access-token claims and refresh-cookie attributes. Build-time generation skips the JWT key check, migrations and seeding, so it needs no database or secrets.
+`/health` (kept), `/health/live` and `/health/ready` (database) are not part of the contract document. `ContractTests` fail when the live document differs from the committed file, and also pin the access-token claims and refresh-cookie attributes. Build-time generation skips the JWT key check, migrations and seeding, so it needs no database or secrets.

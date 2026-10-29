@@ -57,6 +57,8 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<CafeDbContext>();
         services.AddSingleton<ITokenService, JwtTokenService>();
 
+        services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
+
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IPinHasher, PinHasher>();
 

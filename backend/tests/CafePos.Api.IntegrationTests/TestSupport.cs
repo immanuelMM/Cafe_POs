@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Testcontainers.PostgreSql;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 /// <summary>
 /// Boots the real API against a throwaway PostgreSQL database (created from migrations, seeded with dev data).

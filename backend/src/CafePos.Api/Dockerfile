@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY global.json Directory.Build.props Directory.Packages.props CafePos.slnx ./
+COPY global.json Directory.Build.props Directory.Packages.props .editorconfig CafePos.slnx ./
 COPY src/CafePos.Domain/CafePos.Domain.csproj src/CafePos.Domain/
 COPY src/CafePos.Application/CafePos.Application.csproj src/CafePos.Application/
 COPY src/CafePos.Infrastructure/CafePos.Infrastructure.csproj src/CafePos.Infrastructure/

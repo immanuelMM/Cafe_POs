@@ -5,7 +5,7 @@ using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 [Collection("api")]
 public class AuthTests

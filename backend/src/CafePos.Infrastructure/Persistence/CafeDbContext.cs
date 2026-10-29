@@ -58,13 +58,13 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>, IUnitOf
         configurationBuilder.Properties<string>().HaveMaxLength(500);
     }
 
-    protected override void OnModelCreating(ModelBuilder b)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(b);
-        b.ApplyConfigurationsFromAssembly(typeof(CafeDbContext).Assembly);
+        base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(typeof(CafeDbContext).Assembly);
 
         // Client/app-generated Guid keys: tell EF they are never store-generated so graph-discovered new rows are Added, not Modified.
-        foreach (var et in b.Model.GetEntityTypes())
+        foreach (var et in builder.Model.GetEntityTypes())
         {
             var pk = et.FindPrimaryKey();
             if (pk is { Properties.Count: 1 } && pk.Properties[0].ClrType == typeof(Guid) && et.ClrType != typeof(ApplicationUser))
@@ -75,15 +75,15 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>, IUnitOf
         // on LocationId == CurrentLocationId (plan 4.1), plus an index on LocationId.
         // StaffAssignment is filtered too (not ILocationScoped: an Owner/Admin must be able to write assignments for the target
         // location). Auth flows and Owner-gated code read it with an explicit IgnoreQueryFilters() inside the repositories.
-        b.Entity<StaffAssignment>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<IngredientStock>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<StockMovement>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<TimeEntry>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<Order>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<OrderItem>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<OrderItemModifier>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<Payment>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
-        b.Entity<IdempotencyRecord>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<StaffAssignment>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<IngredientStock>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<StockMovement>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<TimeEntry>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<Order>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<OrderItem>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<OrderItemModifier>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<Payment>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
+        builder.Entity<IdempotencyRecord>().HasQueryFilter(x => x.LocationId == CurrentLocationId);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

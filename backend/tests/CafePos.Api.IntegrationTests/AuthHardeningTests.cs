@@ -4,7 +4,7 @@ using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 /// <summary>Refresh-token auditing columns (C5), rate limiting on the auth endpoints (C4) and startup option validation (M8).</summary>
 public class AuthHardeningTests
@@ -99,5 +99,20 @@ public class AuthHardeningTests
 
         Assert.NotNull(ex);
         Assert.Contains("Jwt:Key", ex.ToString(), StringComparison.Ordinal);
+    }
+}
+
+/// <summary>Health endpoints (plan C3): /health stays, /health/live and /health/ready (database) are added.</summary>
+public class HealthTests(ApiFactory factory) : IClassFixture<ApiFactory>
+{
+    [Theory]
+    [InlineData("/health")]
+    [InlineData("/health/live")]
+    [InlineData("/health/ready")]
+    public async Task Health_endpoints_are_public_and_report_healthy(string path)
+    {
+        var res = await factory.CreateClient().GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
     }
 }

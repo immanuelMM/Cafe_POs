@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 /// <summary>
 /// Characterization test for the error contract the frontend depends on (status, title, detail, field errors, extensions).

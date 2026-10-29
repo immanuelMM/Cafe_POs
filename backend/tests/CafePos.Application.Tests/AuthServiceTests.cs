@@ -91,7 +91,7 @@ public class AuthServiceTests
         var foreign = await Sut().LoginAsync(Login(Guid.NewGuid()), null, default);
 
         needs.Error!.ShouldFailWith(ErrorKind.BadRequest, "Location required");
-        Assert.IsType<List<LocationRef>>(needs.Error.Extensions!["locations"]);
+        Assert.IsType<List<LocationRef>>(needs.Error!.Extensions!["locations"]);
         Assert.Equal(Roles.Manager, chosen.Session!.Response.User.Role);
         foreign.Error!.ShouldFailWith(ErrorKind.Forbidden, "No location access");
     }

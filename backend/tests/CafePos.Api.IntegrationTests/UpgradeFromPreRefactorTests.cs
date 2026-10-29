@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 /// <summary>
 /// Refactor safety net (plan risk R2): a database created by the PRE-refactor build (the M3 commit, single CafePos.Api project,

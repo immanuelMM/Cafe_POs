@@ -9,20 +9,20 @@ namespace CafePos.Api.Http;
 /// </summary>
 public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IProblemDetailsService problems) : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         ProblemDetails pd;
-        if (ex is BadHttpRequestException bad && bad.StatusCode is >= 400 and < 500)
+        if (exception is BadHttpRequestException bad && bad.StatusCode is >= 400 and < 500)
         {
             pd = new ProblemDetails { Status = bad.StatusCode, Title = bad.StatusCode == 413 ? "Request too large" : "Bad request", Detail = bad.Message };
         }
         else
         {
-            logger.LogError(ex, "Unhandled exception on {Method} {Path}", ctx.Request.Method, ctx.Request.Path);
+            logger.LogError(exception, "Unhandled exception on {Method} {Path}", httpContext.Request.Method, httpContext.Request.Path);
             pd = new ProblemDetails { Status = 500, Title = "An unexpected error occurred." };
         }
 
-        ctx.Response.StatusCode = pd.Status!.Value;
-        return await problems.TryWriteAsync(new ProblemDetailsContext { HttpContext = ctx, ProblemDetails = pd, Exception = ex });
+        httpContext.Response.StatusCode = pd.Status!.Value;
+        return await problems.TryWriteAsync(new ProblemDetailsContext { HttpContext = httpContext, ProblemDetails = pd, Exception = exception });
     }
 }

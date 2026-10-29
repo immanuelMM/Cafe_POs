@@ -6,7 +6,7 @@
     <Project Path="src/CafePos.Infrastructure/CafePos.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/CafePos.Api.Tests/CafePos.Api.Tests.csproj" />
+    <Project Path="tests/CafePos.Api.IntegrationTests/CafePos.Api.IntegrationTests.csproj" />
     <Project Path="tests/CafePos.Application.Tests/CafePos.Application.Tests.csproj" />
     <Project Path="tests/CafePos.Domain.Tests/CafePos.Domain.Tests.csproj" />
   </Folder>

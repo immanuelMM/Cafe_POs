@@ -9,7 +9,7 @@ using CafePos.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-namespace CafePos.Api.Tests;
+namespace CafePos.Api.IntegrationTests;
 
 internal static class AdvHelpers
 {
