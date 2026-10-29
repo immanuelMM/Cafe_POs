@@ -1,4 +1,5 @@
-using CafePos.Api.Domain;
+using CafePos.Domain;
+using CafePos.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,5 +1,5 @@
 using CafePos.Api.Data;
-using CafePos.Api.Domain;
+using CafePos.Domain;
 using CafePos.Api.Dtos;
 using CafePos.Api.Infrastructure;
 using CafePos.Api.Services;

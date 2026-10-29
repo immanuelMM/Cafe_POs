@@ -1,5 +1,6 @@
 using CafePos.Api.Data;
-using CafePos.Api.Domain;
+using CafePos.Domain;
+using CafePos.Infrastructure.Identity;
 using CafePos.Api.Dtos;
 using CafePos.Api.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -96,9 +97,11 @@ public class LocationsController : ControllerBase
         await _access.EnsureAsync(User, id);
         if (!await _db.Locations.AnyAsync(l => l.Id == id, ct)) throw ApiException.NotFound("Location");
         // Cross-location read for an Owner who is not currently at this location: explicit, Owner/Admin-gated IgnoreQueryFilters.
-        return await _db.StaffAssignments.IgnoreQueryFilters().AsNoTracking().Where(a => a.LocationId == id)
-            .OrderBy(a => a.User!.DisplayName)
-            .Select(a => new StaffMemberDto(a.UserId, a.User!.Email ?? "", a.User.DisplayName, a.Role, a.User.Active)).ToListAsync(ct);
+        return await (from a in _db.StaffAssignments.IgnoreQueryFilters().AsNoTracking()
+                      join u in _db.Users.AsNoTracking() on a.UserId equals u.Id
+                      where a.LocationId == id
+                      orderby u.DisplayName
+                      select new StaffMemberDto(a.UserId, u.Email ?? "", u.DisplayName, a.Role, u.Active)).ToListAsync(ct);
     }
 
     /// <summary>

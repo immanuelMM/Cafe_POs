@@ -1,4 +1,5 @@
-using CafePos.Api.Domain;
+using CafePos.Domain;
+using CafePos.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -106,7 +107,7 @@ public class CafeDbContext : IdentityUserContext<ApplicationUser, Guid>
         {
             e.HasKey(x => new { x.UserId, x.LocationId });
             e.Property(x => x.Role).HasMaxLength(50);
-            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId);
             e.HasOne(x => x.Location).WithMany().HasForeignKey(x => x.LocationId);
         });
 

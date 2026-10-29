@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="ProblemShapeGolden.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../openapi/v1.json" Link="openapi/v1.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using CafePos.Api.Data;
-using CafePos.Api.Domain;
+using CafePos.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 

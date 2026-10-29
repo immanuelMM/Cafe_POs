@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using CafePos.Api.Domain;
+using CafePos.Domain;
 
 namespace CafePos.Api.Dtos;
 

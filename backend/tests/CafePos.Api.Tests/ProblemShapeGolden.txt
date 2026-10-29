@@ -1,0 +1,308 @@
+### anon POST /api/v1/auth/login  <= {}
+400 application/problem+json
+{"errors":{"Email":["The Email field is required.","The Email field is not a valid e-mail address."],"Password":["The Password field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### anon POST /api/v1/auth/login  <= {"email":"nope","password":"x"}
+400 application/problem+json
+{"errors":{"Email":["The Email field is not a valid e-mail address."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### anon POST /api/v1/auth/login  <= {
+400 application/problem+json
+{"errors":{"$":["Expected depth to be zero at the end of the JSON payload. There is an open JSON object or array that should be closed. Path: $ | LineNumber: 0 | BytePositionInLine: 1."],"req":["The req field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### anon POST /api/v1/auth/login  <= {"email":"a@b.c","password":5}
+400 application/problem+json
+{"errors":{"$.password":["The JSON value could not be converted to System.String. Path: $.password | LineNumber: 0 | BytePositionInLine: 29."],"req":["The req field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### anon POST /api/v1/auth/login  <= hello
+415 application/problem+json
+{"status":415,"title":"Unsupported Media Type","type":"https://tools.ietf.org/html/rfc9110#section-15.5.16"}
+
+### admin POST /api/v1/auth/switch-location  <= {"locationId":"abc"}
+400 application/problem+json
+{"errors":{"$.locationId":["The JSON value could not be converted to System.Nullable\u00601[System.Guid]. Path: $.locationId | LineNumber: 0 | BytePositionInLine: 19."],"req":["The req field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/categories  <= {}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/categories  <= {"name":""}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/categories  <= {"name":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...
+400 application/problem+json
+{"errors":{"Name":["The field Name must be a string or array type with a maximum length of \u0027200\u0027."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/items  <= {}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/items  <= {"categoryId":"aaaaaaaa-0000-0000-0000-000000000001","name":"","variations":[{"name":"","sku":"","price":-1}]}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."],"Variations[0].Name":["The Name field is required."],"Variations[0].Price":["The field Price must be between 0 and 1000000."],"Variations[0].Sku":["The Sku field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/items  <= {"categoryId":"aaaaaaaa-0000-0000-0000-000000000001","name":"n","variations":[]}
+422 application/problem+json
+{"detail":"An item needs at least one variation (name, sku, price).","status":422,"title":"Variation required","type":"https://tools.ietf.org/html/rfc4918#section-11.2"}
+
+### admin POST /api/v1/items/aaaaaaaa-0000-0000-0000-000000000001/variations  <= {"price":2000000}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."],"Price":["The field Price must be between 0 and 1000000."],"Sku":["The Sku field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/modifier-lists  <= {"name":"","minSelections":60,"maxSelections":0,"modifiers":[{"name":"","priceDelta":999999}]}
+400 application/problem+json
+{"errors":{"MaxSelections":["The field MaxSelections must be between 1 and 50."],"MinSelections":["The field MinSelections must be between 0 and 50."],"Modifiers[0].Name":["The Name field is required."],"Modifiers[0].PriceDelta":["The field PriceDelta must be between -100000 and 100000."],"Name":["The Name field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/modifier-lists  <= {"name":"x","minSelections":3,"maxSelections":1}
+422 application/problem+json
+{"detail":"minSelections cannot exceed maxSelections.","status":422,"title":"Invalid selection rules","type":"https://tools.ietf.org/html/rfc4918#section-11.2"}
+
+### admin POST /api/v1/ingredients  <= {}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/ingredients  <= {"name":"a","unit":"","lowStockThreshold":-1,"initialQuantity":-2}
+400 application/problem+json
+{"errors":{"InitialQuantity":["The field InitialQuantity must be between 0 and 1000000000."],"LowStockThreshold":["The field LowStockThreshold must be between 0 and 1000000000."],"Unit":["The Unit field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/restocks  <= {"quantity":0}
+400 application/problem+json
+{"errors":{"Quantity":["The field Quantity must be between 0.001 and 1000000000."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/ingredients/aaaaaaaa-0000-0000-0000-000000000001/adjustments  <= {"note":""}
+400 application/problem+json
+{"errors":{"Note":["The Note field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/ingredients/aaaaaaaa-0000-0000-0000-000000000001/adjustments  <= {"quantityDelta":0,"note":"n"}
+404 application/problem+json
+{"detail":"Ingredient was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin PUT /api/v1/variations/aaaaaaaa-0000-0000-0000-000000000001/recipe  <= {"lines":[{"quantity":0}]}
+400 application/problem+json
+{"errors":{"Lines[0].Quantity":["The field Quantity must be between 0.001 and 1000000."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/variations/aaaaaaaa-0000-0000-0000-000000000001/location-overrides/{main}  <= {"priceOverride":-5}
+400 application/problem+json
+{"errors":{"PriceOverride":["The field PriceOverride must be between 0 and 1000000."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding  <= {}
+400 application/problem+json
+{"errors":{"BrandName":["The BrandName field is required."],"PrimaryColor":["The PrimaryColor field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding  <= {"brandName":"x","primaryColor":"red","secondaryColor":"zz","tertiaryColor":"yy","gradientAngle":999}
+400 application/problem+json
+{"errors":{"GradientAngle":["The field GradientAngle must be between 0 and 360."],"PrimaryColor":["Primary color must look like #RRGGBB."],"SecondaryColor":["Secondary color must look like #RRGGBB."],"TertiaryColor":["Tertiary color must look like #RRGGBB."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding  <= {"brandName":"   ","primaryColor":"#aabbcc"}
+400 application/problem+json
+{"errors":{"BrandName":["The BrandName field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding  <= {"brandName":"x","primaryColor":"#aabbcc","tertiaryColor":"#112233"}
+400 application/problem+json
+{"detail":"Set a secondary color before a tertiary color.","status":400,"title":"Invalid colors","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding  <= {"brandName":"x","primaryColor":"#aabbcc","gradient":true}
+400 application/problem+json
+{"detail":"A gradient needs at least two colors.","status":400,"title":"Invalid colors","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding/designs/logo  <= {}
+400 application/problem+json
+{"detail":"The design document must be a JSON object.","status":400,"title":"Invalid design","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding/designs/logo  <= {"document":[1]}
+400 application/problem+json
+{"detail":"The design document must be a JSON object.","status":400,"title":"Invalid design","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin PUT /api/v1/branding/designs/nope  <= {"document":{}}
+404 application/problem+json
+{"detail":"Design was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### owner POST /api/v1/locations  <= {}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/locations  <= {"name":"x","timeZone":"","vatRatePercent":101}
+400 application/problem+json
+{"errors":{"TimeZone":["The TimeZone field is required."],"VatRatePercent":["The field VatRatePercent must be between 0 and 100."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/locations  <= {"name":"x","timeZone":"Mars/Base"}
+422 application/problem+json
+{"detail":"\u0027Mars/Base\u0027 is not a known IANA time zone.","status":422,"title":"Invalid time zone","type":"https://tools.ietf.org/html/rfc4918#section-11.2"}
+
+### admin PUT /api/v1/locations/{main}  <= {"name":"","vatRatePercent":-1}
+400 application/problem+json
+{"errors":{"Name":["The Name field is required."],"VatRatePercent":["The field VatRatePercent must be between 0 and 100."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/locations/{main}/staff  <= {}
+400 application/problem+json
+{"errors":{"Email":["The Email field is required.","The Email field is not a valid e-mail address."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/locations/{main}/staff  <= {"email":"bad","role":"Cashier"}
+400 application/problem+json
+{"errors":{"Email":["The Email field is not a valid e-mail address."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/locations/{main}/staff  <= {"email":"cashier@cafe.local","role":"Nope"}
+422 application/problem+json
+{"detail":"Role must be Cashier, Manager or Admin.","status":422,"title":"Invalid role","type":"https://tools.ietf.org/html/rfc4918#section-11.2"}
+
+### owner POST /api/v1/users  <= {}
+400 application/problem+json
+{"errors":{"DisplayName":["The DisplayName field is required."],"Email":["The Email field is required.","The Email field is not a valid e-mail address."],"Password":["The Password field is required.","The field Password must be a string or array type with a minimum length of \u00278\u0027."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/users  <= {"email":"bad","displayName":"","password":"short"}
+400 application/problem+json
+{"errors":{"DisplayName":["The DisplayName field is required."],"Email":["The Email field is not a valid e-mail address."],"Password":["The field Password must be a string or array type with a minimum length of \u00278\u0027."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/users  <= {"email":"x@y.z","displayName":"X","password":"alllowercase1"}
+400 application/problem+json
+{"detail":"A non-Owner user needs at least one location assignment, otherwise they can never log in.","status":400,"title":"Assignment required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/users  <= {"email":"x@y.z","displayName":"X","password":"Password#12345"}
+400 application/problem+json
+{"detail":"A non-Owner user needs at least one location assignment, otherwise they can never log in.","status":400,"title":"Assignment required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/users  <= {"email":"x@y.z","displayName":"X","password":"Password#12345","assignments":[{"locationId":"11111111-1111-1111-1111-111...
+422 application/problem+json
+{"detail":"Role must be Cashier, Manager or Admin.","status":422,"title":"Invalid role","type":"https://tools.ietf.org/html/rfc4918#section-11.2"}
+
+### owner PUT /api/v1/users/aaaaaaaa-0000-0000-0000-000000000001  <= {}
+400 application/problem+json
+{"errors":{"DisplayName":["The DisplayName field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner PUT /api/v1/users/aaaaaaaa-0000-0000-0000-000000000001/pin  <= {"pin":"12"}
+400 application/problem+json
+{"errors":{"Pin":["PIN must be 4 to 6 digits."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/users/aaaaaaaa-0000-0000-0000-000000000001/locations  <= {}
+422 application/problem+json
+{"detail":"Location does not exist or is inactive.","status":422,"title":"Invalid location","type":"https://tools.ietf.org/html/rfc4918#section-11.2"}
+
+### cashier PUT /api/v1/timeclock/my-pin  <= {"pin":"abc"}
+400 application/problem+json
+{"errors":{"Pin":["PIN must be 4 to 6 digits."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier POST /api/v1/timeclock/punch  <= {}
+400 application/problem+json
+{"errors":{"Pin":["The Pin field is required."],"UserId":["The UserId field is required."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier POST /api/v1/orders  <= {}
+400 application/problem+json
+{"detail":"Send a client-generated UUID as id.","status":400,"title":"Order id required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier POST /api/v1/orders  <= {"id":"aaaaaaaa-0000-0000-0000-000000000001","items":[{"quantity":0}]}
+400 application/problem+json
+{"errors":{"Items[0].Quantity":["The field Quantity must be between 1 and 100."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier POST /api/v1/orders  <= {"id":"00000000-0000-0000-0000-000000000000","items":[]}
+400 application/problem+json
+{"detail":"Send a client-generated UUID as id.","status":400,"title":"Order id required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier POST /api/v1/orders/aaaaaaaa-0000-0000-0000-000000000001/items  <= {"itemVariationId":"aaaaaaaa-0000-0000-0000-000000000001","quantity":101}
+400 application/problem+json
+{"errors":{"Quantity":["The field Quantity must be between 1 and 100."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier POST /api/v1/orders/aaaaaaaa-0000-0000-0000-000000000001/complete  <= {}
+400 application/problem+json
+{"detail":"Send an Idempotency-Key header (max 200 chars).","status":400,"title":"Idempotency-Key required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier POST /api/v1/orders/aaaaaaaa-0000-0000-0000-000000000001/complete  <= {"amountTendered":-1}
+400 application/problem+json
+{"errors":{"AmountTendered":["The field AmountTendered must be between 0 and 100000000."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier GET /api/v1/orders?status=Nope
+400 application/problem+json
+{"detail":"Status must be Open, Completed or Canceled.","status":400,"title":"Invalid status","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier GET /api/v1/orders?page=abc
+400 application/problem+json
+{"errors":{"page":["The value \u0027abc\u0027 is not valid."]},"status":400,"title":"One or more validation errors occurred.","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### cashier GET /api/v1/orders/aaaaaaaa-0000-0000-0000-000000000001
+404 application/problem+json
+{"detail":"Order was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### cashier GET /api/v1/orders/not-a-guid
+404 application/problem+json
+{"status":404,"title":"Not Found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### cashier POST /api/v1/categories  <= {"name":"x"}
+403 application/problem+json
+{"status":403,"title":"Forbidden","type":"https://tools.ietf.org/html/rfc9110#section-15.5.4"}
+
+### cashier GET /api/v1/orders/aaaaaaaa-0000-0000-0000-000000000001/receipt
+404 application/problem+json
+{"detail":"Order was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### owner GET /api/v1/orders/aaaaaaaa-0000-0000-0000-000000000001
+404 application/problem+json
+{"detail":"Order was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### owner POST /api/v1/orders  <= {"id":"aaaaaaaa-0000-0000-0000-000000000001","items":[{"itemVariationId":"aaaaaaaa-0000-0000-0000-000000000001"}]}
+400 application/problem+json
+{"detail":"This request needs an active location. Owners: call POST /api/v1/auth/switch-location or pass locationId.","status":400,"title":"Location required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### owner POST /api/v1/ingredients  <= {"name":"ZZ owner","unit":"g","initialQuantity":5}
+400 application/problem+json
+{"detail":"This request needs an active location. Owners: call POST /api/v1/auth/switch-location or pass locationId.","status":400,"title":"Location required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### admin POST /api/v1/ingredients  <= {"name":"Espresso Beans","unit":"g"}
+409 application/problem+json
+{"detail":"\u0027Espresso Beans\u0027 already exists.","status":409,"title":"Duplicate ingredient","type":"https://tools.ietf.org/html/rfc9110#section-15.5.10"}
+
+### admin POST /api/v1/restocks  <= {"ingredientId":"aaaaaaaa-0000-0000-0000-000000000001","quantity":5}
+422 application/problem+json
+{"detail":"Ingredient does not exist or is inactive.","status":422,"title":"Invalid ingredient","type":"https://tools.ietf.org/html/rfc4918#section-11.2"}
+
+### admin GET /api/v1/ingredients/aaaaaaaa-0000-0000-0000-000000000001/movements
+404 application/problem+json
+{"detail":"Ingredient was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin GET /api/v1/variations/aaaaaaaa-0000-0000-0000-000000000001/recipe
+404 application/problem+json
+{"detail":"Variation was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin GET /api/v1/ingredients?locationId=aaaaaaaa-0000-0000-0000-000000000001
+404 application/problem+json
+{"detail":"Location was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### manager GET /api/v1/ingredients?locationId={uptown}
+403 application/problem+json
+{"detail":"You do not have access to that location. Switch location first (POST /api/v1/auth/switch-location).","status":403,"title":"Forbidden","type":"https://tools.ietf.org/html/rfc9110#section-15.5.4"}
+
+### admin PUT /api/v1/locations/aaaaaaaa-0000-0000-0000-000000000001  <= {"name":"n","timeZone":"Asia/Manila"}
+404 application/problem+json
+{"detail":"Location was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin POST /api/v1/locations/aaaaaaaa-0000-0000-0000-000000000001/staff  <= {"email":"cashier@cafe.local","role":"Cashier"}
+404 application/problem+json
+{"detail":"Location was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin GET /api/v1/users/aaaaaaaa-0000-0000-0000-000000000001
+404 application/problem+json
+{"detail":"User was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin DELETE /api/v1/users/aaaaaaaa-0000-0000-0000-000000000001/locations/{main}
+404 application/problem+json
+{"detail":"Assignment was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin GET /api/v1/items/aaaaaaaa-0000-0000-0000-000000000001
+404 application/problem+json
+{"detail":"Item was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin PUT /api/v1/items/aaaaaaaa-0000-0000-0000-000000000001/image  <= x
+404 application/problem+json
+{"detail":"Item was not found.","status":404,"title":"Not found","type":"https://tools.ietf.org/html/rfc9110#section-15.5.5"}
+
+### admin PUT /api/v1/branding/logo  <= x
+400 application/problem+json
+{"detail":"Send the image in the multipart form field \u0027file\u0027.","status":400,"title":"File required","type":"https://tools.ietf.org/html/rfc9110#section-15.5.1"}
+
+### anon POST /api/v1/auth/refresh
+401 application/problem+json
+{"detail":"Invalid credentials or session.","status":401,"title":"Unauthorized","type":"https://tools.ietf.org/html/rfc9110#section-15.5.2"}
+
+### anon GET /api/v1/items
+401 application/problem+json
+{"status":401,"title":"Unauthorized","type":"https://tools.ietf.org/html/rfc9110#section-15.5.2"}
+

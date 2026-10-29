@@ -75,7 +75,7 @@ public sealed class HttpCurrentLocation : ICurrentLocation
 
     public Guid? LocationId => Guid.TryParse(User?.FindFirstValue(AppClaims.LocationId), out var id) ? id : null;
     public Guid? UserId => Guid.TryParse(User?.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
-    public bool IsOwner => User?.IsInRole(CafePos.Api.Domain.Roles.Owner) == true;
+    public bool IsOwner => User?.IsInRole(CafePos.Domain.Roles.Owner) == true;
 }
 
 public static class AppClaims
@@ -86,9 +86,9 @@ public static class AppClaims
 public static class ClaimsExtensions
 {
     public static bool IsManagerUp(this ClaimsPrincipal user) =>
-        user.IsInRole(CafePos.Api.Domain.Roles.Manager) || user.IsInRole(CafePos.Api.Domain.Roles.Admin) || user.IsOwner();
+        user.IsInRole(CafePos.Domain.Roles.Manager) || user.IsInRole(CafePos.Domain.Roles.Admin) || user.IsOwner();
 
-    public static bool IsOwner(this ClaimsPrincipal user) => user.IsInRole(CafePos.Api.Domain.Roles.Owner);
+    public static bool IsOwner(this ClaimsPrincipal user) => user.IsInRole(CafePos.Domain.Roles.Owner);
 
     public static Guid? ActiveLocationId(this ClaimsPrincipal user) =>
         Guid.TryParse(user.FindFirstValue(AppClaims.LocationId), out var id) ? id : null;

@@ -1,4 +1,4 @@
-namespace CafePos.Api.Services;
+namespace CafePos.Domain;
 
 /// <summary>
 /// Money rules (Philippines, PHP). DECISION: all catalog prices, modifier deltas, line totals and order totals are

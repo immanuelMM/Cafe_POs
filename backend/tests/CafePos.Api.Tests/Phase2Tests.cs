@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CafePos.Api.Data;
-using CafePos.Api.Domain;
+using CafePos.Domain;
 using CafePos.Api.Dtos;
 using CafePos.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
