@@ -72,7 +72,11 @@ function PosScreen() {
   }, [searchOpen])
 
   const cats = useCategories()
-  const items = useItems({ categoryId: categoryId || undefined, search: search.trim() || undefined })
+  // A search looks across every category (and shows "All" selected); clearing it brings the chosen category back.
+  // A category that no longer exists (deactivated, refetch) counts as All.
+  const searching = search.trim() !== ''
+  const activeCat = searching || !(cats.data ?? []).some((c) => c.id === categoryId) ? '' : categoryId
+  const items = useItems({ categoryId: activeCat || undefined, search: search.trim() || undefined })
   const mods = useModifierLists()
   const { lines, add, setSheetOpen } = useCartStore()
 
@@ -118,7 +122,14 @@ function PosScreen() {
     <div className="pos">
       <section className="pos-menu" aria-label="Menu">
         <div className={`pos-tools${searchShown ? ' pos-tools-search' : ''}`}>
-          <CategoryTabs categories={cats.data ?? []} value={categoryId} onChange={setCategoryId} />
+          <CategoryTabs
+            categories={cats.data ?? []}
+            value={activeCat}
+            onChange={(id) => {
+              setCategoryId(id)
+              setSearch('')
+            }}
+          />
           <div className="pos-search">
             <input
               ref={searchRef}

@@ -189,6 +189,45 @@ describe('PosPage', () => {
     expect(box).toHaveFocus()
   })
 
+  describe('search and categories', () => {
+    const cats = [
+      { id: 'cat-1', name: 'Tea', sortOrder: 1, active: true },
+      { id: 'cat-2', name: 'Pastry', sortOrder: 2, active: true },
+    ]
+    it('searches across all categories (All selected) and restores the category when the search is cleared', async () => {
+      const asked: { cat: string | null; q: string | null }[] = []
+      server.use(
+        http.get(url('/api/v1/categories'), () => HttpResponse.json(cats)),
+        http.get(url('/api/v1/items'), ({ request }) => {
+          const u = new URL(request.url)
+          asked.push({ cat: u.searchParams.get('categoryId'), q: u.searchParams.get('search') })
+          return HttpResponse.json(paged([tea]))
+        }),
+      )
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      await user.click(await screen.findByRole('tab', { name: 'Pastry' }))
+      await vi.waitFor(() => expect(asked.at(-1)).toEqual({ cat: 'cat-2', q: null }))
+
+      await user.type(screen.getByRole('searchbox', { name: 'Search items' }), 'lat')
+      await vi.waitFor(() => expect(asked.at(-1)).toEqual({ cat: null, q: 'lat' }))
+      expect(screen.getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'true')
+
+      await user.click(screen.getByRole('button', { name: 'Clear search' }))
+      await vi.waitFor(() => expect(asked.at(-1)).toEqual({ cat: 'cat-2', q: null }))
+      expect(screen.getByRole('tab', { name: 'Pastry' })).toHaveAttribute('aria-selected', 'true')
+    })
+
+    it('keeps the category list in the DOM while searching (CSS only swaps it for the field on phones)', async () => {
+      server.use(http.get(url('/api/v1/categories'), () => HttpResponse.json(cats)))
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      await screen.findByRole('tab', { name: 'Tea' })
+      await user.type(screen.getByRole('searchbox', { name: 'Search items' }), 'x')
+      expect(screen.getByRole('tablist', { name: 'Categories' })).toBeInTheDocument()
+    })
+  })
+
   describe('clear order', () => {
     const add = (n: number) => {
       for (let i = 1; i <= n; i++)
@@ -232,6 +271,27 @@ describe('PosPage', () => {
       expect(useCartStore.getState().lines).toHaveLength(0)
       expect(within(cart).getByText('Tap an item to start an order.')).toBeInTheDocument()
     })
+  })
+
+  it('does not bring the "Clear all?" question back by itself after the cart changes', async () => {
+    for (let i = 1; i <= 4; i++)
+      useCartStore.getState().add({
+        itemName: `Item ${i}`,
+        variationId: `v${i}`,
+        variationName: 'Regular',
+        basePrice: 10,
+        modifiers: [],
+        quantity: 1,
+      })
+    const user = userEvent.setup()
+    renderWithProviders(<PosPage />)
+    const cart = screen.getByRole('complementary', { name: 'Current order' })
+    await user.click(within(cart).getByRole('button', { name: 'Clear' }))
+    expect(within(cart).getByRole('group', { name: 'Confirm clearing the order' })).toBeInTheDocument()
+    await user.click(within(cart).getByRole('button', { name: 'Remove Item 1' })) // 3 lines: question gone
+    expect(within(cart).queryByRole('group', { name: 'Confirm clearing the order' })).not.toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: /Iced Tea/ })) // back to 4 lines
+    expect(within(cart).queryByRole('group', { name: 'Confirm clearing the order' })).not.toBeInTheDocument()
   })
 
   describe('option sheet', () => {
@@ -323,6 +383,23 @@ describe('PosPage', () => {
       expect(input).toHaveValue('500')
       expect(within(dialog).getByText('Change').nextElementSibling).toHaveTextContent('₱400.00')
       expect(pay).toBeEnabled()
+    })
+
+    it('normalises a typed leading "." and shows no shortfall error for unfinished entries', async () => {
+      const { user, dialog } = await openPayment() // total 100
+      const input = within(dialog).getByLabelText(/Cash tendered/)
+      await user.type(input, '.')
+      expect(input).toHaveValue('0.')
+      expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
+      await user.clear(input)
+      await user.type(input, '.5')
+      expect(input).toHaveValue('0.5')
+      expect(within(dialog).queryByText(/NaN/)).not.toBeInTheDocument()
+      await user.clear(input)
+      await user.type(input, '12.')
+      expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
+      await user.type(input, '5')
+      expect(within(dialog).getByRole('alert')).toHaveTextContent('Tendered amount is less than the total.')
     })
 
     it('starts a decimal with 0. and fills the amount from a quick-tender button', async () => {

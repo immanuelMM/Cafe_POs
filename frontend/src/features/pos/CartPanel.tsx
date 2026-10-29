@@ -9,8 +9,9 @@ const CONFIRM_CLEAR_OVER = 3
 export function CartPanel({ onCharge }: { onCharge: () => void }) {
   const { lines, setQuantity, remove, clear, sheetOpen, setSheetOpen } = useCartStore()
   const total = cartTotal(lines)
-  const [asking, setAsking] = useState(false)
-  const confirming = asking && lines.length > CONFIRM_CLEAR_OVER
+  // The question belongs to one cart snapshot: any change to the lines (or clearing) dismisses it.
+  const [askedFor, setAskedFor] = useState<typeof lines | null>(null)
+  const confirming = askedFor === lines && lines.length > CONFIRM_CLEAR_OVER
   const keepRef = useRef<HTMLButtonElement>(null)
 
   // The Clear button is replaced by the question; put focus on the safe answer so keyboard users are not dropped.
@@ -19,7 +20,7 @@ export function CartPanel({ onCharge }: { onCharge: () => void }) {
   }, [confirming])
 
   const onClear = () => {
-    if (lines.length > CONFIRM_CLEAR_OVER) setAsking(true)
+    if (lines.length > CONFIRM_CLEAR_OVER) setAskedFor(lines)
     else clear()
   }
 
@@ -33,7 +34,7 @@ export function CartPanel({ onCharge }: { onCharge: () => void }) {
               type="button"
               className="btn btn-sm btn-ghost"
               aria-expanded={confirming}
-              onClick={confirming ? () => setAsking(false) : onClear}
+              onClick={confirming ? () => setAskedFor(null) : onClear}
             >
               Clear
             </button>
@@ -57,13 +58,13 @@ export function CartPanel({ onCharge }: { onCharge: () => void }) {
               type="button"
               className="btn btn-sm btn-danger"
               onClick={() => {
-                setAsking(false)
+                setAskedFor(null)
                 clear()
               }}
             >
               Yes, clear
             </button>
-            <button type="button" className="btn btn-sm" ref={keepRef} onClick={() => setAsking(false)}>
+            <button type="button" className="btn btn-sm" ref={keepRef} onClick={() => setAskedFor(null)}>
               Keep
             </button>
           </div>

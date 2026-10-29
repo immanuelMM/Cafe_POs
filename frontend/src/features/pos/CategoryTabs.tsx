@@ -17,6 +17,8 @@ export function CategoryTabs({ categories, value, onChange }: Props) {
   const vertical = useMediaQuery('(min-width: 600px) and (min-height: 500px)')
   const listRef = useRef<HTMLDivElement>(null)
   const all = [{ id: '', name: 'All' }, ...categories]
+  // Roving tabindex: if the value matches no tab, All is the tab stop so keyboard users can still Tab in.
+  const stop = all.some((c) => c.id === value) ? value : ''
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const prev = vertical ? 'ArrowUp' : 'ArrowLeft'
@@ -52,7 +54,7 @@ export function CategoryTabs({ categories, value, onChange }: Props) {
           type="button"
           role="tab"
           aria-selected={value === c.id}
-          tabIndex={value === c.id ? 0 : -1}
+          tabIndex={stop === c.id ? 0 : -1}
           className={`pos-cat${value === c.id ? ' pos-cat-on' : ''}`}
           onClick={() => onChange(c.id)}
         >

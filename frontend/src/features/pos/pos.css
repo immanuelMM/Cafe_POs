@@ -85,11 +85,13 @@
     flex: none;
     width: var(--tap);
   }
-  .pos-tools-search .pos-cats {
-    display: none;
-  }
-  .pos-tools-search .pos-search {
-    display: block;
+  @media (max-width: 599px), (max-height: 499px) {
+    .pos-tools-search .pos-cats {
+      display: none;
+    }
+    .pos-tools-search .pos-search {
+      display: block;
+    }
   }
 
   /* ---- menu grid: columns follow the container width ---- */

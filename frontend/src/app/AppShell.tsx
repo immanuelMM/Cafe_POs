@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { isAdmin, isManager, useAuthStore } from '../features/auth/authStore'
@@ -60,7 +60,7 @@ function RailLink({ item }: { item: NavItem }) {
   )
 }
 
-/** Account popover: who is signed in, the location switcher and the full-screen toggle. */
+/** Account popover: who is signed in and the full-screen toggle (the location switcher lives in the context bar). */
 function AccountPopover({ onClose }: { onClose: () => void }) {
   const user = useAuthStore((s) => s.user)
   const fs = useFullscreen()
@@ -111,6 +111,7 @@ export function AppShell() {
   const brandName = useBrandName()
   const [moreOpen, setMoreOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const closeAccount = useCallback(() => setAccountOpen(false), [])
 
   const manage: NavItem[] = [
     ...(manager
@@ -124,7 +125,9 @@ export function AppShell() {
     ...(user?.isOwner ? [{ to: '/admin/locations', label: 'Locations', icon: <IconMapPin /> }] : []),
     ...(admin ? [{ to: '/admin/settings', label: 'Settings', icon: <IconSettings /> }] : []),
   ]
-  const title = TITLES.find(([p]) => pathname.startsWith(p))?.[1] ?? brandName
+  const title = /\/receipt$/.test(pathname)
+    ? 'Receipt'
+    : (TITLES.find(([p]) => pathname.startsWith(p))?.[1] ?? brandName)
 
   const onLogout = async () => {
     try {
@@ -199,7 +202,7 @@ export function AppShell() {
           </Suspense>
         </main>
       </div>
-      {accountOpen && <AccountPopover onClose={() => setAccountOpen(false)} />}
+      {accountOpen && <AccountPopover onClose={closeAccount} />}
       {moreOpen && (
         <Modal title="More" onClose={() => setMoreOpen(false)}>
           <nav className="more-links" aria-label="More">

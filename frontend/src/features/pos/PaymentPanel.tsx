@@ -37,9 +37,12 @@ export function PaymentPanel({ onClose }: { onClose: () => void }) {
   const amount = Number(tendered)
   const valid = tendered !== '' && !Number.isNaN(amount) && amount >= total
   const change = valid ? round2(amount - total) : 0
+  // No error for an empty or unfinished entry ("", "12."); only a real amount below the total.
+  const showShortfall = !valid && tendered !== '' && !tendered.endsWith('.') && Number.isFinite(amount)
 
   const onTenderedChange = (v: string) => {
-    if (/^\d{0,7}(\.\d{0,2})?$/.test(v)) setTendered(v)
+    const n = v.startsWith('.') ? `0${v}` : v
+    if (/^\d{0,7}(\.\d{0,2})?$/.test(n)) setTendered(n)
   }
   const onKey = (k: KeypadKey) =>
     setTendered((t) => {
@@ -165,7 +168,7 @@ export function PaymentPanel({ onClose }: { onClose: () => void }) {
               <dd className={`big${valid ? ' ok' : ''}`}>{valid ? formatMoney(change) : '—'}</dd>
             </div>
           </dl>
-          {tendered !== '' && !valid && (
+          {showShortfall && (
             <p className="field-error" role="alert">
               Tendered amount is less than the total.
             </p>

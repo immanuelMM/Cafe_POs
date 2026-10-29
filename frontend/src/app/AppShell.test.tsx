@@ -12,15 +12,16 @@ const tree = (
   <Routes>
     <Route element={<AppShell />}>
       <Route path="/pos" element={<p>pos page</p>} />
+      <Route path="/orders/:id/receipt" element={<p>receipt page</p>} />
     </Route>
   </Routes>
 )
 
 const MANAGE = ['Menu banner', 'Catalog', 'Inventory', 'Staff', 'Locations', 'Settings']
 
-function renderShell() {
+function renderShell(route = '/pos') {
   server.use(http.get(url('/api/v1/branding'), () => HttpResponse.json({})))
-  return renderWithProviders(tree, { route: '/pos' })
+  return renderWithProviders(tree, { route })
 }
 
 /** Link names inside the main navigation (one DOM at every size; CSS decides how it is laid out). */
@@ -53,6 +54,12 @@ describe('AppShell navigation', () => {
     expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/orders')
     expect(screen.getByRole('link', { name: 'POS' })).toHaveClass('active')
     expect(within(screen.getByRole('main')).getByText('pos page')).toBeInTheDocument()
+  })
+
+  it('titles the phone app bar "Receipt" on an order receipt, not "Orders"', () => {
+    signIn()
+    renderShell('/orders/abc/receipt')
+    expect(document.querySelector('.appbar-title')).toHaveTextContent('Receipt')
   })
 
   it('always shows a Log out button', () => {

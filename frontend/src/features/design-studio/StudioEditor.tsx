@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type Konva from 'konva'
 import { ErrorBox, Spinner } from '../../components/ui'
 import { errorMessage } from '../../lib/errors'
+import { useMediaQuery } from '../../lib/useMediaQuery'
 import {
   DEFAULT_BRAND_NAME,
   assetUrl,
@@ -38,16 +39,7 @@ type Status = { type: 'ok' | 'error'; text: string } | null
 type Sheet = 'add' | 'layers' | 'props'
 
 /** Three-column layout from 1100px; below that (phones, tablet portrait) the panels are bottom sheets. */
-const useIsWide = () => {
-  const [wide, setWide] = useState(() => window.matchMedia('(min-width: 1100px)').matches)
-  useEffect(() => {
-    const m = window.matchMedia('(min-width: 1100px)')
-    const on = () => setWide(m.matches)
-    m.addEventListener('change', on)
-    return () => m.removeEventListener('change', on)
-  }, [])
-  return wide
-}
+const useIsWide = () => useMediaQuery('(min-width: 1100px)')
 
 /** Physical print size of the page: the preset's, or a 75 dpi equivalent for custom sizes. */
 const printSize = (doc: StudioDoc) =>
