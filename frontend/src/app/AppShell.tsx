@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { isAdmin, isManager, useAuthStore } from '../features/auth/authStore'
@@ -5,6 +6,7 @@ import { logout } from '../features/auth/authApi'
 import { useBrandName } from '../features/branding/brandingApi'
 import { BrandLogo } from '../features/branding/BrandLogo'
 import { LocationSwitcher } from './LocationSwitcher'
+import { Spinner } from '../components/ui'
 
 export function AppShell() {
   const user = useAuthStore((s) => s.user)
@@ -52,7 +54,9 @@ export function AppShell() {
         </div>
       </header>
       <main className="main">
-        <Outlet />
+        <Suspense fallback={<Spinner label="Loading…" />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )
