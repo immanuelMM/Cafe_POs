@@ -20,6 +20,7 @@
     <Using Include="Xunit" />
     <Using Include="CafePos.Application.Features.Catalog" />
     <Using Include="CafePos.Application.Features.Inventory" />
+    <Using Include="CafePos.Application.Features.Auth" />
     <Using Include="CafePos.Application.Features.Branding" />
     <Using Include="CafePos.Application.Features.Locations" />
     <Using Include="CafePos.Application.Features.TimeClock" />

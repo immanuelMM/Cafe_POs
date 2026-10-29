@@ -9,6 +9,9 @@ internal sealed class LocationRepository(CafeDbContext db) : ILocationRepository
     public async Task<IReadOnlyList<Location>> ListAllAsync(CancellationToken ct) =>
         await db.Locations.AsNoTracking().OrderBy(l => l.Name).ToListAsync(ct);
 
+    public async Task<IReadOnlyList<Location>> ListActiveAsync(CancellationToken ct) =>
+        await db.Locations.AsNoTracking().Where(l => l.Active).OrderBy(l => l.Name).ToListAsync(ct);
+
     public async Task<IReadOnlyList<Location>> ListActiveAssignedToAsync(Guid userId, CancellationToken ct) =>
         await db.StaffAssignments.IgnoreQueryFilters().AsNoTracking()
             .Where(a => a.UserId == userId && a.Location!.Active).Select(a => a.Location!).OrderBy(l => l.Name).ToListAsync(ct);

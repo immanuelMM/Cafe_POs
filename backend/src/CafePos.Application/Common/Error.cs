@@ -33,6 +33,8 @@ public sealed record Error(
 
     public static Error Forbidden(string detail) => new(ErrorKind.Forbidden, "Forbidden", detail);
 
+    public static Error Forbidden(string title, string detail) => new(ErrorKind.Forbidden, title, detail);
+
     public static Error Unauthorized(string title = "Unauthorized", string? detail = null) => new(ErrorKind.Unauthorized, title, detail);
 
     public static Error Locked(string title, string? detail = null) => new(ErrorKind.Locked, title, detail);

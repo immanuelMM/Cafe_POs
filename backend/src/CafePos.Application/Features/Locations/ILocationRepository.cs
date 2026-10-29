@@ -7,6 +7,9 @@ public interface ILocationRepository
     /// <summary>Every location including inactive ones, by name (Owner view).</summary>
     Task<IReadOnlyList<Location>> ListAllAsync(CancellationToken ct);
 
+    /// <summary>Active locations only, by name (the choices of an Owner session).</summary>
+    Task<IReadOnlyList<Location>> ListActiveAsync(CancellationToken ct);
+
     /// <summary>Active locations the user is assigned to, by name.</summary>
     Task<IReadOnlyList<Location>> ListActiveAssignedToAsync(Guid userId, CancellationToken ct);
 

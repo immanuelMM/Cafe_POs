@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace CafePos.Api.Infrastructure;
+namespace CafePos.Api.Http;
 
 /// <summary>Multipart body with the uploaded file in the form field "file".</summary>
 public class UploadFileRequest

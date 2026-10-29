@@ -17,12 +17,781 @@ namespace CafePos.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.11")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CafePos.Api.Domain.ApplicationUser", b =>
+            modelBuilder.Entity("CafePos.Domain.BrandDesign", b =>
+                {
+                    b.Property<string>("Kind")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Kind");
+
+                    b.ToTable("BrandDesigns");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.BrandSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("BrandName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("Gradient")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("GradientAngle")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LogoContentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("LogoData")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("PrimaryColor")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("SecondaryColor")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("Tagline")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TarpaulinContentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("TarpaulinData")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("TertiaryColor")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BrandSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BrandName = "Brew & Bean",
+                            Gradient = false,
+                            GradientAngle = 135,
+                            PrimaryColor = "#3b2417",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
+                });
+
+            modelBuilder.Entity("CafePos.Domain.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.IdempotencyRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResponseJson")
+                        .IsRequired()
+                        .HasMaxLength(100000)
+                        .HasColumnType("character varying(100000)");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("IdempotencyRecords");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.Ingredient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("LowStockThreshold")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Ingredients");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.IngredientStock", b =>
+                {
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IngredientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("QuantityOnHand")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.HasKey("LocationId", "IngredientId");
+
+                    b.HasIndex("IngredientId");
+
+                    b.ToTable("IngredientStocks");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.Item", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ImageUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.ItemImage", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("ItemId");
+
+                    b.ToTable("ItemImages");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.ItemModifierList", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ModifierListId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ItemId", "ModifierListId");
+
+                    b.HasIndex("ModifierListId");
+
+                    b.ToTable("ItemModifierLists");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.ItemVariation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("Sku")
+                        .IsUnique();
+
+                    b.ToTable("ItemVariations");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.ItemVariationLocationOverride", b =>
+                {
+                    b.Property<Guid>("ItemVariationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("LowStockThresholdOverride")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal?>("PriceOverride")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool?>("TrackInventoryOverride")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("ItemVariationId", "LocationId");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("ItemVariationLocationOverrides");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.Location", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("LastOrderNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("StripeTerminalLocationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("VatRatePercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Locations");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.Modifier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ModifierListId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("PriceDelta")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModifierListId");
+
+                    b.ToTable("Modifiers");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.ModifierList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxSelections")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinSelections")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ModifierLists");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CanceledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CashierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CashierName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("OrderNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("VatRatePercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId", "CreatedAt");
+
+                    b.HasIndex("LocationId", "OrderNumber")
+                        .IsUnique();
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.OrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("ItemVariationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("VariationName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.OrderItemModifier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ModifierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("PriceDelta")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("OrderItemId");
+
+                    b.ToTable("OrderItemModifiers");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("AmountTendered")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("ChangeGiven")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProviderReference")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.RecipeLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IngredientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ItemVariationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IngredientId");
+
+                    b.HasIndex("ItemVariationId", "IngredientId")
+                        .IsUnique();
+
+                    b.ToTable("RecipeLines");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.StaffAssignment", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("UserId", "LocationId");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("StaffAssignments");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.StockMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IngredientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("QuantityDelta")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("SourceDocumentRef")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Supplier")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal?>("UnitCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IngredientId");
+
+                    b.HasIndex("LocationId", "IngredientId", "CreatedAt");
+
+                    b.ToTable("StockMovements");
+                });
+
+            modelBuilder.Entity("CafePos.Domain.TimeEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ClockInAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ClockOutAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "LocationId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TimeEntries_OneOpenPerUserLocation")
+                        .HasFilter("\"ClockOutAt\" IS NULL");
+
+                    b.HasIndex("LocationId", "UserId", "ClockInAt");
+
+                    b.ToTable("TimeEntries");
+                });
+
+            modelBuilder.Entity("CafePos.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -112,767 +881,6 @@ namespace CafePos.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.BrandDesign", b =>
-                {
-                    b.Property<string>("Kind")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("Document")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Kind");
-
-                    b.ToTable("BrandDesigns");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.BrandSettings", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("BrandName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<bool>("Gradient")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("GradientAngle")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LogoContentType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<byte[]>("LogoData")
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("PrimaryColor")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
-
-                    b.Property<string>("SecondaryColor")
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
-
-                    b.Property<string>("Tagline")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("TarpaulinContentType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<byte[]>("TarpaulinData")
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("TertiaryColor")
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BrandSettings");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BrandName = "Brew & Bean",
-                            Gradient = false,
-                            GradientAngle = 135,
-                            PrimaryColor = "#3b2417",
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.Category", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.IdempotencyRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ResponseJson")
-                        .IsRequired()
-                        .HasMaxLength(100000)
-                        .HasColumnType("character varying(100000)");
-
-                    b.Property<int>("StatusCode")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LocationId", "Key")
-                        .IsUnique();
-
-                    b.ToTable("IdempotencyRecords");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.Ingredient", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal>("LowStockThreshold")
-                        .HasPrecision(18, 3)
-                        .HasColumnType("numeric(18,3)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Ingredients");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.IngredientStock", b =>
-                {
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IngredientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("QuantityOnHand")
-                        .HasPrecision(18, 3)
-                        .HasColumnType("numeric(18,3)");
-
-                    b.HasKey("LocationId", "IngredientId");
-
-                    b.HasIndex("IngredientId");
-
-                    b.ToTable("IngredientStocks");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.Item", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime?>("ImageUpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Items");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.ItemImage", b =>
-                {
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.HasKey("ItemId");
-
-                    b.ToTable("ItemImages");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.ItemModifierList", b =>
-                {
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ModifierListId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ItemId", "ModifierListId");
-
-                    b.HasIndex("ModifierListId");
-
-                    b.ToTable("ItemModifierLists");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.ItemVariation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("Sku")
-                        .IsUnique();
-
-                    b.ToTable("ItemVariations");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.ItemVariationLocationOverride", b =>
-                {
-                    b.Property<Guid>("ItemVariationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("LowStockThresholdOverride")
-                        .HasPrecision(18, 3)
-                        .HasColumnType("numeric(18,3)");
-
-                    b.Property<decimal?>("PriceOverride")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<bool?>("TrackInventoryOverride")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("ItemVariationId", "LocationId");
-
-                    b.HasIndex("LocationId");
-
-                    b.ToTable("ItemVariationLocationOverrides");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.Location", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("ContactPhone")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<int>("LastOrderNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("StripeTerminalLocationId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("TimeZone")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<decimal>("VatRatePercent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Locations");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.Modifier", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("ModifierListId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<decimal>("PriceDelta")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ModifierListId");
-
-                    b.ToTable("Modifiers");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.ModifierList", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("MaxSelections")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MinSelections")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ModifierLists");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.Order", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("CanceledAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CashierId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CashierName")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<int?>("OrderNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<decimal>("Total")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal>("VatAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal>("VatRatePercent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LocationId", "CreatedAt");
-
-                    b.HasIndex("LocationId", "OrderNumber")
-                        .IsUnique();
-
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.OrderItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ItemName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid>("ItemVariationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("LineTotal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("VariationName")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LocationId");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderItems");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.OrderItemModifier", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ModifierId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<Guid>("OrderItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("PriceDelta")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LocationId");
-
-                    b.HasIndex("OrderItemId");
-
-                    b.ToTable("OrderItemModifiers");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.Payment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal?>("AmountTendered")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal?>("ChangeGiven")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Method")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ProviderReference")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LocationId");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.RecipeLine", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IngredientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ItemVariationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Quantity")
-                        .HasPrecision(18, 3)
-                        .HasColumnType("numeric(18,3)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IngredientId");
-
-                    b.HasIndex("ItemVariationId", "IngredientId")
-                        .IsUnique();
-
-                    b.ToTable("RecipeLines");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.RefreshToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TokenHash")
-                        .IsUnique();
-
-                    b.ToTable("RefreshTokens");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.StaffAssignment", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("UserId", "LocationId");
-
-                    b.HasIndex("LocationId");
-
-                    b.ToTable("StaffAssignments");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.StockMovement", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("IngredientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<decimal>("QuantityDelta")
-                        .HasPrecision(18, 3)
-                        .HasColumnType("numeric(18,3)");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("SourceDocumentRef")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Supplier")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<decimal?>("UnitCost")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IngredientId");
-
-                    b.HasIndex("LocationId", "IngredientId", "CreatedAt");
-
-                    b.ToTable("StockMovements");
-                });
-
-            modelBuilder.Entity("CafePos.Api.Domain.TimeEntry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ClockInAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ClockOutAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "LocationId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_TimeEntries_OneOpenPerUserLocation")
-                        .HasFilter("\"ClockOutAt\" IS NULL");
-
-                    b.HasIndex("LocationId", "UserId", "ClockInAt");
-
-                    b.ToTable("TimeEntries");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
@@ -945,15 +953,15 @@ namespace CafePos.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.IngredientStock", b =>
+            modelBuilder.Entity("CafePos.Domain.IngredientStock", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Ingredient", "Ingredient")
+                    b.HasOne("CafePos.Domain.Ingredient", "Ingredient")
                         .WithMany()
                         .HasForeignKey("IngredientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CafePos.Api.Domain.Location", null)
+                    b.HasOne("CafePos.Domain.Location", null)
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -962,9 +970,9 @@ namespace CafePos.Infrastructure.Persistence.Migrations
                     b.Navigation("Ingredient");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.Item", b =>
+            modelBuilder.Entity("CafePos.Domain.Item", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Category", "Category")
+                    b.HasOne("CafePos.Domain.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -973,24 +981,24 @@ namespace CafePos.Infrastructure.Persistence.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.ItemImage", b =>
+            modelBuilder.Entity("CafePos.Domain.ItemImage", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Item", null)
+                    b.HasOne("CafePos.Domain.Item", null)
                         .WithOne()
-                        .HasForeignKey("CafePos.Api.Domain.ItemImage", "ItemId")
+                        .HasForeignKey("CafePos.Domain.ItemImage", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.ItemModifierList", b =>
+            modelBuilder.Entity("CafePos.Domain.ItemModifierList", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Item", null)
+                    b.HasOne("CafePos.Domain.Item", null)
                         .WithMany("ModifierLists")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CafePos.Api.Domain.ModifierList", "ModifierList")
+                    b.HasOne("CafePos.Domain.ModifierList", "ModifierList")
                         .WithMany()
                         .HasForeignKey("ModifierListId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -999,9 +1007,9 @@ namespace CafePos.Infrastructure.Persistence.Migrations
                     b.Navigation("ModifierList");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.ItemVariation", b =>
+            modelBuilder.Entity("CafePos.Domain.ItemVariation", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Item", "Item")
+                    b.HasOne("CafePos.Domain.Item", "Item")
                         .WithMany("Variations")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1010,75 +1018,75 @@ namespace CafePos.Infrastructure.Persistence.Migrations
                     b.Navigation("Item");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.ItemVariationLocationOverride", b =>
+            modelBuilder.Entity("CafePos.Domain.ItemVariationLocationOverride", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.ItemVariation", null)
+                    b.HasOne("CafePos.Domain.ItemVariation", null)
                         .WithMany()
                         .HasForeignKey("ItemVariationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CafePos.Api.Domain.Location", null)
+                    b.HasOne("CafePos.Domain.Location", null)
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.Modifier", b =>
+            modelBuilder.Entity("CafePos.Domain.Modifier", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.ModifierList", null)
+                    b.HasOne("CafePos.Domain.ModifierList", null)
                         .WithMany("Modifiers")
                         .HasForeignKey("ModifierListId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.Order", b =>
+            modelBuilder.Entity("CafePos.Domain.Order", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Location", null)
+                    b.HasOne("CafePos.Domain.Location", null)
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.OrderItem", b =>
+            modelBuilder.Entity("CafePos.Domain.OrderItem", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Order", null)
+                    b.HasOne("CafePos.Domain.Order", null)
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.OrderItemModifier", b =>
+            modelBuilder.Entity("CafePos.Domain.OrderItemModifier", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.OrderItem", null)
+                    b.HasOne("CafePos.Domain.OrderItem", null)
                         .WithMany("Modifiers")
                         .HasForeignKey("OrderItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.Payment", b =>
+            modelBuilder.Entity("CafePos.Domain.Payment", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Order", null)
+                    b.HasOne("CafePos.Domain.Order", null)
                         .WithMany("Payments")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.RecipeLine", b =>
+            modelBuilder.Entity("CafePos.Domain.RecipeLine", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Ingredient", "Ingredient")
+                    b.HasOne("CafePos.Domain.Ingredient", "Ingredient")
                         .WithMany()
                         .HasForeignKey("IngredientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CafePos.Api.Domain.ItemVariation", null)
+                    b.HasOne("CafePos.Domain.ItemVariation", null)
                         .WithMany("Recipe")
                         .HasForeignKey("ItemVariationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1087,49 +1095,47 @@ namespace CafePos.Infrastructure.Persistence.Migrations
                     b.Navigation("Ingredient");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.StaffAssignment", b =>
+            modelBuilder.Entity("CafePos.Domain.StaffAssignment", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Location", "Location")
+                    b.HasOne("CafePos.Domain.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CafePos.Api.Domain.ApplicationUser", "User")
+                    b.HasOne("CafePos.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Location");
-
-                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.StockMovement", b =>
+            modelBuilder.Entity("CafePos.Domain.StockMovement", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Ingredient", null)
+                    b.HasOne("CafePos.Domain.Ingredient", null)
                         .WithMany()
                         .HasForeignKey("IngredientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CafePos.Api.Domain.Location", null)
+                    b.HasOne("CafePos.Domain.Location", null)
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.TimeEntry", b =>
+            modelBuilder.Entity("CafePos.Domain.TimeEntry", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.Location", null)
+                    b.HasOne("CafePos.Domain.Location", null)
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CafePos.Api.Domain.ApplicationUser", null)
+                    b.HasOne("CafePos.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1138,7 +1144,7 @@ namespace CafePos.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.ApplicationUser", null)
+                    b.HasOne("CafePos.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1147,7 +1153,7 @@ namespace CafePos.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.ApplicationUser", null)
+                    b.HasOne("CafePos.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1156,38 +1162,38 @@ namespace CafePos.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("CafePos.Api.Domain.ApplicationUser", null)
+                    b.HasOne("CafePos.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.Item", b =>
+            modelBuilder.Entity("CafePos.Domain.Item", b =>
                 {
                     b.Navigation("ModifierLists");
 
                     b.Navigation("Variations");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.ItemVariation", b =>
+            modelBuilder.Entity("CafePos.Domain.ItemVariation", b =>
                 {
                     b.Navigation("Recipe");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.ModifierList", b =>
+            modelBuilder.Entity("CafePos.Domain.ModifierList", b =>
                 {
                     b.Navigation("Modifiers");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.Order", b =>
+            modelBuilder.Entity("CafePos.Domain.Order", b =>
                 {
                     b.Navigation("Items");
 
                     b.Navigation("Payments");
                 });
 
-            modelBuilder.Entity("CafePos.Api.Domain.OrderItem", b =>
+            modelBuilder.Entity("CafePos.Domain.OrderItem", b =>
                 {
                     b.Navigation("Modifiers");
                 });

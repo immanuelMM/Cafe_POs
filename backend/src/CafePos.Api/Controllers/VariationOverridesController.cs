@@ -1,5 +1,5 @@
 using CafePos.Api.Http;
-using CafePos.Api.Infrastructure;
+using CafePos.Api.Auth;
 using CafePos.Application.Features.VariationOverrides;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

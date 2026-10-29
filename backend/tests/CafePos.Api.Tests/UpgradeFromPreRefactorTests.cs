@@ -22,6 +22,8 @@ namespace CafePos.Api.Tests;
 /// </summary>
 public class UpgradeFromPreRefactorTests
 {
+    private const string AdditiveMigration = "RefreshTokenReplacementAndIp";
+
     private static readonly string[] ExpectedMigrations =
     [
         "20261016132257_InitialCreate",
@@ -69,9 +71,19 @@ public class UpgradeFromPreRefactorTests
             Assert.False(db.Database.HasPendingModelChanges(), "The EF model differs from the migration snapshot; add a migration (see plan M6).");
         }
 
-        // 3. History and schema are unchanged by the boot.
-        Assert.Equal(historyBefore, await ReadAsync(dbConnection, "SELECT \"MigrationId\", \"ProductVersion\" FROM \"__EFMigrationsHistory\" ORDER BY \"MigrationId\""));
-        Assert.Equal(schemaBefore, await SchemaFingerprintAsync(dbConnection));
+        // 3. The six pre-refactor migrations are untouched. Since the refactor exactly ONE additive migration exists (plan C5: two
+        //    nullable RefreshTokens columns); the boot applied it, and nothing else in the schema changed.
+        var historyAfter = await ReadAsync(dbConnection, "SELECT \"MigrationId\", \"ProductVersion\" FROM \"__EFMigrationsHistory\" ORDER BY \"MigrationId\"");
+        Assert.Equal(historyBefore, historyAfter.Take(historyBefore.Count).ToList());
+        var applied = Assert.Single(historyAfter.Skip(historyBefore.Count));
+        Assert.EndsWith("_" + AdditiveMigration, applied.Split('|')[0]);
+
+        var schemaAfter = await SchemaFingerprintAsync(dbConnection);
+        Assert.Empty(schemaBefore.Except(schemaAfter));
+        var added = schemaAfter.Except(schemaBefore).ToList();
+        Assert.Equal(2, added.Count);
+        Assert.Contains(added, l => l.StartsWith("RefreshTokens|CreatedByIp|", StringComparison.Ordinal));
+        Assert.Contains(added, l => l.StartsWith("RefreshTokens|ReplacedByTokenHash|", StringComparison.Ordinal));
 
         // 4. Old data and old password hashes work through the API.
         var login = await client.PostAsJsonAsync("/api/v1/auth/login", new { email = DevDataSeeder.CashierEmail, password = DevDataSeeder.CashierPassword });
@@ -112,7 +124,7 @@ public class UpgradeFromPreRefactorTests
     }
 
     /// <summary>Columns, indexes and constraints of the public schema, so any schema change shows up as a difference.</summary>
-    private static async Task<string> SchemaFingerprintAsync(string connectionString)
+    private static async Task<List<string>> SchemaFingerprintAsync(string connectionString)
     {
         var columns = await ReadAsync(connectionString,
             "SELECT table_name, column_name, data_type, is_nullable, character_maximum_length, numeric_precision, numeric_scale, column_default " +
@@ -122,6 +134,6 @@ public class UpgradeFromPreRefactorTests
         var constraints = await ReadAsync(connectionString,
             "SELECT conrelid::regclass::text, conname, pg_get_constraintdef(oid) FROM pg_constraint " +
             "WHERE connamespace = 'public'::regnamespace ORDER BY 1, 2");
-        return string.Join("\n", columns.Concat(["--"]).Concat(indexes).Concat(["--"]).Concat(constraints));
+        return columns.Concat(indexes).Concat(constraints).ToList();
     }
 }

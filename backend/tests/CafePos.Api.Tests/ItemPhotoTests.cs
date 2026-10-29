@@ -3,8 +3,6 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
-using CafePos.Api.Dtos;
-using CafePos.Api.Infrastructure;
 
 namespace CafePos.Api.Tests;
 

@@ -6,7 +6,6 @@ using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 using CafePos.Infrastructure.Identity;
-using CafePos.Api.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

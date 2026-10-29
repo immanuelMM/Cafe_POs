@@ -1,3 +1,4 @@
+using CafePos.Application.Features.Auth;
 using CafePos.Application.Features.Branding;
 using CafePos.Application.Features.Catalog;
 using CafePos.Application.Features.Inventory;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddSingleton<IPaymentProviderResolver, PaymentProviderResolver>();
         services.AddScoped<BrandingService>();
         services.AddScoped<TimeClockService>();
+        services.AddScoped<AuthService>();
         services.AddScoped<LocationService>();
         services.AddScoped<UserService>();
         services.AddScoped<VariationOverrideService>();

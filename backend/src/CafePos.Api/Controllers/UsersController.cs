@@ -1,5 +1,5 @@
 using CafePos.Api.Http;
-using CafePos.Api.Infrastructure;
+using CafePos.Api.Auth;
 using CafePos.Application.Common;
 using CafePos.Application.Features.Users;
 using Microsoft.AspNetCore.Authorization;

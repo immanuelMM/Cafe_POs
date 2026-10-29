@@ -5,8 +5,6 @@ using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
 using CafePos.Infrastructure.Identity;
-using CafePos.Api.Dtos;
-using CafePos.Api.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -28,6 +26,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName;
     private readonly bool _seedDevData;
+    private readonly IReadOnlyDictionary<string, string?> _extraConfig;
     private readonly NpgsqlConnectionStringBuilder _csb;
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -37,10 +36,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     }
 
     /// <summary>Boots the API against an existing database (for example one restored from a pre-refactor dump).</summary>
-    internal ApiFactory(string databaseName, bool seedDevData)
+    internal ApiFactory(string databaseName, bool seedDevData, IReadOnlyDictionary<string, string?>? extraConfig = null)
     {
         _dbName = databaseName;
         _seedDevData = seedDevData;
+        _extraConfig = extraConfig ?? new Dictionary<string, string?>();
         var baseCs = Environment.GetEnvironmentVariable("TEST_PG_CONNECTION")
                      ?? PostgresContainer.ConnectionString;
         _csb = new NpgsqlConnectionStringBuilder(baseCs) { Database = _dbName };
@@ -55,13 +55,16 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
-        builder.ConfigureAppConfiguration((_, cfg) => cfg.AddInMemoryCollection(new Dictionary<string, string?>
+        builder.ConfigureAppConfiguration((_, cfg) => cfg.AddInMemoryCollection(new Dictionary<string, string?>(
+            new Dictionary<string, string?>
         {
+            // The suite signs in hundreds of times from one address; rate limiting is tested with its own factory.
+            ["RateLimiting:Enabled"] = "false",
             ["ConnectionStrings:Default"] = ConnectionString,
             ["Jwt:Key"] = "test-signing-key-test-signing-key-test-signing-key",
             ["Database:MigrateOnStartup"] = "true",
             ["Database:SeedDevData"] = _seedDevData ? "true" : "false"
-        }));
+        }.Concat(_extraConfig).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value))));
     }
 
     protected override void Dispose(bool disposing)

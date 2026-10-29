@@ -6,8 +6,6 @@ using System.Text;
 using CafePos.Application.Common;
 using CafePos.Infrastructure.Persistence;
 using CafePos.Domain;
-using CafePos.Api.Dtos;
-using CafePos.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 

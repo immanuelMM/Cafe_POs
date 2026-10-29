@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 
-namespace CafePos.Api.Infrastructure;
+namespace CafePos.Api.OpenApi;
 
 /// <summary>Document title/version and the Bearer security scheme (same as the former Swashbuckle setup).</summary>
 internal sealed class OpenApiDocumentSetup : IOpenApiDocumentTransformer

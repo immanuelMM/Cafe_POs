@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using CafePos.Api.Infrastructure;
 using CafePos.Application.Common;
 using CafePos.Domain;
 
