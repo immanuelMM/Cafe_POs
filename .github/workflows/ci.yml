@@ -56,7 +56,7 @@ jobs:
           if grep -q "has the following vulnerable packages" vulnerable.txt; then
             echo "::warning title=Vulnerable NuGet packages::see the job log (dotnet list package --vulnerable)"
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: backend-test-results
@@ -183,7 +183,7 @@ jobs:
       - name: Compose logs
         if: failure()
         run: docker compose -f docker-compose.yml -f e2e/docker-compose.e2e.yml logs --no-color --tail=300
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report
@@ -223,7 +223,7 @@ jobs:
         env:
           ConnectionStrings__Default: Host=placeholder;Database=cafepos;Username=placeholder;Password=placeholder
         run: dotnet ef migrations bundle --project src/CafePos.Infrastructure --self-contained -r linux-x64 --force -o ../artifacts/efbundle
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: efbundle-linux-x64
           path: artifacts/efbundle
