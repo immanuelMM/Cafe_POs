@@ -10,10 +10,10 @@ services:
     container_name: cafepos-db
     environment:
       POSTGRES_USER: cafepos
-      POSTGRES_PASSWORD: cafepos_dev_pw   # local dev only
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cafepos_dev_pw}   # local dev only
       POSTGRES_DB: cafepos
     ports:
-      - "5433:5432"
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - cafepos-pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -26,26 +26,49 @@ services:
     build:
       context: ./backend
       dockerfile: src/CafePos.Api/Dockerfile
+    # Safety net on top of the startup DB retry: come back if the process still exits (never after `docker compose stop`).
+    restart: on-failure:5
     depends_on:
       db:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__Default: Host=db;Port=5432;Database=cafepos;Username=cafepos;Password=cafepos_dev_pw
+      # "GSS Encryption Mode=Disable": Npgsql otherwise tries to load Kerberos (libgssapi_krb5) on every connection, which the
+      # aspnet runtime image does not ship. Plain password auth is all that is used here and on managed PostgreSQL.
+      ConnectionStrings__Default: Host=db;Port=5432;Database=cafepos;Username=cafepos;Password=${POSTGRES_PASSWORD:-cafepos_dev_pw};GSS Encryption Mode=Disable
+      # appsettings.Development.json is not shipped in the image (it is excluded from publish), so the dev-only values
+      # that file used to carry come from here. Never use this key outside local Docker.
+      Jwt__Key: ${JWT_DEV_KEY:-DEV-ONLY-compose-signing-key-do-not-use-in-production-0123456789}
+      Database__MigrateOnStartup: "true"
+      Database__SeedDevData: "true"
+      Cors__Origins__0: http://localhost:${WEB_PORT:-5173}
     ports:
-      - "5080:8080"
+      - "${API_PORT:-5080}:8080"
+    healthcheck:
+      # Readiness (database reachable); the image HEALTHCHECK probes /health/live. The runtime image has no curl/wget.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health/ready HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3 && head -n1 <&3 | grep -q ' 200 '"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
 
   web:
     build:
       context: ./frontend
       args:
         # Baked into the bundle; the browser calls the API directly, so this is a host URL.
-        VITE_API_BASE_URL: http://localhost:5080/api/v1
+        VITE_API_BASE_URL: http://localhost:${API_PORT:-5080}/api/v1
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
-      - "5173:80"   # matches the API's Cors:Origins
+      - "${WEB_PORT:-5173}:80"   # the API's Cors:Origins is set to match
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   cafepos-pgdata:

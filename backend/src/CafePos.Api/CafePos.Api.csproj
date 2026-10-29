@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <!-- Dev-only secrets (Jwt:Key) for `dotnet run`, set with the dotnet user-secrets tool (see README) -->
+    <UserSecretsId>cafepos-api-dev</UserSecretsId>
 
     <!-- Committed contract snapshot (backend/openapi/v1.json) the frontend generates its types from. It is regenerated only
          on request so a forgotten update fails ContractTests instead of being silently rewritten:
@@ -25,6 +27,11 @@
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Development-only settings (local DB credentials) never ship in the published image. -->
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <ItemGroup>

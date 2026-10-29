@@ -1,3 +1,9 @@
-**/bin
-**/obj
-tests
+bin/
+obj/
+**/bin/
+**/obj/
+tests/
+TestResults/
+openapi/
+.vs/
+*.user

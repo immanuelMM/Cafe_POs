@@ -29,10 +29,14 @@ docker compose down            # stop (data kept); `docker compose down -v` also
 ```
 
 The frontend container serves a production build, so re-run `docker compose up -d --build` after code changes.
+Compose waits for the database and the API to be healthy, and restarts the API if it exits. Optional overrides (ports, dev
+password, dev JWT key) are listed in [`.env.example`](.env.example); copy it to `.env` to use them. The image contains no dev
+secrets: compose supplies the dev-only `Jwt__Key` and the dev-database switches as environment variables.
+Deployment notes (images, production configuration, migrations): [`docs/deployment.md`](docs/deployment.md).
 
 ### Local dev (hot reload)
 
-Prerequisites: .NET SDK 10.0.x, Docker (running), Node 20+.
+Prerequisites: .NET SDK 10.0.x, Docker (running), Node 22.
 
 ```bash
 # Database (from the repo root)
@@ -40,6 +44,7 @@ docker compose up -d --wait db
 
 # Backend (http://localhost:5080, Scalar at /scalar/v1)
 cd backend
+dotnet user-secrets set "Jwt:Key" "DEV-ONLY-signing-key-do-not-use-in-production-0123456789" --project src/CafePos.Api   # one-time
 dotnet run --project src/CafePos.Api
 
 # Frontend (http://localhost:5173)

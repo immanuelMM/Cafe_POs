@@ -17,6 +17,10 @@ npm run stack:down            # stop; `npm run stack:reset` also deletes the E2E
 
 - `docker-compose.e2e.yml` disables rate limiting and points the database at its own volume (`cafepos-e2e-pgdata`),
   so your hand-edited dev data is never used or modified.
+- The override reuses the dev stack's container names, so `stack:up` recreates `cafepos-db` on the E2E volume. Afterwards a
+  plain `docker compose up -d` (dev stack) brings the dev database back on `backend_cafepos-pgdata`; until then anything
+  running against `cafepos-db` is using the E2E data. Always `docker compose down` the dev stack before `stack:up`.
+- CI runs the `@smoke` subset on pull requests and the full suite on `main` and nightly (`.github/workflows/ci.yml`, job `e2e`).
 - Tests share one database and run serially. They assert on deltas (stock before/after), and `global-setup.ts` tops
   up consumed ingredients, so the suite can be re-run without resetting. `npm run stack:reset` gives a pristine DB.
 - Override targets with `E2E_BASE_URL` (default `http://localhost:5173`) and `E2E_API_URL` (default `http://localhost:5080`).

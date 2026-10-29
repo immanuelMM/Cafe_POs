@@ -11,6 +11,8 @@ API contract for the frontend: [`../docs/api/phase1-api.md`](../docs/api/phase1-
 ```bash
 docker compose up -d --wait db          # from the repo root: PostgreSQL 16 on localhost:5433 (user/db: cafepos)
 cd backend
+# One-time: the dev signing key is no longer committed; store one (32+ chars) in your user-secrets
+dotnet user-secrets set "Jwt:Key" "DEV-ONLY-signing-key-do-not-use-in-production-0123456789" --project src/CafePos.Api
 dotnet run --project src/CafePos.Api    # http://localhost:5080  (Development)
 ```
 In Development the app applies migrations and seeds dev data on startup (empty DB only). Scalar API docs: http://localhost:5080/scalar/v1
@@ -35,9 +37,11 @@ Reset the database (repo root): `docker compose down -v`.
 ## Configuration
 | Key | Notes |
 |---|---|
-| `ConnectionStrings:Default` | Dev value lives in `appsettings.Development.json` (docker compose credentials, local only) |
-| `Jwt:Key` | **Required, min 32 chars.** Dev key is in `appsettings.Development.json`; in any other environment set `Jwt__Key` (env var / secret store) |
+| `ConnectionStrings:Default` | Dev value lives in `appsettings.Development.json` (docker compose credentials, local only). Always include `GSS Encryption Mode=Disable` (Npgsql would otherwise load Kerberos, which the runtime image lacks) |
+| `Jwt:Key` | **Required, min 32 chars; never committed.** `dotnet run`: `dotnet user-secrets set "Jwt:Key" "<key>" --project src/CafePos.Api`. Docker compose: set by `docker-compose.yml` (a clearly named dev-only key, override with `JWT_DEV_KEY`). Anywhere else: `Jwt__Key` from the host's secret store. Startup fails fast without it |
 | `Cors:Origins` | Defaults to `http://localhost:5173` |
+| `ForwardedHeaders:KnownProxies[]` / `KnownNetworks[]` | Reverse proxies whose `X-Forwarded-*` headers are trusted. Empty (default) means not trusted; required behind a TLS-terminating ingress. See [`../docs/deployment.md`](../docs/deployment.md) |
+| `RateLimiting:*` | `Enabled`, `Login`, `LoginPerIp`, `Refresh`, `SwitchLocation`, `TimeclockPunch` (each `PermitLimit` + `WindowSeconds`) |
 | `Database:MigrateOnStartup` / `Database:SeedDevData` | `true` only in Development; run migrations explicitly elsewhere |
 
 ## Tests
