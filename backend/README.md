@@ -47,7 +47,7 @@ cd backend
 dotnet build
 dotnet test
 ```
-Integration tests boot the real API against a throwaway PostgreSQL database (created from the migrations, dropped afterwards), so the Docker db container (`cafepos-db`) must be running. Use `TEST_PG_CONNECTION` to point at another server (the `Database=` part is replaced). The suite had 99 tests at the end of Phase 2, including tenant-isolation tests for cross-location access.
+Integration tests boot the real API against a throwaway PostgreSQL database (created from the migrations, dropped afterwards). A PostgreSQL 16 container is started automatically with Testcontainers, so only a running Docker engine is needed (the compose db does not have to be up). Set `TEST_PG_CONNECTION` to use an existing server instead (the `Database=` part is replaced). The suite has 115 tests, including tenant-isolation tests for cross-location access.
 
 ## Migrations
 EF tool is a local tool (`dotnet tool restore`).

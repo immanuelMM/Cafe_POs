@@ -51,7 +51,7 @@ npm run dev
 
 In Development the backend migrates and seeds an empty database on startup. Dev logins are listed in [`backend/README.md`](backend/README.md#seeded-dev-accounts).
 
-Tests: `docker compose up -d --wait db`, then `cd backend && dotnet test` (see the backend README).
+Tests: `cd backend && dotnet test` (needs a running Docker engine; a PostgreSQL container is started automatically, see the backend README).
 
 ## Roles and locations
 

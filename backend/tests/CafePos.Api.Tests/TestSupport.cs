@@ -12,13 +12,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Testcontainers.PostgreSql;
 
 namespace CafePos.Api.Tests;
 
 /// <summary>
 /// Boots the real API against a throwaway PostgreSQL database (created from migrations, seeded with dev data).
-/// Needs a reachable server: by default the docker compose db (localhost:5433). Override with TEST_PG_CONNECTION
-/// (any connection string; the Database part is replaced with a unique name).
+/// By default a PostgreSQL 16 Testcontainers container is started once per test run (needs a running Docker engine,
+/// nothing else). Set TEST_PG_CONNECTION to use an existing server instead (e.g. a CI service container); the
+/// Database part is replaced with a unique name per factory.
 /// </summary>
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
@@ -30,7 +32,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     public ApiFactory()
     {
         var baseCs = Environment.GetEnvironmentVariable("TEST_PG_CONNECTION")
-                     ?? "Host=localhost;Port=5433;Username=cafepos;Password=cafepos_dev_pw";
+                     ?? PostgresContainer.ConnectionString;
         _csb = new NpgsqlConnectionStringBuilder(baseCs) { Database = _dbName };
     }
 
@@ -116,6 +118,24 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         var page = await client.GetFromJsonAsync<PagedResult<ItemDto>>("/api/v1/items?pageSize=100", Json);
         return page!.Data.SelectMany(i => i.Variations).First(v => v.Sku == sku).Id;
     }
+}
+
+/// <summary>One shared PostgreSQL container for the whole test run; reaped by Testcontainers (Ryuk) when the process ends.</summary>
+internal static class PostgresContainer
+{
+    private static readonly Lazy<PostgreSqlContainer> Container = new(() =>
+    {
+        // Testcontainers 4.x negotiates Docker API 1.44, which engines older than Docker 25 reject
+        // ("client version 1.44 is too new"). Pin an older, universally supported API version unless the caller chose one.
+        if (Environment.GetEnvironmentVariable("DOCKER_API_VERSION") is null)
+            Environment.SetEnvironmentVariable("DOCKER_API_VERSION", "1.43");
+        var c = new PostgreSqlBuilder().WithImage("postgres:16-alpine").Build();
+        c.StartAsync().GetAwaiter().GetResult();
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => { try { c.DisposeAsync().AsTask().GetAwaiter().GetResult(); } catch { } };
+        return c;
+    });
+
+    public static string ConnectionString => Container.Value.GetConnectionString();
 }
 
 public sealed class FixedLocation : ICurrentLocation
