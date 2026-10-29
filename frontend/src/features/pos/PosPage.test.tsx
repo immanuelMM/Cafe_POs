@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { components } from '../../api/schema'
 import { server } from '../../test/server'
 import { renderWithProviders } from '../../test/render'
@@ -114,6 +114,169 @@ describe('PosPage', () => {
     await user.click(within(cart).getByRole('button', { name: 'Decrease Iced Tea' }))
     expect(within(cart).getByText('Tap an item to start an order.')).toBeInTheDocument()
     expect(within(cart).getByRole('button', { name: /^Charge/ })).toBeDisabled()
+  })
+
+  describe('category column', () => {
+    const cats = [
+      { id: 'cat-1', name: 'Tea', sortOrder: 1, active: true },
+      { id: 'cat-2', name: 'Pastry', sortOrder: 2, active: true },
+    ]
+    it('is a vertical tablist: All plus every category, selecting one filters the menu', async () => {
+      const asked: (string | null)[] = []
+      server.use(
+        http.get(url('/api/v1/categories'), () => HttpResponse.json(cats)),
+        http.get(url('/api/v1/items'), ({ request }) => {
+          asked.push(new URL(request.url).searchParams.get('categoryId'))
+          return HttpResponse.json(paged([tea]))
+        }),
+      )
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      const list = await screen.findByRole('tablist', { name: 'Categories' })
+      expect(list).toHaveAttribute('aria-orientation', 'vertical')
+      const tabs = await within(list).findAllByRole('tab')
+      await vi.waitFor(() =>
+        expect(
+          within(list)
+            .getAllByRole('tab')
+            .map((t) => t.textContent),
+        ).toEqual(['All', 'Tea', 'Pastry']),
+      )
+      expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+
+      await user.click(within(list).getByRole('tab', { name: 'Pastry' }))
+      expect(within(list).getByRole('tab', { name: 'Pastry' })).toHaveAttribute('aria-selected', 'true')
+      expect(within(list).getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'false')
+      await vi.waitFor(() => expect(asked).toContain('cat-2'))
+    })
+
+    it('moves between categories with the arrow keys', async () => {
+      server.use(http.get(url('/api/v1/categories'), () => HttpResponse.json(cats)))
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      const tea = await screen.findByRole('tab', { name: 'Tea' })
+      screen.getByRole('tab', { name: 'All' }).focus()
+      await user.keyboard('{ArrowDown}')
+      expect(tea).toHaveAttribute('aria-selected', 'true')
+      expect(tea).toHaveFocus()
+      await user.keyboard('{End}')
+      expect(screen.getByRole('tab', { name: 'Pastry' })).toHaveAttribute('aria-selected', 'true')
+    })
+  })
+
+  it('marks items with no active variation as disabled "Unavailable" tiles', async () => {
+    const sold = makeItem({
+      id: 'item-9',
+      name: 'Banana Bread',
+      variations: [variation({ id: 'bb', itemId: 'item-9', active: false })],
+    })
+    mockCatalog([tea, sold])
+    renderWithProviders(<PosPage />)
+    const tile = await screen.findByRole('button', { name: /Banana Bread/ })
+    expect(tile).toBeDisabled()
+    expect(tile).toHaveTextContent('Unavailable')
+    expect(screen.getByRole('button', { name: /Iced Tea/ })).toBeEnabled()
+  })
+
+  it('clears the search with the clear button', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<PosPage />)
+    const box = await screen.findByRole('searchbox', { name: 'Search items' })
+    expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument()
+    await user.type(box, 'lat')
+    await user.click(screen.getByRole('button', { name: 'Clear search' }))
+    expect(box).toHaveValue('')
+    expect(box).toHaveFocus()
+  })
+
+  describe('clear order', () => {
+    const add = (n: number) => {
+      for (let i = 1; i <= n; i++)
+        useCartStore.getState().add({
+          itemName: `Item ${i}`,
+          variationId: `v${i}`,
+          variationName: 'Regular',
+          basePrice: 10,
+          modifiers: [],
+          quantity: 1,
+        })
+    }
+
+    it('clears at once when the order has 3 lines or fewer', async () => {
+      add(3)
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      const cart = screen.getByRole('complementary', { name: 'Current order' })
+      await user.click(within(cart).getByRole('button', { name: 'Clear' }))
+      expect(within(cart).queryByRole('group', { name: 'Confirm clearing the order' })).not.toBeInTheDocument()
+      expect(useCartStore.getState().lines).toHaveLength(0)
+    })
+
+    it('asks "Clear all?" first when the order has more than 3 lines; Keep leaves it alone', async () => {
+      add(4)
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      const cart = screen.getByRole('complementary', { name: 'Current order' })
+      await user.click(within(cart).getByRole('button', { name: 'Clear' }))
+      const ask = within(cart).getByRole('group', { name: 'Confirm clearing the order' })
+      expect(ask).toHaveTextContent('Clear all 4 lines?')
+      expect(useCartStore.getState().lines).toHaveLength(4)
+      expect(within(ask).getByRole('button', { name: 'Keep' })).toHaveFocus()
+
+      await user.click(within(ask).getByRole('button', { name: 'Keep' }))
+      expect(within(cart).queryByRole('group', { name: 'Confirm clearing the order' })).not.toBeInTheDocument()
+      expect(useCartStore.getState().lines).toHaveLength(4)
+
+      await user.click(within(cart).getByRole('button', { name: 'Clear' }))
+      await user.click(within(cart).getByRole('button', { name: 'Yes, clear' }))
+      expect(useCartStore.getState().lines).toHaveLength(0)
+      expect(within(cart).getByText('Tap an item to start an order.')).toBeInTheDocument()
+    })
+  })
+
+  describe('option sheet', () => {
+    it('gives single-choice groups radio-group semantics and shows Required until chosen', async () => {
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      await user.click(await screen.findByRole('button', { name: /Latte/ }))
+      const dialog = await screen.findByRole('dialog', { name: 'Latte' })
+      const group = within(dialog).getByRole('radiogroup', { name: 'Milk Type' })
+      expect(group).toHaveTextContent('Required')
+      expect(within(dialog).getByRole('radiogroup', { name: 'Size / variation' })).toBeInTheDocument()
+      expect(within(dialog).getByRole('button', { name: /^Add to order/ })).toBeDisabled()
+
+      await user.click(within(group).getByRole('radio', { name: /Oat Milk/ }))
+      expect(group).not.toHaveTextContent('Required')
+      expect(group).toHaveTextContent('Selected')
+      expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
+      expect(within(dialog).getByRole('button', { name: /^Add to order/ })).toBeEnabled()
+    })
+
+    it('uses a checkbox group for multi-select lists and locks the rest at the maximum', async () => {
+      const extras: S['ModifierListDto'] = {
+        id: 'ml-2',
+        name: 'Extras',
+        minSelections: 0,
+        maxSelections: 2,
+        active: true,
+        modifiers: ['Syrup', 'Whip', 'Shot'].map((name, i) => ({ id: `x${i}`, name, priceDelta: 10, active: true })),
+      }
+      const withExtras = makeItem({ ...latte, modifierListIds: ['ml-2'] })
+      server.use(
+        http.get(url('/api/v1/modifier-lists'), () => HttpResponse.json([extras])),
+        http.get(url('/api/v1/items'), () => HttpResponse.json(paged([withExtras]))),
+      )
+      const user = userEvent.setup()
+      renderWithProviders(<PosPage />)
+      await user.click(await screen.findByRole('button', { name: /Latte/ }))
+      const dialog = await screen.findByRole('dialog', { name: 'Latte' })
+      const group = within(dialog).getByRole('group', { name: 'Extras' })
+      expect(group).not.toHaveTextContent('Required')
+      expect(within(dialog).getByRole('button', { name: /^Add to order/ })).toBeEnabled() // optional list
+      await user.click(within(group).getByRole('checkbox', { name: /Syrup/ }))
+      await user.click(within(group).getByRole('checkbox', { name: /Whip/ }))
+      expect(within(group).getByRole('checkbox', { name: /Shot/ })).toBeDisabled()
+    })
   })
 
   describe('checkout', () => {

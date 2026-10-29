@@ -7,6 +7,8 @@ interface Props {
   children: ReactNode
   footer?: ReactNode
   wide?: boolean
+  /** Extra class on the dialog box (feature-specific sizing). */
+  className?: string
   /**
    * Responsive by default: bottom sheet on phones, centred dialog on tablets.
    * 'side' = right-hand side sheet on tablets (admin edit forms); 'full' = full-screen on phones.
@@ -15,7 +17,7 @@ interface Props {
 }
 
 /** Accessible dialog (role, label, Escape and focus return are the same for every variant). */
-export function Modal({ title, onClose, children, footer, wide, variant = 'dialog' }: Props) {
+export function Modal({ title, onClose, children, footer, wide, className, variant = 'dialog' }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function Modal({ title, onClose, children, footer, wide, variant = 'dialo
     }
   }, [onClose])
 
-  const cls = `modal${wide ? ' modal-wide' : ''}${variant === 'dialog' ? '' : ` modal-${variant}`}`
+  const cls = `modal${wide ? ' modal-wide' : ''}${variant === 'dialog' ? '' : ` modal-${variant}`}${className ? ` ${className}` : ''}`
   return (
     <div
       className={`modal-backdrop${variant === 'side' ? ' modal-backdrop-side' : ''}`}
