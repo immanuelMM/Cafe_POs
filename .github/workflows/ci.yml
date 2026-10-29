@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# No path filters on purpose: the contract job must run when either side changes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  # Testcontainers 4.x defaults to Docker API 1.44. Docker Engine 29+ (newer runner images) rejects
+  # anything below 1.44, and Engine 28 accepts 1.44, so pin 1.44 and override the 1.43 fallback in TestSupport.cs.
+  DOCKER_API_VERSION: "1.44"
+
+jobs:
+  backend:
+    name: Backend (build + test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - run: dotnet restore
+      - run: dotnet build --no-restore -c Release
+      - run: dotnet test --no-build -c Release --logger "trx;LogFileName=test-results.trx"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/**/TestResults/*.trx
+          if-no-files-found: ignore
+
+  contract:
+    name: OpenAPI contract snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Generate OpenAPI document
+        working-directory: backend
+        run: dotnet build src/CafePos.Api -p:OpenApiGenerateDocuments=true
+      - name: Fail if backend/openapi/v1.json is out of date
+        run: |
+          git status --short -- backend/openapi
+          git diff --exit-code -- backend/openapi/v1.json
+
+  frontend:
+    name: Frontend (lint, typecheck, test, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+      - name: Generated API types are up to date
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.['gen:api'] ? 0 : 1)"; then
+            npm run gen:api
+            git diff --exit-code -- .
+          else
+            echo "No gen:api script yet; skipping generated-types check."
+          fi
