@@ -39,8 +39,32 @@ public static class OwnerBootstrapper
             return;
         }
 
+        // Configuration problems are found before any database work: nothing is created, startup continues.
+        var defaults = new Location();
+        var timeZone = defaults.TimeZone;
+        if (!string.IsNullOrWhiteSpace(options.LocationTimeZone))
+        {
+            timeZone = options.LocationTimeZone.Trim();
+            if (!TimeZoneInfo.TryFindSystemTimeZoneById(timeZone, out _))
+            {
+                logger.LogError("Owner bootstrap skipped: Bootstrap:LocationTimeZone is not a known time zone id. Fix it and restart.");
+                return;
+            }
+        }
+        var vat = options.LocationVatRatePercent ?? defaults.VatRatePercent;
+        if (vat < 0m || vat > 100m)
+        {
+            logger.LogError("Owner bootstrap skipped: Bootstrap:LocationVatRatePercent must be between 0 and 100. Fix it and restart.");
+            return;
+        }
+
         var db = sp.GetRequiredService<CafeDbContext>();
-        if (await db.Users.AnyAsync(ct)) return; // the normal case on every start after the first
+        if (await db.Users.AnyAsync(ct)) // the normal case on every start after the first
+        {
+            if (options.IsConfigured)
+                logger.LogWarning("Bootstrap__OwnerPassword is still set; remove it - if the database is ever recreated (e.g. free-plan expiry) it would recreate an Owner with this password.");
+            return;
+        }
 
         var users = sp.GetRequiredService<UserManager<Identity.ApplicationUser>>();
         var displayName = string.IsNullOrWhiteSpace(options.OwnerName) ? DefaultOwnerName : options.OwnerName.Trim();
@@ -49,30 +73,17 @@ public static class OwnerBootstrapper
             Id = Guid.NewGuid(), UserName = email, Email = email, EmailConfirmed = true, DisplayName = displayName, IsOwner = true
         };
 
-        // Same password policy as every other account (Identity options), checked before touching the database.
-        var problems = new List<string>();
-        foreach (var validator in users.PasswordValidators)
-        {
-            var check = await validator.ValidateAsync(users, user, password!);
-            if (!check.Succeeded) problems.AddRange(check.Errors.Select(e => e.Code));
-        }
-        if (problems.Count > 0)
-        {
-            logger.LogError("Owner bootstrap skipped for {Email}: the password does not meet the password policy ({Problems}). Fix Bootstrap:OwnerPassword and restart.",
-                Mask(email!), string.Join(", ", problems));
-            return;
-        }
-
         try
         {
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock({0})", [AdvisoryLockKey], ct);
             if (await db.Users.AnyAsync(ct)) return; // another instance finished first
 
+            // CreateAsync runs the user (email) and password validators exactly once; a rejection rolls the transaction back.
             var created = await users.CreateAsync(user, password!);
             if (!created.Succeeded)
             {
-                logger.LogError("Owner bootstrap failed for {Email}: {Errors}. Startup continues without creating the owner.",
+                logger.LogError("Owner bootstrap failed for {Email}: {Errors}. Fix Bootstrap:OwnerEmail / Bootstrap:OwnerPassword and restart; startup continues without an owner.",
                     Mask(email!), string.Join(", ", created.Errors.Select(e => e.Code)));
                 return;
             }
@@ -80,8 +91,9 @@ public static class OwnerBootstrapper
             if (!await db.Locations.AnyAsync(ct))
             {
                 var name = string.IsNullOrWhiteSpace(options.LocationName) ? DefaultLocationName : options.LocationName.Trim();
-                db.Locations.Add(new Location { Id = Guid.NewGuid(), Name = name });
+                db.Locations.Add(new Location { Id = Guid.NewGuid(), Name = name, TimeZone = timeZone, VatRatePercent = vat });
                 await db.SaveChangesAsync(ct);
+                logger.LogInformation("Owner bootstrap created location {LocationName} with time zone {TimeZone} and VAT {Vat}%. Change these in the app if they are not right.", name, timeZone, vat);
             }
             await tx.CommitAsync(ct);
             logger.LogWarning("Owner bootstrap created the first owner {Email}. Remove Bootstrap__OwnerEmail and Bootstrap__OwnerPassword from the environment now.", Mask(email!));

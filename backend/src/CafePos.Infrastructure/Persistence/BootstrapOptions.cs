@@ -16,4 +16,11 @@ public sealed class BootstrapOptions
     public string? OwnerName { get; set; }
     /// <summary>Name of the first location, created only when no location exists. Defaults to "Main".</summary>
     public string? LocationName { get; set; }
+    /// <summary>IANA/system time zone id of the first location (for example "Asia/Manila"). Falls back to the entity default.</summary>
+    public string? LocationTimeZone { get; set; }
+    /// <summary>VAT percent of the first location, 0 to 100. Falls back to the entity default (12).</summary>
+    public decimal? LocationVatRatePercent { get; set; }
+
+    /// <summary>True when either credential is set, i.e. the bootstrapper has something to do or to warn about.</summary>
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(OwnerEmail) || !string.IsNullOrEmpty(OwnerPassword);
 }

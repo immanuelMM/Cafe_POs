@@ -124,6 +124,117 @@ public class OwnerBootstrapTests
         Assert.Empty(await db.Locations.IgnoreQueryFilters().ToListAsync());
     }
 
+    // ---- hardening ----
+
+    private sealed class ListLogger : Microsoft.Extensions.Logging.ILogger
+    {
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, string Message)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Add((logLevel, formatter(state, exception)));
+    }
+
+    private static Dictionary<string, string?> NoMigrate() => new()
+    {
+        ["Database:MigrateOnStartup"] = "false", ["Bootstrap:OwnerEmail"] = Email, ["Bootstrap:OwnerPassword"] = Password
+    };
+
+    [Fact]
+    public async Task Runs_even_when_migrate_on_startup_is_off_because_a_pre_deploy_step_migrated()
+    {
+        var dbName = "cafepos_test_" + Guid.NewGuid().ToString("N");
+        using var migrator = new ApiFactory(dbName, false); // applies the migrations, like a pre-deploy step
+        _ = migrator.Services;
+        using var app = new ApiFactory(dbName, false, NoMigrate());
+
+        var res = await app.CreateClient().PostAsJsonAsync("/api/v1/auth/login", new { email = Email, password = Password });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task An_unavailable_or_unmigrated_database_is_logged_and_startup_continues()
+    {
+        // The database does not even exist: a non-transient failure that must not stop the host.
+        using var app = new ApiFactory("cafepos_test_" + Guid.NewGuid().ToString("N"), false, NoMigrate());
+
+        var res = await app.CreateClient().GetAsync("/health/live");
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task An_unexpected_exception_is_swallowed_and_logged_without_secrets()
+    {
+        var services = new ServiceCollection()
+            .Configure<BootstrapOptions>(o => { o.OwnerEmail = Email; o.OwnerPassword = Password; })
+            .BuildServiceProvider(); // no DbContext registered: RunAsync throws InvalidOperationException
+        var logger = new ListLogger();
+
+        await DatabaseStartup.BootstrapOwnerAsync(services, logger);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Error, entry.Level);
+        Assert.DoesNotContain(Password, entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Email, entry.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("owner@")]
+    [InlineData("not-an-email")]
+    public async Task A_bad_email_creates_nothing_and_startup_continues(string email)
+    {
+        using var factory = NewFactory(false, ("Bootstrap:OwnerEmail", email), ("Bootstrap:OwnerPassword", Password));
+
+        Assert.Equal(HttpStatusCode.OK, (await factory.CreateClient().GetAsync("/health/ready")).StatusCode);
+        using var db = factory.NewDb(null);
+        Assert.Empty(await db.Users.ToListAsync());
+        Assert.Empty(await db.Locations.IgnoreQueryFilters().ToListAsync());
+    }
+
+    [Fact]
+    public async Task The_location_uses_the_configured_time_zone_and_vat()
+    {
+        using var factory = NewFactory(false, Full(("Bootstrap:LocationTimeZone", "UTC"), ("Bootstrap:LocationVatRatePercent", "7.5")));
+        _ = factory.Services;
+
+        using var db = factory.NewDb(null);
+        var location = await db.Locations.IgnoreQueryFilters().SingleAsync();
+        Assert.Equal("UTC", location.TimeZone);
+        Assert.Equal(7.5m, location.VatRatePercent);
+    }
+
+    [Theory]
+    [InlineData("Bootstrap:LocationTimeZone", "Mars/Olympus")]
+    [InlineData("Bootstrap:LocationVatRatePercent", "101")]
+    [InlineData("Bootstrap:LocationVatRatePercent", "-1")]
+    public async Task Invalid_location_settings_skip_the_bootstrap_without_crashing(string key, string value)
+    {
+        using var factory = NewFactory(false, Full((key, value)));
+
+        Assert.Equal(HttpStatusCode.OK, (await factory.CreateClient().GetAsync("/health/live")).StatusCode);
+        using var db = factory.NewDb(null);
+        Assert.Empty(await db.Users.ToListAsync());
+        Assert.Empty(await db.Locations.IgnoreQueryFilters().ToListAsync());
+    }
+
+    [Fact]
+    public async Task A_password_left_set_after_the_first_login_warns_without_revealing_it()
+    {
+        using var factory = NewFactory(false, Full());
+        _ = factory.Services;
+        var logger = new ListLogger();
+
+        using (var scope = factory.Services.CreateScope())
+            await OwnerBootstrapper.RunAsync(scope.ServiceProvider, logger);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Warning, entry.Level);
+        Assert.Contains("Bootstrap__OwnerPassword is still set", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(Password, entry.Message, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("alice@example.com", "a***@e***.com")]
     [InlineData("a@b", "a***@b***")]

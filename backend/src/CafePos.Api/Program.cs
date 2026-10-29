@@ -28,6 +28,9 @@ if (!BuildEnvironment.IsOpenApiGeneration)
     var database = app.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
     if (database.MigrateOnStartup)
         await DatabaseStartup.MigrateAndSeedAsync(app.Services, database.SeedDevData, app.Logger);
+    // Runs whether or not this process migrated (a pre-deploy step may have), and only when Bootstrap credentials are configured.
+    if (app.Services.GetRequiredService<IOptions<BootstrapOptions>>().Value.IsConfigured)
+        await DatabaseStartup.BootstrapOwnerAsync(app.Services, app.Logger);
 }
 
 // First, so every later component (HTTPS redirection, CORS, rate limiting, cookies) sees the client address and scheme set by a
@@ -42,6 +45,15 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
     app.UseHttpsRedirection();
+}
+
+var spaFiles = BuildEnvironment.IsOpenApiGeneration ? null : SpaHosting.Resolve(app.Configuration, app.Environment, app.Logger);
+if (spaFiles is not null)
+{
+    app.UseSpaStaticFiles(spaFiles);
+    // Routing is otherwise added implicitly at the very start, and static files skip any request that already has an endpoint
+    // (the SPA fallback matches everything). Adding it explicitly here keeps the static files first.
+    app.UseRouting();
 }
 
 if (app.Environment.IsDevelopment())
@@ -60,6 +72,8 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 // Liveness: the process is up (no dependencies). Readiness: the database is reachable.
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).AllowAnonymous();
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") }).AllowAnonymous();
+
+if (spaFiles is not null) app.MapSpaFallback(spaFiles);
 
 app.Run();
 
