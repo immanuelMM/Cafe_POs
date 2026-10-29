@@ -54,6 +54,13 @@ test.describe('accessibility (axe) @a11y', () => {
     await scan(page)
   })
 
+  test('POS option sheet', async ({ page }) => {
+    await loginViaUi(page, USERS.cashier)
+    await page.locator('button.tile', { hasText: 'Latte' }).click()
+    await expect(page.getByRole('dialog', { name: 'Latte' })).toBeVisible()
+    await scan(page)
+  })
+
   test('POS payment dialog', async ({ page }) => {
     await loginViaUi(page, USERS.cashier)
     await page.getByRole('button', { name: /Iced Tea/ }).click()

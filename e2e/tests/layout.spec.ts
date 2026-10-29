@@ -6,7 +6,6 @@ import {
   expectMinFontSize,
   expectNoHorizontalScroll,
   expectTapTargets,
-  findSmallTargets,
   MIN_TAP_PX,
 } from '../support/layout'
 import { loginViaUi } from '../support/ui'
@@ -103,27 +102,29 @@ test.describe('layout @layout', () => {
     expect(await res.json()).toHaveProperty('name')
   })
 
-  // ---- Targets for later milestones (red today, so fixme; remove the fixme when the milestone lands) ----
+  // ---- M3 (POS): tap sizes and type scale. Scoped to POS; other screens get these at M4-M9. ----
 
-  // M3 (tap sizes): every control >= 48px.
-  test.fixme('POS: every control is at least 48px (M3)', async ({ page }) => {
-    await open(page, SCREENS[0])
-    await expectTapTargets(page, MIN_TAP_PX)
-  })
-
-  // M3 (type scale): tile labels 20px per the plan; 16px is the floor asserted here.
-  test.fixme('POS: tile labels are at least 16px (M3)', async ({ page }) => {
-    await open(page, SCREENS[0])
-    await expectMinFontSize(page.locator('button.tile'), 16, 'tile labels')
-  })
-
-  // Not an assertion: records the controls under 48px on the POS screen in the report, as M3's work list.
-  test('POS: lists controls under the 48px tap floor (informational)', async ({ page }, testInfo) => {
-    await open(page, SCREENS[0])
-    const small = await findSmallTargets(page, MIN_TAP_PX)
-    testInfo.annotations.push({
-      type: 'small-targets',
-      description: `${small.length}: ${small.map((s) => `${s.desc} ${s.width}x${s.height}`).join('; ')}`,
+  for (const withLine of [false, true]) {
+    const state = withLine ? 'with a cart line' : 'empty cart'
+    test(`POS (${state}): every control is at least 48px and tile text is readable (M3)`, async ({ page }, testInfo) => {
+      await open(page, SCREENS[0])
+      if (withLine) {
+        await page.locator('button.tile', { hasText: 'Iced Tea' }).click()
+        await expect(page.getByRole('complementary', { name: 'Current order' }).or(page.getByRole('button', { name: 'Open current order' })).first()).toBeAttached()
+      }
+      await expectTapTargets(page, MIN_TAP_PX)
+      // Plan: 18px on tablets, 16px on the phone.
+      await expectMinFontSize(page.locator('button.tile .tile-name'), testInfo.project.name === 'phone' ? 16 : 18, 'tile names')
     })
+  }
+
+  // Controls inside the open cart sheet on phones are checked too (the sheet is part of POS).
+  test('POS: the order sheet controls are at least 48px (M3)', async ({ page }) => {
+    await open(page, SCREENS[0])
+    await page.locator('button.tile', { hasText: 'Iced Tea' }).click()
+    const bar = page.getByRole('button', { name: 'Open current order' })
+    if (await bar.isVisible()) await bar.click()
+    await expect(page.getByRole('complementary', { name: 'Current order' })).toBeVisible()
+    await expectTapTargets(page, MIN_TAP_PX)
   })
 })

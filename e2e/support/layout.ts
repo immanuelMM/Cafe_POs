@@ -63,13 +63,23 @@ export async function expectTapTargets(page: Page, min = MIN_TAP_PX, scope?: Loc
 /** The element's whole box is inside the viewport (e.g. the Charge button must never be pushed off-screen). */
 export async function expectFullyInViewport(page: Page, target: Locator, label = 'element') {
   await expect(target).toBeVisible()
-  const box = await target.boundingBox()
   const vp = page.viewportSize()!
-  expect(box, `${label} has no box`).not.toBeNull()
-  expect(box!.x, `${label} left edge`).toBeGreaterThanOrEqual(-0.5)
-  expect(box!.y, `${label} top edge`).toBeGreaterThanOrEqual(-0.5)
-  expect(box!.x + box!.width, `${label} right edge`).toBeLessThanOrEqual(vp.width + 0.5)
-  expect(box!.y + box!.height, `${label} bottom edge`).toBeLessThanOrEqual(vp.height + 0.5)
+  // Poll: sheets and dialogs slide in, so the box is only meaningful once the transition has settled.
+  await expect
+    .poll(
+      async () => {
+        const box = await target.boundingBox()
+        if (!box) return 'no box'
+        const out: string[] = []
+        if (box.x < -0.5) out.push('left ' + Math.round(box.x))
+        if (box.y < -0.5) out.push('top ' + Math.round(box.y))
+        if (box.x + box.width > vp.width + 0.5) out.push('right +' + Math.round(box.x + box.width - vp.width))
+        if (box.y + box.height > vp.height + 0.5) out.push('bottom +' + Math.round(box.y + box.height - vp.height))
+        return out.join(', ') || 'inside'
+      },
+      { message: label + ' must be fully inside the viewport' },
+    )
+    .toBe('inside')
 }
 
 /** Smallest computed font-size (px) among the elements matching `target`. */
