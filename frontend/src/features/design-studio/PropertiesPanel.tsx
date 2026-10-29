@@ -37,10 +37,24 @@ function FontSelect({ value, onChange }: { value: string; onChange: (stack: stri
   )
 }
 
-function Outline({ stroke, width, onChange, label = 'Outline' }: { stroke: string | null; width: number; onChange: (stroke: string | null, width: number) => void; label?: string }) {
+function Outline({
+  stroke,
+  width,
+  onChange,
+  label = 'Outline',
+}: {
+  stroke: string | null
+  width: number
+  onChange: (stroke: string | null, width: number) => void
+  label?: string
+}) {
   return (
     <div className="sf-stack">
-      <Toggle label={label} checked={!!stroke} onChange={(on) => onChange(on ? '#1f1410' : null, on ? Math.max(width, 3) : 0)} />
+      <Toggle
+        label={label}
+        checked={!!stroke}
+        onChange={(on) => onChange(on ? '#1f1410' : null, on ? Math.max(width, 3) : 0)}
+      />
       {stroke && (
         <>
           <ColorField label={`${label} color`} value={stroke} onChange={(c) => onChange(c, width)} />
@@ -58,7 +72,13 @@ function ShapeProps({ el, upd }: { el: ShapeElement; upd: Upd }) {
       {isLine ? (
         <Section title="Line">
           <ColorField label="Color" value={el.stroke ?? '#1f1410'} onChange={(stroke) => upd({ stroke })} />
-          <NumField label="Thickness" value={el.strokeWidth} min={1} max={200} onChange={(w) => upd({ strokeWidth: w, height: Math.max(w, 1) }, `${el.id}:sw`)} />
+          <NumField
+            label="Thickness"
+            value={el.strokeWidth}
+            min={1}
+            max={200}
+            onChange={(w) => upd({ strokeWidth: w, height: Math.max(w, 1) }, `${el.id}:sw`)}
+          />
         </Section>
       ) : (
         <>
@@ -66,38 +86,84 @@ function ShapeProps({ el, upd }: { el: ShapeElement; upd: Upd }) {
             <FillEditor label="Fill" fill={el.fill} allowNone onChange={(fill) => upd({ fill })} />
           </Section>
           <Section title="Outline" open={!!el.stroke}>
-            <Outline stroke={el.stroke} width={el.strokeWidth} onChange={(stroke, strokeWidth) => upd({ stroke, strokeWidth })} />
+            <Outline
+              stroke={el.stroke}
+              width={el.strokeWidth}
+              onChange={(stroke, strokeWidth) => upd({ stroke, strokeWidth })}
+            />
           </Section>
         </>
       )}
       {(el.shape === 'roundRect' || el.shape === 'rect') && (
         <Section title="Corners">
-          <NumField label="Corner radius" value={el.cornerRadius} min={0} max={1000} onChange={(cornerRadius) => upd({ cornerRadius, shape: cornerRadius > 0 ? 'roundRect' : 'rect' }, `${el.id}:cr`)} />
+          <NumField
+            label="Corner radius"
+            value={el.cornerRadius}
+            min={0}
+            max={1000}
+            onChange={(cornerRadius) =>
+              upd({ cornerRadius, shape: cornerRadius > 0 ? 'roundRect' : 'rect' }, `${el.id}:cr`)
+            }
+          />
         </Section>
       )}
       {el.shape === 'star' && (
         <Section title="Star">
-          <NumField label="Points" value={el.points} min={3} max={16} onChange={(points) => upd({ points: Math.round(points) }, `${el.id}:pt`)} />
-          <NumField label="Inner radius %" value={Math.round(el.innerRatio * 100)} min={10} max={90} onChange={(v) => upd({ innerRatio: v / 100 }, `${el.id}:ir`)} />
+          <NumField
+            label="Points"
+            value={el.points}
+            min={3}
+            max={16}
+            onChange={(points) => upd({ points: Math.round(points) }, `${el.id}:pt`)}
+          />
+          <NumField
+            label="Inner radius %"
+            value={Math.round(el.innerRatio * 100)}
+            min={10}
+            max={90}
+            onChange={(v) => upd({ innerRatio: v / 100 }, `${el.id}:ir`)}
+          />
         </Section>
       )}
       {el.shape === 'polygon' && (
         <Section title="Polygon">
-          <NumField label="Sides" value={el.sides} min={3} max={16} onChange={(sides) => upd({ sides: Math.round(sides) }, `${el.id}:sd`)} />
+          <NumField
+            label="Sides"
+            value={el.sides}
+            min={3}
+            max={16}
+            onChange={(sides) => upd({ sides: Math.round(sides) }, `${el.id}:sd`)}
+          />
         </Section>
       )}
       {el.shape === 'ring' && (
         <Section title="Ring">
-          <NumField label="Hole size %" value={Math.round(el.innerRatio * 100)} min={10} max={95} onChange={(v) => upd({ innerRatio: v / 100 }, `${el.id}:ir`)} />
+          <NumField
+            label="Hole size %"
+            value={Math.round(el.innerRatio * 100)}
+            min={10}
+            max={95}
+            onChange={(v) => upd({ innerRatio: v / 100 }, `${el.id}:ir`)}
+          />
         </Section>
       )}
       {!isLine && (
         <Section title="Flip" open={false}>
           <div className="row-actions">
-            <button type="button" className="btn btn-sm" aria-pressed={el.flipX} onClick={() => upd({ flipX: !el.flipX })}>
+            <button
+              type="button"
+              className="btn btn-sm"
+              aria-pressed={el.flipX}
+              onClick={() => upd({ flipX: !el.flipX })}
+            >
               Flip horizontal
             </button>
-            <button type="button" className="btn btn-sm" aria-pressed={el.flipY} onClick={() => upd({ flipY: !el.flipY })}>
+            <button
+              type="button"
+              className="btn btn-sm"
+              aria-pressed={el.flipY}
+              onClick={() => upd({ flipY: !el.flipY })}
+            >
               Flip vertical
             </button>
           </div>
@@ -117,22 +183,65 @@ function TextProps({ el, upd }: { el: TextElement; upd: Upd }) {
       <Section title="Text">
         <label className="field">
           <span className="field-label">Content</span>
-          <textarea className="studio-textarea" rows={3} value={el.text} onChange={(e) => upd({ text: e.target.value }, k('text'))} />
+          <textarea
+            className="studio-textarea"
+            rows={3}
+            value={el.text}
+            onChange={(e) => upd({ text: e.target.value }, k('text'))}
+          />
         </label>
         <FontSelect value={el.fontFamily} onChange={(fontFamily) => upd({ fontFamily })} />
         <div className="sf-grid">
-          <NumField label="Size" value={el.fontSize} min={4} max={1000} onChange={(fontSize) => upd({ fontSize }, k('fs'))} />
-          <NumField label="Letter spacing" value={el.letterSpacing} min={-20} max={200} step={0.5} onChange={(letterSpacing) => upd({ letterSpacing }, k('ls'))} />
-          <NumField label="Line height" value={el.lineHeight} min={0.6} max={3} step={0.05} onChange={(lineHeight) => upd({ lineHeight }, k('lh'))} />
+          <NumField
+            label="Size"
+            value={el.fontSize}
+            min={4}
+            max={1000}
+            onChange={(fontSize) => upd({ fontSize }, k('fs'))}
+          />
+          <NumField
+            label="Letter spacing"
+            value={el.letterSpacing}
+            min={-20}
+            max={200}
+            step={0.5}
+            onChange={(letterSpacing) => upd({ letterSpacing }, k('ls'))}
+          />
+          <NumField
+            label="Line height"
+            value={el.lineHeight}
+            min={0.6}
+            max={3}
+            step={0.05}
+            onChange={(lineHeight) => upd({ lineHeight }, k('lh'))}
+          />
         </div>
         <div className="row-actions">
-          <button type="button" className="btn btn-sm studio-b" aria-pressed={el.bold} aria-label="Bold" onClick={() => upd({ bold: !el.bold })}>
+          <button
+            type="button"
+            className="btn btn-sm studio-b"
+            aria-pressed={el.bold}
+            aria-label="Bold"
+            onClick={() => upd({ bold: !el.bold })}
+          >
             <b>B</b>
           </button>
-          <button type="button" className="btn btn-sm studio-b" aria-pressed={el.italic} aria-label="Italic" onClick={() => upd({ italic: !el.italic })}>
+          <button
+            type="button"
+            className="btn btn-sm studio-b"
+            aria-pressed={el.italic}
+            aria-label="Italic"
+            onClick={() => upd({ italic: !el.italic })}
+          >
             <i>I</i>
           </button>
-          <button type="button" className="btn btn-sm studio-b" aria-pressed={el.underline} aria-label="Underline" onClick={() => upd({ underline: !el.underline })}>
+          <button
+            type="button"
+            className="btn btn-sm studio-b"
+            aria-pressed={el.underline}
+            aria-label="Underline"
+            onClick={() => upd({ underline: !el.underline })}
+          >
             <u>U</u>
           </button>
         </div>
@@ -148,14 +257,24 @@ function TextProps({ el, upd }: { el: TextElement; upd: Upd }) {
         />
         <label className="field">
           <span className="field-label">Curve ({el.curve})</span>
-          <input type="range" min={-100} max={100} value={el.curve} onChange={(e) => upd({ curve: Number(e.target.value) }, k('curve'))} />
+          <input
+            type="range"
+            min={-100}
+            max={100}
+            value={el.curve}
+            onChange={(e) => upd({ curve: Number(e.target.value) }, k('curve'))}
+          />
         </label>
       </Section>
       <Section title="Fill">
         <FillEditor label="Text fill" fill={el.fill} onChange={(fill) => fill && upd({ fill })} />
       </Section>
       <Section title="Outline" open={!!el.stroke}>
-        <Outline stroke={el.stroke} width={el.strokeWidth} onChange={(stroke, strokeWidth) => upd({ stroke, strokeWidth })} />
+        <Outline
+          stroke={el.stroke}
+          width={el.strokeWidth}
+          onChange={(stroke, strokeWidth) => upd({ stroke, strokeWidth })}
+        />
       </Section>
       <Section title="Shadow" open={!!el.shadow}>
         <ShadowEditor shadow={el.shadow} onChange={(shadow) => upd({ shadow })} />
@@ -181,7 +300,11 @@ function ImageProps({ el, upd }: { el: ImageElement; upd: Upd }) {
   return (
     <>
       <Section title="Image">
-        {error && <div className="alert alert-error" role="alert">{error}</div>}
+        {error && (
+          <div className="alert alert-error" role="alert">
+            {error}
+          </div>
+        )}
         <Seg
           label="Image fit"
           value={el.fit}
@@ -192,22 +315,49 @@ function ImageProps({ el, upd }: { el: ImageElement; upd: Upd }) {
           ]}
           onChange={(fit) => upd({ fit })}
         />
-        <NumField label="Corner radius" value={el.cornerRadius} min={0} max={2000} onChange={(cornerRadius) => upd({ cornerRadius }, `${el.id}:cr`)} />
-        <input ref={input} type="file" accept={IMAGE_ACCEPT} className="sr-only" id="studio-replace-image" onChange={(e) => void replace(e.target.files?.[0])} />
+        <NumField
+          label="Corner radius"
+          value={el.cornerRadius}
+          min={0}
+          max={2000}
+          onChange={(cornerRadius) => upd({ cornerRadius }, `${el.id}:cr`)}
+        />
+        <input
+          ref={input}
+          type="file"
+          accept={IMAGE_ACCEPT}
+          className="sr-only"
+          id="studio-replace-image"
+          onChange={(e) => void replace(e.target.files?.[0])}
+        />
         <div className="row-actions">
           <label htmlFor="studio-replace-image" className="btn btn-sm">
             Replace image
           </label>
-          <button type="button" className="btn btn-sm" aria-pressed={el.flipX} onClick={() => upd({ flipX: !el.flipX })}>
+          <button
+            type="button"
+            className="btn btn-sm"
+            aria-pressed={el.flipX}
+            onClick={() => upd({ flipX: !el.flipX })}
+          >
             Flip horizontal
           </button>
-          <button type="button" className="btn btn-sm" aria-pressed={el.flipY} onClick={() => upd({ flipY: !el.flipY })}>
+          <button
+            type="button"
+            className="btn btn-sm"
+            aria-pressed={el.flipY}
+            onClick={() => upd({ flipY: !el.flipY })}
+          >
             Flip vertical
           </button>
         </div>
       </Section>
       <Section title="Outline" open={!!el.stroke}>
-        <Outline stroke={el.stroke} width={el.strokeWidth} onChange={(stroke, strokeWidth) => upd({ stroke, strokeWidth })} />
+        <Outline
+          stroke={el.stroke}
+          width={el.strokeWidth}
+          onChange={(stroke, strokeWidth) => upd({ stroke, strokeWidth })}
+        />
       </Section>
       <Section title="Shadow" open={!!el.shadow}>
         <ShadowEditor shadow={el.shadow} onChange={(shadow) => upd({ shadow })} />
@@ -223,23 +373,50 @@ function MenuProps({ el, upd }: { el: MenuElement; upd: Upd }) {
   return (
     <Section title="Menu block">
       <p className="muted studio-note">Shows your live catalog (active items and prices). Resize the block to fit.</p>
-      {layout.overflow && <div className="alert alert-error" role="alert">The menu does not fit. Add columns, lower the font size or make the block bigger.</div>}
+      {layout.overflow && (
+        <div className="alert alert-error" role="alert">
+          The menu does not fit. Add columns, lower the font size or make the block bigger.
+        </div>
+      )}
       {layout.empty && <p className="muted studio-note">No active menu items yet.</p>}
-      <Seg label="Columns" value={el.columns} options={[1, 2, 3, 4].map((n) => ({ value: n, label: `${n} col` }))} onChange={(columns) => upd({ columns })} />
+      <Seg
+        label="Columns"
+        value={el.columns}
+        options={[1, 2, 3, 4].map((n) => ({ value: n, label: `${n} col` }))}
+        onChange={(columns) => upd({ columns })}
+      />
       <FontSelect value={el.fontFamily} onChange={(fontFamily) => upd({ fontFamily })} />
       <Toggle label="Fit text to the block" checked={!!el.autoFit} onChange={(autoFit) => upd({ autoFit })} />
       {el.autoFit ? (
-        <p className="muted studio-note">Using {Math.round(layout.fontSize)} px. Resize the block or change columns to scale the text.</p>
+        <p className="muted studio-note">
+          Using {Math.round(layout.fontSize)} px. Resize the block or change columns to scale the text.
+        </p>
       ) : (
-        <NumField label="Font size" value={el.fontSize} min={6} max={400} onChange={(fontSize) => upd({ fontSize }, k('fs'))} />
+        <NumField
+          label="Font size"
+          value={el.fontSize}
+          min={6}
+          max={400}
+          onChange={(fontSize) => upd({ fontSize }, k('fs'))}
+        />
       )}
       <ColorField label="Text color" value={el.textColor} onChange={(textColor) => upd({ textColor })} />
       <ColorField label="Category color" value={el.accentColor} onChange={(accentColor) => upd({ accentColor })} />
       <ColorField label="Price color" value={el.priceColor} onChange={(priceColor) => upd({ priceColor })} />
-      <Toggle label="Panel background" checked={!!el.background} onChange={(on) => upd({ background: on ? '#ffffff' : null })} />
-      {el.background && <ColorField label="Panel color" value={el.background} onChange={(background) => upd({ background })} />}
+      <Toggle
+        label="Panel background"
+        checked={!!el.background}
+        onChange={(on) => upd({ background: on ? '#ffffff' : null })}
+      />
+      {el.background && (
+        <ColorField label="Panel color" value={el.background} onChange={(background) => upd({ background })} />
+      )}
       <Toggle label="Show photos" checked={el.showPhotos} onChange={(showPhotos) => upd({ showPhotos })} />
-      <Toggle label="Show descriptions" checked={el.showDescriptions} onChange={(showDescriptions) => upd({ showDescriptions })} />
+      <Toggle
+        label="Show descriptions"
+        checked={el.showDescriptions}
+        onChange={(showDescriptions) => upd({ showDescriptions })}
+      />
     </Section>
   )
 }
@@ -255,17 +432,32 @@ function SingleProps({ el }: { el: StudioElement }) {
   return (
     <>
       <div className="studio-prop-head">
-        <input aria-label="Layer name" className="studio-name" value={el.name} onChange={(e) => upd({ name: e.target.value }, k('name'))} />
+        <input
+          aria-label="Layer name"
+          className="studio-name"
+          value={el.name}
+          onChange={(e) => upd({ name: e.target.value }, k('name'))}
+        />
         <span className="muted studio-kind">{el.kind === 'shape' ? el.shape : el.kind}</span>
       </div>
       <div className="studio-actions">
         <button type="button" className="btn btn-sm" onClick={() => duplicate([el.id])}>
           Duplicate
         </button>
-        <button type="button" className="btn btn-sm" aria-pressed={el.locked} onClick={() => upd({ locked: !el.locked })}>
+        <button
+          type="button"
+          className="btn btn-sm"
+          aria-pressed={el.locked}
+          onClick={() => upd({ locked: !el.locked })}
+        >
           {el.locked ? 'Unlock' : 'Lock'}
         </button>
-        <button type="button" className="btn btn-sm" aria-pressed={el.hidden} onClick={() => upd({ hidden: !el.hidden })}>
+        <button
+          type="button"
+          className="btn btn-sm"
+          aria-pressed={el.hidden}
+          onClick={() => upd({ hidden: !el.hidden })}
+        >
           {el.hidden ? 'Show' : 'Hide'}
         </button>
         <button type="button" className="btn btn-sm btn-danger-ghost" onClick={() => remove([el.id])}>
@@ -278,13 +470,38 @@ function SingleProps({ el }: { el: StudioElement }) {
           <NumField label="X" value={el.x} onChange={(x) => upd({ x }, k('x'))} />
           <NumField label="Y" value={el.y} onChange={(y) => upd({ y }, k('y'))} />
           <NumField label="Width" value={el.width} min={1} onChange={(width) => upd({ width }, k('w'))} />
-          <NumField label="Height" value={el.height} min={1} disabled={autoHeight} onChange={(height) => upd({ height }, k('h'))} />
-          <NumField label="Rotation" value={el.rotation} min={-360} max={360} onChange={(rotation) => upd({ rotation }, k('r'))} />
-          <NumField label="Opacity %" value={Math.round(el.opacity * 100)} min={0} max={100} onChange={(o) => upd({ opacity: o / 100 }, k('o'))} />
+          <NumField
+            label="Height"
+            value={el.height}
+            min={1}
+            disabled={autoHeight}
+            onChange={(height) => upd({ height }, k('h'))}
+          />
+          <NumField
+            label="Rotation"
+            value={el.rotation}
+            min={-360}
+            max={360}
+            onChange={(rotation) => upd({ rotation }, k('r'))}
+          />
+          <NumField
+            label="Opacity %"
+            value={Math.round(el.opacity * 100)}
+            min={0}
+            max={100}
+            onChange={(o) => upd({ opacity: o / 100 }, k('o'))}
+          />
         </div>
         <div className="studio-align" role="group" aria-label="Align to page">
           {ALIGNS.map((a) => (
-            <button key={a.mode} type="button" className="btn btn-sm btn-icon" title={a.title} aria-label={a.title} onClick={() => align([el.id], a.mode)}>
+            <button
+              key={a.mode}
+              type="button"
+              className="btn btn-sm btn-icon"
+              title={a.title}
+              aria-label={a.title}
+              onClick={() => align([el.id], a.mode)}
+            >
               {a.label}
             </button>
           ))}
@@ -324,7 +541,14 @@ function MultiProps({ ids }: { ids: string[] }) {
       <Section title="Align">
         <div className="studio-align" role="group" aria-label="Align selection">
           {ALIGNS.map((a) => (
-            <button key={a.mode} type="button" className="btn btn-sm btn-icon" title={a.title} aria-label={a.title} onClick={() => align(ids, a.mode)}>
+            <button
+              key={a.mode}
+              type="button"
+              className="btn btn-sm btn-icon"
+              title={a.title}
+              aria-label={a.title}
+              onClick={() => align(ids, a.mode)}
+            >
               {a.label}
             </button>
           ))}

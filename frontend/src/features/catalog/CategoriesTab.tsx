@@ -33,7 +33,11 @@ function CategoryForm({ cat, onClose }: { cat: Category | null; onClose: () => v
           await save.mutateAsync({ id: cat?.id, body: v }).then(onClose, () => undefined)
         })}
       >
-        {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+        {save.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(save.error)}
+          </div>
+        )}
         <Field label="Name" error={errors.name?.message}>
           <input {...register('name')} />
         </Field>
@@ -72,7 +76,9 @@ export function CategoriesTab() {
             <div className="grow">
               <strong>{c.name}</strong> <span className="muted">order {c.sortOrder}</span>
             </div>
-            <span className={`badge ${c.active ? 'badge-completed' : 'badge-canceled'}`}>{c.active ? 'Active' : 'Inactive'}</span>
+            <span className={`badge ${c.active ? 'badge-completed' : 'badge-canceled'}`}>
+              {c.active ? 'Active' : 'Inactive'}
+            </span>
             <button className="btn btn-sm" onClick={() => setEditing(c)}>
               Edit
             </button>

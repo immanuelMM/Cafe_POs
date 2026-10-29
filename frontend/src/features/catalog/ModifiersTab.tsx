@@ -45,7 +45,9 @@ function ModifierListForm({ list, onClose }: { list: ModifierList | null; onClos
       minSelections: list?.minSelections ?? 0,
       maxSelections: list?.maxSelections ?? 1,
       active: list?.active ?? true,
-      modifiers: list?.modifiers.filter((m) => m.active).map((m) => ({ id: m.id, name: m.name, priceDelta: m.priceDelta, active: true })) ?? [
+      modifiers: list?.modifiers
+        .filter((m) => m.active)
+        .map((m) => ({ id: m.id, name: m.name, priceDelta: m.priceDelta, active: true })) ?? [
         { name: '', priceDelta: 0, active: true },
       ],
     },
@@ -60,7 +62,11 @@ function ModifierListForm({ list, onClose }: { list: ModifierList | null; onClos
           await save.mutateAsync({ id: list?.id, body: v }).then(onClose, () => undefined)
         })}
       >
-        {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+        {save.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(save.error)}
+          </div>
+        )}
         <Field label="List name (e.g. Milk Type)" error={errors.name?.message}>
           <input {...register('name')} />
         </Field>
@@ -84,9 +90,19 @@ function ModifierListForm({ list, onClose }: { list: ModifierList | null; onClos
                 <input {...register(`modifiers.${i}.name`)} />
               </Field>
               <Field label="Price change (₱, VAT incl.)" error={errors.modifiers?.[i]?.priceDelta?.message}>
-                <input type="number" step="0.01" inputMode="decimal" {...register(`modifiers.${i}.priceDelta`, { valueAsNumber: true })} />
+                <input
+                  type="number"
+                  step="0.01"
+                  inputMode="decimal"
+                  {...register(`modifiers.${i}.priceDelta`, { valueAsNumber: true })}
+                />
               </Field>
-              <button type="button" className="btn btn-icon btn-danger-ghost" onClick={() => remove(i)} aria-label="Remove modifier">
+              <button
+                type="button"
+                className="btn btn-icon btn-danger-ghost"
+                onClick={() => remove(i)}
+                aria-label="Remove modifier"
+              >
                 🗑
               </button>
             </div>
@@ -128,11 +144,16 @@ export function ModifiersTab() {
               <div className="muted">
                 {l.modifiers
                   .filter((m) => m.active)
-                  .map((m) => `${m.name}${m.priceDelta ? ` (${m.priceDelta > 0 ? '+' : ''}${formatMoney(m.priceDelta)})` : ''}`)
+                  .map(
+                    (m) =>
+                      `${m.name}${m.priceDelta ? ` (${m.priceDelta > 0 ? '+' : ''}${formatMoney(m.priceDelta)})` : ''}`,
+                  )
                   .join(' · ')}
               </div>
             </div>
-            <span className={`badge ${l.active ? 'badge-completed' : 'badge-canceled'}`}>{l.active ? 'Active' : 'Inactive'}</span>
+            <span className={`badge ${l.active ? 'badge-completed' : 'badge-canceled'}`}>
+              {l.active ? 'Active' : 'Inactive'}
+            </span>
             <button className="btn btn-sm" onClick={() => setEditing(l)}>
               Edit
             </button>

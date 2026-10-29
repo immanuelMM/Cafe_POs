@@ -53,7 +53,11 @@ export function useShortcuts({ onSave, onPasteFiles }: { onSave: () => void; onP
         if (!sel.length) return
         e.preventDefault()
         const d = e.shiftKey ? 10 : 1
-        st.nudge(sel, e.key === 'ArrowLeft' ? -d : e.key === 'ArrowRight' ? d : 0, e.key === 'ArrowUp' ? -d : e.key === 'ArrowDown' ? d : 0)
+        st.nudge(
+          sel,
+          e.key === 'ArrowLeft' ? -d : e.key === 'ArrowRight' ? d : 0,
+          e.key === 'ArrowUp' ? -d : e.key === 'ArrowDown' ? d : 0,
+        )
       } else if (e.key === 'Escape') {
         st.select([])
       }

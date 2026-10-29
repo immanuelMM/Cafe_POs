@@ -169,7 +169,12 @@ export function MenuBannerPage() {
             </Link>
           )}
           {effectiveView === 'generated' && (
-            <button type="button" className="btn btn-primary" onClick={() => void print()} disabled={loading || printing}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => void print()}
+              disabled={loading || printing}
+            >
               {printing ? 'Preparing…' : 'Print banner'}
             </button>
           )}
@@ -181,10 +186,20 @@ export function MenuBannerPage() {
         </PageHeader>
         {uploadedUrl && (
           <div className="tabs" role="group" aria-label="Banner source">
-            <button type="button" className={effectiveView === 'generated' ? 'tab tab-on' : 'tab'} aria-pressed={effectiveView === 'generated'} onClick={() => setView('generated')}>
+            <button
+              type="button"
+              className={effectiveView === 'generated' ? 'tab tab-on' : 'tab'}
+              aria-pressed={effectiveView === 'generated'}
+              onClick={() => setView('generated')}
+            >
               Generated from menu
             </button>
-            <button type="button" className={effectiveView === 'uploaded' ? 'tab tab-on' : 'tab'} aria-pressed={effectiveView === 'uploaded'} onClick={() => setView('uploaded')}>
+            <button
+              type="button"
+              className={effectiveView === 'uploaded' ? 'tab tab-on' : 'tab'}
+              aria-pressed={effectiveView === 'uploaded'}
+              onClick={() => setView('uploaded')}
+            >
               Uploaded design
             </button>
           </div>
@@ -210,29 +225,52 @@ export function MenuBannerPage() {
               </select>
             </Field>
             <label className="check">
-              <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} /> Show inactive items
+              <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} /> Show
+              inactive items
             </label>
             <label className="check">
-              <input type="checkbox" checked={showPhotos} onChange={(e) => setPhotosChoice(e.target.checked)} /> Show photos
+              <input type="checkbox" checked={showPhotos} onChange={(e) => setPhotosChoice(e.target.checked)} /> Show
+              photos
             </label>
           </div>
         )}
         {loading && <Spinner label="Loading menu…" />}
-        {error && <ErrorBox error={error} onRetry={() => { void cats.refetch(); void items.refetch() }} />}
+        {error && (
+          <ErrorBox
+            error={error}
+            onRetry={() => {
+              void cats.refetch()
+              void items.refetch()
+            }}
+          />
+        )}
         {effectiveView === 'generated' && truncated && (
-          <div className="alert alert-error" role="alert">Only the first {items.data?.data.length} items are shown; the menu has {items.data?.totalCount}.</div>
+          <div className="alert alert-error" role="alert">
+            Only the first {items.data?.data.length} items are shown; the menu has {items.data?.totalCount}.
+          </div>
         )}
         {effectiveView === 'generated' && overflow && (
-          <div className="alert alert-error" role="alert">The menu does not fit this size. Add columns or choose a bigger size.</div>
+          <div className="alert alert-error" role="alert">
+            The menu does not fit this size. Add columns or choose a bigger size.
+          </div>
         )}
-        {effectiveView === 'generated' && !loading && sections.length === 0 && <p className="muted">No active menu items to show yet.</p>}
+        {effectiveView === 'generated' && !loading && sections.length === 0 && (
+          <p className="muted">No active menu items to show yet.</p>
+        )}
       </div>
 
       {effectiveView === 'uploaded' && uploadedUrl ? (
         <div className="banner-upload no-print">
           {isPdf ? (
-            <object data={uploadedUrl} type="application/pdf" className="banner-pdf" aria-label="Uploaded banner design">
-              <a href={uploadedUrl} target="_blank" rel="noreferrer">Open the uploaded PDF</a>
+            <object
+              data={uploadedUrl}
+              type="application/pdf"
+              className="banner-pdf"
+              aria-label="Uploaded banner design"
+            >
+              <a href={uploadedUrl} target="_blank" rel="noreferrer">
+                Open the uploaded PDF
+              </a>
             </object>
           ) : (
             <img src={uploadedUrl} alt="Uploaded banner design" />

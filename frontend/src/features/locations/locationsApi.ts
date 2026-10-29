@@ -19,7 +19,11 @@ export const useCurrentLocation = () => {
 }
 
 export const useLocationStaff = (id: string | undefined) =>
-  useQuery({ queryKey: ['location-staff', id], queryFn: () => api<StaffMember[]>(`/locations/${id}/staff`), enabled: !!id })
+  useQuery({
+    queryKey: ['location-staff', id],
+    queryFn: () => api<StaffMember[]>(`/locations/${id}/staff`),
+    enabled: !!id,
+  })
 
 /** Switch the active location (null = Owner "All locations"): replaces the token and resets all cached server data. */
 export function useSwitchLocation() {

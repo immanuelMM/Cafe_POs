@@ -55,17 +55,25 @@ export function PinModal({ title, subtitle, busy, error, confirm, onSubmit, onCl
   }, [add, back, ok])
 
   const shownError = localError ?? error
-  const prompt = confirm ? (first === null ? 'Choose a PIN (4 to 6 digits)' : 'Enter it again to confirm') : 'Enter your PIN'
+  const prompt = confirm
+    ? first === null
+      ? 'Choose a PIN (4 to 6 digits)'
+      : 'Enter it again to confirm'
+    : 'Enter your PIN'
   return (
     <Modal title={title} onClose={onClose}>
       {subtitle && <p className="pin-who">{subtitle}</p>}
-      <p className="muted center" style={{ margin: 0 }}>{prompt}</p>
+      <p className="muted center" style={{ margin: 0 }}>
+        {prompt}
+      </p>
       <div className="pin-dots" role="status" aria-label={`${pin.length} digits entered`}>
         {Array.from({ length: MAX }, (_, i) => (
           <span key={i} className={i < pin.length ? 'pin-dot pin-dot-on' : 'pin-dot'} aria-hidden="true" />
         ))}
       </div>
-      <div className="pin-msg" role="alert">{shownError}</div>
+      <div className="pin-msg" role="alert">
+        {shownError}
+      </div>
       <div className="pinpad">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
           <button key={d} type="button" className="btn pin-key" onClick={() => add(d)} disabled={busy}>

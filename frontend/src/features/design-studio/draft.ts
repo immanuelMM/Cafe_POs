@@ -40,7 +40,13 @@ export function clearDraft(kind: DesignKind) {
 }
 
 /** Debounced draft autosave while there are unsaved changes. `onResult(false)` when the browser refused the write. */
-export function useDraftAutosave(kind: DesignKind, doc: StudioDoc, dirty: boolean, enabled: boolean, onResult: (ok: boolean) => void) {
+export function useDraftAutosave(
+  kind: DesignKind,
+  doc: StudioDoc,
+  dirty: boolean,
+  enabled: boolean,
+  onResult: (ok: boolean) => void,
+) {
   const cb = useRef(onResult)
   cb.current = onResult
   useEffect(() => {

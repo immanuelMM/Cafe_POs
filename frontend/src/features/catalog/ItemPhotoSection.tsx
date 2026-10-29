@@ -43,9 +43,19 @@ export function ItemPhotoSection({ item }: { item: Item }) {
     <fieldset className="opt-group">
       <legend>Photo</legend>
       <div className="photo-section">
-        {src ? <img className="photo-preview" src={src} alt={`Photo of ${item.name}`} /> : <div className="photo-preview photo-empty">No photo</div>}
+        {src ? (
+          <img className="photo-preview" src={src} alt={`Photo of ${item.name}`} />
+        ) : (
+          <div className="photo-preview photo-empty">No photo</div>
+        )}
         <div className="photo-actions">
-          <input ref={inputRef} type="file" accept={PHOTO_TYPES.join(',')} hidden onChange={(e) => pick(e.target.files?.[0])} />
+          <input
+            ref={inputRef}
+            type="file"
+            accept={PHOTO_TYPES.join(',')}
+            hidden
+            onChange={(e) => pick(e.target.files?.[0])}
+          />
           <button type="button" className="btn" onClick={() => inputRef.current?.click()}>
             {src ? 'Replace photo' : 'Upload photo'}
           </button>
@@ -62,7 +72,11 @@ export function ItemPhotoSection({ item }: { item: Item }) {
           <p className="field-hint">PNG, JPEG or WebP. You can crop and zoom before uploading.</p>
         </div>
       </div>
-      {err && <div className="alert alert-error" role="alert">{err}</div>}
+      {err && (
+        <div className="alert alert-error" role="alert">
+          {err}
+        </div>
+      )}
       {file && (
         <LogoEditor
           file={file}

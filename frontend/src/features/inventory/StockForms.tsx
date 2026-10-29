@@ -42,7 +42,13 @@ export function IngredientForm({ ing, onClose }: { ing: Ingredient | null; onClo
     formState: { errors },
   } = useForm<IngValues>({
     resolver: zodResolver(ingSchema),
-    defaultValues: { name: ing?.name ?? '', unit: ing?.unit ?? '', lowStockThreshold: ing?.lowStockThreshold ?? 0, initialQuantity: 0, active: ing?.active ?? true },
+    defaultValues: {
+      name: ing?.name ?? '',
+      unit: ing?.unit ?? '',
+      lowStockThreshold: ing?.lowStockThreshold ?? 0,
+      initialQuantity: 0,
+      active: ing?.active ?? true,
+    },
   })
   return (
     <Modal title={ing ? `Edit ${ing.name}` : 'New ingredient'} onClose={onClose}>
@@ -53,19 +59,37 @@ export function IngredientForm({ ing, onClose }: { ing: Ingredient | null; onClo
             id: ing?.id,
             body: ing
               ? { name: v.name, unit: v.unit, lowStockThreshold: v.lowStockThreshold, active: v.active }
-              : { name: v.name, unit: v.unit, lowStockThreshold: v.lowStockThreshold, initialQuantity: v.initialQuantity },
+              : {
+                  name: v.name,
+                  unit: v.unit,
+                  lowStockThreshold: v.lowStockThreshold,
+                  initialQuantity: v.initialQuantity,
+                },
           }),
         )}
       >
-        {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+        {save.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(save.error)}
+          </div>
+        )}
         <Field label="Name" error={errors.name?.message}>
           <input {...register('name')} />
         </Field>
         <Field label="Unit" error={errors.unit?.message}>
           <input placeholder="ml, g, each" {...register('unit')} />
         </Field>
-        <Field label="Low-stock threshold" error={errors.lowStockThreshold?.message} hint="Flagged when on-hand is at or below this">
-          <input type="number" step="0.001" inputMode="decimal" {...register('lowStockThreshold', { valueAsNumber: true })} />
+        <Field
+          label="Low-stock threshold"
+          error={errors.lowStockThreshold?.message}
+          hint="Flagged when on-hand is at or below this"
+        >
+          <input
+            type="number"
+            step="0.001"
+            inputMode="decimal"
+            {...register('lowStockThreshold', { valueAsNumber: true })}
+          />
         </Field>
         {ing ? (
           <label className="check">
@@ -73,7 +97,12 @@ export function IngredientForm({ ing, onClose }: { ing: Ingredient | null; onClo
           </label>
         ) : (
           <Field label="Opening quantity" error={errors.initialQuantity?.message}>
-            <input type="number" step="0.001" inputMode="decimal" {...register('initialQuantity', { valueAsNumber: true })} />
+            <input
+              type="number"
+              step="0.001"
+              inputMode="decimal"
+              {...register('initialQuantity', { valueAsNumber: true })}
+            />
           </Field>
         )}
         <button className="btn btn-primary btn-block" disabled={save.isPending}>
@@ -104,15 +133,31 @@ export function RestockForm({ ing, onClose }: { ing: Ingredient; onClose: () => 
       <form
         className="form"
         onSubmit={handleSubmit((v) =>
-          save.mutate({ ingredientId: ing.id, quantity: v.quantity, unitCost: v.unitCost, supplier: v.supplier || undefined, note: v.note || undefined }),
+          save.mutate({
+            ingredientId: ing.id,
+            quantity: v.quantity,
+            unitCost: v.unitCost,
+            supplier: v.supplier || undefined,
+            note: v.note || undefined,
+          }),
         )}
       >
         <p className="muted">
           On hand: {formatQty(ing.quantityOnHand ?? 0)} {ing.unit}
         </p>
-        {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+        {save.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(save.error)}
+          </div>
+        )}
         <Field label={`Quantity received (${ing.unit})`} error={errors.quantity?.message}>
-          <input type="number" step="0.001" inputMode="decimal" autoFocus {...register('quantity', { valueAsNumber: true })} />
+          <input
+            type="number"
+            step="0.001"
+            inputMode="decimal"
+            autoFocus
+            {...register('quantity', { valueAsNumber: true })}
+          />
         </Field>
         <Field label="Unit cost (₱, optional)" error={errors.unitCost?.message}>
           <input type="number" step="0.01" inputMode="decimal" {...register('unitCost', { setValueAs: optNum })} />
@@ -161,7 +206,11 @@ export function AdjustForm({ ing, onClose }: { ing: Ingredient; onClose: () => v
         <p className="muted">
           On hand: {formatQty(ing.quantityOnHand ?? 0)} {ing.unit}
         </p>
-        {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+        {save.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(save.error)}
+          </div>
+        )}
         <Field label="Type">
           <select {...register('kind')}>
             <option value="Waste">Waste / spoilage (removes stock)</option>
@@ -183,7 +232,17 @@ export function AdjustForm({ ing, onClose }: { ing: Ingredient; onClose: () => v
   )
 }
 
-export function MovementsModal({ ing, locationId, locationName, onClose }: { ing: Ingredient; locationId?: string; locationName?: string; onClose: () => void }) {
+export function MovementsModal({
+  ing,
+  locationId,
+  locationName,
+  onClose,
+}: {
+  ing: Ingredient
+  locationId?: string
+  locationName?: string
+  onClose: () => void
+}) {
   const [page, setPage] = useState(1)
   const q = useMovements(ing.id, page, locationId)
   return (
@@ -200,7 +259,14 @@ export function MovementsModal({ ing, locationId, locationName, onClose }: { ing
             </span>
             <span className={`badge badge-reason-${m.reason.toLowerCase()}`}>{m.reason}</span>
             <span className="muted grow">
-              {[m.note, m.supplier && `from ${m.supplier}`, m.unitCost != null && `@ ${formatMoney(m.unitCost)}`, m.sourceDocumentRef].filter(Boolean).join(' · ')}
+              {[
+                m.note,
+                m.supplier && `from ${m.supplier}`,
+                m.unitCost != null && `@ ${formatMoney(m.unitCost)}`,
+                m.sourceDocumentRef,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </span>
             <time className="muted" dateTime={m.createdAt}>
               {formatDateTime(m.createdAt)}

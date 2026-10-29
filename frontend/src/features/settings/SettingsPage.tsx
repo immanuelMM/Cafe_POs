@@ -59,8 +59,16 @@ function LocationForm({ loc }: { loc: LocationDto }) {
         save.mutate(v, { onSuccess: () => reset(v) })
       })}
     >
-      {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
-      {saved && <div className="alert alert-ok" role="status">Saved.</div>}
+      {save.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(save.error)}
+        </div>
+      )}
+      {saved && (
+        <div className="alert alert-ok" role="status">
+          Saved.
+        </div>
+      )}
       <Field label="Location name" error={errors.name?.message}>
         <input {...register('name')} />
       </Field>
@@ -102,7 +110,8 @@ export function SettingsPage() {
       <h2 className="section-title">Location settings</h2>
       {!hasLocation && (
         <p className="muted">
-          You are in the All locations view. Pick a location in the header to edit its settings, or manage every location under Locations.
+          You are in the All locations view. Pick a location in the header to edit its settings, or manage every
+          location under Locations.
         </p>
       )}
       {hasLocation && q.isLoading && <Spinner />}

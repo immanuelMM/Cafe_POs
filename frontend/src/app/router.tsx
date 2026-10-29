@@ -7,12 +7,8 @@ import { PosPage } from '../features/pos/PosPage'
 import { Spinner } from '../components/ui'
 
 // POS and login stay eager for first paint; everything else is split per route.
-const OrdersPage = lazy(() =>
-  import('../features/orders/OrdersPage').then((m) => ({ default: m.OrdersPage })),
-)
-const ReceiptPage = lazy(() =>
-  import('../features/orders/ReceiptPage').then((m) => ({ default: m.ReceiptPage })),
-)
+const OrdersPage = lazy(() => import('../features/orders/OrdersPage').then((m) => ({ default: m.OrdersPage })))
+const ReceiptPage = lazy(() => import('../features/orders/ReceiptPage').then((m) => ({ default: m.ReceiptPage })))
 const TimeClockPage = lazy(() =>
   import('../features/timeclock/TimeClockPage').then((m) => ({ default: m.TimeClockPage })),
 )
@@ -22,18 +18,12 @@ const TimeRecordsPage = lazy(() =>
 const MenuBannerPage = lazy(() =>
   import('../features/branding/MenuBannerPage').then((m) => ({ default: m.MenuBannerPage })),
 )
-const CatalogPage = lazy(() =>
-  import('../features/catalog/CatalogPage').then((m) => ({ default: m.CatalogPage })),
-)
+const CatalogPage = lazy(() => import('../features/catalog/CatalogPage').then((m) => ({ default: m.CatalogPage })))
 const InventoryPage = lazy(() =>
   import('../features/inventory/InventoryPage').then((m) => ({ default: m.InventoryPage })),
 )
-const SettingsPage = lazy(() =>
-  import('../features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
-)
-const UsersPage = lazy(() =>
-  import('../features/users/UsersPage').then((m) => ({ default: m.UsersPage })),
-)
+const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })))
+const UsersPage = lazy(() => import('../features/users/UsersPage').then((m) => ({ default: m.UsersPage })))
 const LocationsPage = lazy(() =>
   import('../features/locations/LocationsPage').then((m) => ({ default: m.LocationsPage })),
 )

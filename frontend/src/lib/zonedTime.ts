@@ -23,12 +23,19 @@ function offsetAt(ts: number, tz: string) {
     second: 'numeric',
   }).formatToParts(new Date(ts))
   const g = (t: string) => Number(parts.find((p) => p.type === t)?.value)
-  return Date.UTC(g('year'), g('month') - 1, g('day'), g('hour'), g('minute'), g('second')) - Math.floor(ts / 1000) * 1000
+  return (
+    Date.UTC(g('year'), g('month') - 1, g('day'), g('hour'), g('minute'), g('second')) - Math.floor(ts / 1000) * 1000
+  )
 }
 
 /** Today's date in the zone. */
 export function todayIn(tz?: string, now = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: safeZone(tz), year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: safeZone(tz),
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now)
 }
 
 export function addDays(date: string, n: number) {

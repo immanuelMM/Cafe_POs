@@ -31,7 +31,12 @@ export function LocationSwitcher() {
     <label className="loc-switch">
       <span className="sr-only">Active location</span>
       <span aria-hidden="true">📍</span>
-      <select value={user.location?.id ?? ''} onChange={(e) => onChange(e.target.value)} disabled={sw.isPending} aria-label="Active location">
+      <select
+        value={user.location?.id ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={sw.isPending}
+        aria-label="Active location"
+      >
         {user.isOwner && <option value="">All locations</option>}
         {options.map((l) => (
           <option key={l.locationId} value={l.locationId}>

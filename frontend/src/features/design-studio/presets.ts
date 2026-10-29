@@ -14,11 +14,46 @@ export interface CanvasPreset {
 export const PRESETS: CanvasPreset[] = [
   { id: 'logo-512', kind: 'logo', label: 'Square 512 x 512', width: 512, height: 512 },
   { id: 'logo-1024', kind: 'logo', label: 'Square 1024 x 1024', width: 1024, height: 1024 },
-  { id: 'banner-2x3', kind: 'banner', label: '2 x 3 ft portrait', width: 1800, height: 2700, print: { w: 24, h: 36, unit: 'in' } },
-  { id: 'banner-3x4', kind: 'banner', label: '3 x 4 ft portrait', width: 2700, height: 3600, print: { w: 36, h: 48, unit: 'in' } },
-  { id: 'banner-4x3', kind: 'banner', label: '4 x 3 ft landscape', width: 3600, height: 2700, print: { w: 48, h: 36, unit: 'in' } },
-  { id: 'banner-a3p', kind: 'banner', label: 'A3 portrait', width: 1754, height: 2480, print: { w: 297, h: 420, unit: 'mm' } },
-  { id: 'banner-a3l', kind: 'banner', label: 'A3 landscape', width: 2480, height: 1754, print: { w: 420, h: 297, unit: 'mm' } },
+  {
+    id: 'banner-2x3',
+    kind: 'banner',
+    label: '2 x 3 ft portrait',
+    width: 1800,
+    height: 2700,
+    print: { w: 24, h: 36, unit: 'in' },
+  },
+  {
+    id: 'banner-3x4',
+    kind: 'banner',
+    label: '3 x 4 ft portrait',
+    width: 2700,
+    height: 3600,
+    print: { w: 36, h: 48, unit: 'in' },
+  },
+  {
+    id: 'banner-4x3',
+    kind: 'banner',
+    label: '4 x 3 ft landscape',
+    width: 3600,
+    height: 2700,
+    print: { w: 48, h: 36, unit: 'in' },
+  },
+  {
+    id: 'banner-a3p',
+    kind: 'banner',
+    label: 'A3 portrait',
+    width: 1754,
+    height: 2480,
+    print: { w: 297, h: 420, unit: 'mm' },
+  },
+  {
+    id: 'banner-a3l',
+    kind: 'banner',
+    label: 'A3 landscape',
+    width: 2480,
+    height: 1754,
+    print: { w: 420, h: 297, unit: 'mm' },
+  },
 ]
 
 export const presetsFor = (kind: DesignKind) => PRESETS.filter((p) => p.kind === kind)
@@ -72,7 +107,8 @@ export const SHAPES: ShapeOption[] = [
  * element box without stretching the stroke. Icons are drawn with the even-odd rule: sub-paths inside another one are holes.
  */
 export const PATHS: Record<'heart' | 'bubble', string> = {
-  heart: 'M50 100 C8 66 0 40 0 27 C0 10 13 0 27 0 C38 0 46 6 50 15 C54 6 62 0 73 0 C87 0 100 10 100 27 C100 40 92 66 50 100 Z',
+  heart:
+    'M50 100 C8 66 0 40 0 27 C0 10 13 0 27 0 C38 0 46 6 50 15 C54 6 62 0 73 0 C87 0 100 10 100 27 C100 40 92 66 50 100 Z',
   bubble: 'M12 0 L88 0 Q100 0 100 12 L100 66 Q100 78 88 78 L42 78 L20 100 L26 78 L12 78 Q0 78 0 66 L0 12 Q0 0 12 0 Z',
 }
 

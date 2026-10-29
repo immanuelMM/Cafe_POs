@@ -5,7 +5,18 @@ import type { Section } from '../branding/menuSections'
 import type { MenuElement } from './types'
 
 export type MenuDraw =
-  | { t: 'text'; x: number; y: number; w: number; text: string; size: number; bold: boolean; color: string; align: 'left' | 'right'; opacity: number }
+  | {
+      t: 'text'
+      x: number
+      y: number
+      w: number
+      text: string
+      size: number
+      bold: boolean
+      color: string
+      align: 'left' | 'right'
+      opacity: number
+    }
   | { t: 'rule'; x: number; y: number; w: number; h: number; color: string }
   | { t: 'photo'; x: number; y: number; size: number; path: string }
 
@@ -22,7 +33,14 @@ const LINE = 1.2
 let probe: Konva.Text | null = null
 function measureRaw(text: string, size: number, bold: boolean, family: string, width?: number) {
   probe ??= new Konva.Text({ wrap: 'word' })
-  probe.setAttrs({ text, fontSize: size, fontFamily: family, fontStyle: bold ? 'bold' : 'normal', lineHeight: LINE, width: width ?? 'auto' })
+  probe.setAttrs({
+    text,
+    fontSize: size,
+    fontFamily: family,
+    fontStyle: bold ? 'bold' : 'normal',
+    lineHeight: LINE,
+    width: width ?? 'auto',
+  })
   return { h: probe.height(), w: probe.getTextWidth() }
 }
 
@@ -65,8 +83,31 @@ function build(el: MenuElement, sections: Section[], fs: number, cache: Map<stri
       const pw = p ? measure(p, size, true).w : 0
       const nameW = Math.max(fs, tw - indent - (p ? pw + fs * 0.6 : 0))
       const { h } = measure(label, size, bold, nameW)
-      out.push({ t: 'text', x: tx + indent, y, w: nameW, text: label, size, bold, color: el.textColor, align: 'left', opacity: 1 })
-      if (p) out.push({ t: 'text', x: tx + tw - pw, y, w: pw, text: p, size, bold: true, color: el.priceColor, align: 'right', opacity: 1 })
+      out.push({
+        t: 'text',
+        x: tx + indent,
+        y,
+        w: nameW,
+        text: label,
+        size,
+        bold,
+        color: el.textColor,
+        align: 'left',
+        opacity: 1,
+      })
+      if (p)
+        out.push({
+          t: 'text',
+          x: tx + tw - pw,
+          y,
+          w: pw,
+          text: p,
+          size,
+          bold: true,
+          color: el.priceColor,
+          align: 'right',
+          opacity: 1,
+        })
       y += h
     }
     const vars = item.variations
@@ -78,7 +119,18 @@ function build(el: MenuElement, sections: Section[], fs: number, cache: Map<stri
     }
     if (el.showDescriptions && item.description) {
       const { h } = measure(item.description, fs * 0.72, false, tw)
-      out.push({ t: 'text', x: tx, y, w: tw, text: item.description, size: fs * 0.72, bold: false, color: el.textColor, align: 'left', opacity: 0.7 })
+      out.push({
+        t: 'text',
+        x: tx,
+        y,
+        w: tw,
+        text: item.description,
+        size: fs * 0.72,
+        bold: false,
+        color: el.textColor,
+        align: 'left',
+        opacity: 0.7,
+      })
       y += h
     }
     return { draws: out, h: Math.max(y, photo) }
@@ -92,7 +144,13 @@ function build(el: MenuElement, sections: Section[], fs: number, cache: Map<stri
     sections: sections.map((s) => {
       const titleH = measure(s.category.name, fs * 1.5, true, colW).h
       const ruleH = Math.max(2, fs * 0.12)
-      return { titleH, ruleH, headH: titleH + fs * 0.15 + ruleH + fs * 0.5, name: s.category.name, items: s.items.map(itemBlock) }
+      return {
+        titleH,
+        ruleH,
+        headH: titleH + fs * 0.15 + ruleH + fs * 0.5,
+        name: s.category.name,
+        items: s.items.map(itemBlock),
+      }
     }),
   }
 }
@@ -122,7 +180,18 @@ function pack(el: MenuElement, b: Built, limitH: number, innerH: number) {
       const ox = pad + col * (colW + gap)
       let oy = pad + y
       if (i === 0) {
-        draws.push({ t: 'text', x: ox, y: oy, w: colW, text: s.name, size: fs * 1.5, bold: true, color: el.accentColor, align: 'left', opacity: 1 })
+        draws.push({
+          t: 'text',
+          x: ox,
+          y: oy,
+          w: colW,
+          text: s.name,
+          size: fs * 1.5,
+          bold: true,
+          color: el.accentColor,
+          align: 'left',
+          opacity: 1,
+        })
         draws.push({ t: 'rule', x: ox, y: oy + s.titleH + fs * 0.15, w: colW, h: s.ruleH, color: el.accentColor })
         oy += s.headH
       }

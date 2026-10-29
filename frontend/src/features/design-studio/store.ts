@@ -62,11 +62,14 @@ export function boundsOf(el: StudioElement) {
   return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y }
 }
 
-const clone = <T,>(v: T): T => structuredClone(v)
+const clone = <T>(v: T): T => structuredClone(v)
 
 function scaleElement(el: StudioElement, sx: number, sy: number): StudioElement {
   const k = Math.min(sx, sy)
-  const anisotropic = (el.kind === 'shape' && (el.shape === 'rect' || el.shape === 'roundRect')) || el.kind === 'menu' || el.kind === 'image'
+  const anisotropic =
+    (el.kind === 'shape' && (el.shape === 'rect' || el.shape === 'roundRect')) ||
+    el.kind === 'menu' ||
+    el.kind === 'image'
   const cx = (el.x + el.width / 2) * sx
   const cy = (el.y + el.height / 2) * sy
   const width = el.width * (anisotropic ? sx : k)
@@ -82,7 +85,13 @@ function scaleElement(el: StudioElement, sx: number, sy: number): StudioElement 
     next.strokeWidth *= k
     next.cornerRadius *= k
   }
-  if ('shadow' in next && next.shadow) next.shadow = { ...next.shadow, blur: next.shadow.blur * k, offsetX: next.shadow.offsetX * k, offsetY: next.shadow.offsetY * k }
+  if ('shadow' in next && next.shadow)
+    next.shadow = {
+      ...next.shadow,
+      blur: next.shadow.blur * k,
+      offsetX: next.shadow.offsetX * k,
+      offsetY: next.shadow.offsetY * k,
+    }
   return next
 }
 
@@ -99,7 +108,8 @@ export const useStudio = create<State>((set, get) => ({
   load: (doc, dirty = false) => set({ doc, selected: [], past: [], future: [], dirty, coalesce: null }),
   markSaved: () => set({ dirty: false }),
   select: (ids) => set({ selected: ids }),
-  toggleSelect: (id) => set((s) => ({ selected: s.selected.includes(id) ? s.selected.filter((i) => i !== id) : [...s.selected, id] })),
+  toggleSelect: (id) =>
+    set((s) => ({ selected: s.selected.includes(id) ? s.selected.filter((i) => i !== id) : [...s.selected, id] })),
   selectAll: () => set((s) => ({ selected: s.doc.elements.filter((e) => !e.locked && !e.hidden).map((e) => e.id) })),
 
   commit: (doc, key) => {
@@ -130,7 +140,9 @@ export const useStudio = create<State>((set, get) => ({
     commit(
       {
         ...doc,
-        elements: doc.elements.map((e) => (set_.has(e.id) ? ({ ...e, ...(typeof patch === 'function' ? patch(e) : patch) } as StudioElement) : e)),
+        elements: doc.elements.map((e) =>
+          set_.has(e.id) ? ({ ...e, ...(typeof patch === 'function' ? patch(e) : patch) } as StudioElement) : e,
+        ),
       },
       key,
     )
@@ -150,9 +162,11 @@ export const useStudio = create<State>((set, get) => ({
     if (mode === 'front') els = [...els.filter((e) => !sel.has(e.id)), ...els.filter((e) => sel.has(e.id))]
     else if (mode === 'back') els = [...els.filter((e) => sel.has(e.id)), ...els.filter((e) => !sel.has(e.id))]
     else if (mode === 'forward') {
-      for (let i = els.length - 2; i >= 0; i--) if (sel.has(els[i].id) && !sel.has(els[i + 1].id)) [els[i], els[i + 1]] = [els[i + 1], els[i]]
+      for (let i = els.length - 2; i >= 0; i--)
+        if (sel.has(els[i].id) && !sel.has(els[i + 1].id)) [els[i], els[i + 1]] = [els[i + 1], els[i]]
     } else {
-      for (let i = 1; i < els.length; i++) if (sel.has(els[i].id) && !sel.has(els[i - 1].id)) [els[i], els[i - 1]] = [els[i - 1], els[i]]
+      for (let i = 1; i < els.length; i++)
+        if (sel.has(els[i].id) && !sel.has(els[i - 1].id)) [els[i], els[i - 1]] = [els[i - 1], els[i]]
     }
     if (els.every((e, i) => e === doc.elements[i])) return
     commit({ ...doc, elements: els })
@@ -163,7 +177,17 @@ export const useStudio = create<State>((set, get) => ({
     const sel = new Set(ids)
     const copies = doc.elements
       .filter((e) => sel.has(e.id))
-      .map((e) => ({ ...clone(e), id: newId(), name: `${e.name} copy`, x: e.x + 24, y: e.y + 24, locked: false }) as StudioElement)
+      .map(
+        (e) =>
+          ({
+            ...clone(e),
+            id: newId(),
+            name: `${e.name} copy`,
+            x: e.x + 24,
+            y: e.y + 24,
+            locked: false,
+          }) as StudioElement,
+      )
     if (!copies.length) return
     commit({ ...doc, elements: [...doc.elements, ...copies] })
     set({ selected: copies.map((c) => c.id) })
@@ -179,7 +203,9 @@ export const useStudio = create<State>((set, get) => ({
     const { clipboard, doc, commit, pasteCount } = get()
     if (!clipboard.length) return
     const n = pasteCount + 1
-    const copies = clipboard.map((e) => ({ ...clone(e), id: newId(), x: e.x + 24 * n, y: e.y + 24 * n, locked: false }) as StudioElement)
+    const copies = clipboard.map(
+      (e) => ({ ...clone(e), id: newId(), x: e.x + 24 * n, y: e.y + 24 * n, locked: false }) as StudioElement,
+    )
     commit({ ...doc, elements: [...doc.elements, ...copies] })
     set({ selected: copies.map((c) => c.id), pasteCount: n })
   },
@@ -189,7 +215,14 @@ export const useStudio = create<State>((set, get) => ({
     const prev = s.past[s.past.length - 1]
     if (!prev) return
     const ids = new Set(prev.elements.map((e) => e.id))
-    set({ doc: prev, past: s.past.slice(0, -1), future: [s.doc, ...s.future], selected: s.selected.filter((i) => ids.has(i)), dirty: true, coalesce: null })
+    set({
+      doc: prev,
+      past: s.past.slice(0, -1),
+      future: [s.doc, ...s.future],
+      selected: s.selected.filter((i) => ids.has(i)),
+      dirty: true,
+      coalesce: null,
+    })
   },
 
   redo: () => {
@@ -197,7 +230,14 @@ export const useStudio = create<State>((set, get) => ({
     const next = s.future[0]
     if (!next) return
     const ids = new Set(next.elements.map((e) => e.id))
-    set({ doc: next, future: s.future.slice(1), past: [...s.past, s.doc], selected: s.selected.filter((i) => ids.has(i)), dirty: true, coalesce: null })
+    set({
+      doc: next,
+      future: s.future.slice(1),
+      past: [...s.past, s.doc],
+      selected: s.selected.filter((i) => ids.has(i)),
+      dirty: true,
+      coalesce: null,
+    })
   },
 
   setBackground: (bg, key) => get().commit({ ...get().doc, background: bg }, key),
@@ -234,7 +274,12 @@ export const useStudio = create<State>((set, get) => ({
         : (() => {
             const x = Math.min(...boxes.map((b) => b.x))
             const y = Math.min(...boxes.map((b) => b.y))
-            return { x, y, width: Math.max(...boxes.map((b) => b.x + b.width)) - x, height: Math.max(...boxes.map((b) => b.y + b.height)) - y }
+            return {
+              x,
+              y,
+              width: Math.max(...boxes.map((b) => b.x + b.width)) - x,
+              height: Math.max(...boxes.map((b) => b.y + b.height)) - y,
+            }
           })()
     const delta = new Map<string, { dx: number; dy: number }>()
     targets.forEach((e, i) => {
@@ -260,10 +305,6 @@ export const useStudio = create<State>((set, get) => ({
 
   nudge: (ids, dx, dy) => {
     const sel = new Set(ids)
-    get().update(
-      ids,
-      (e) => (sel.has(e.id) && !e.locked ? { x: e.x + dx, y: e.y + dy } : {}),
-      'nudge',
-    )
+    get().update(ids, (e) => (sel.has(e.id) && !e.locked ? { x: e.x + dx, y: e.y + dy } : {}), 'nudge')
   },
 }))

@@ -6,7 +6,10 @@ import type { Variation } from '../../lib/types'
 import { useIngredients } from '../inventory/inventoryApi'
 import { catalogCalls, useCatalogMutation, useRecipe } from './catalogApi'
 
-interface Line { ingredientId: string; quantity: string }
+interface Line {
+  ingredientId: string
+  quantity: string
+}
 
 function Editor({ variation, initial, onClose }: { variation: Variation; initial: Line[]; onClose: () => void }) {
   const ings = useIngredients()
@@ -17,7 +20,8 @@ function Editor({ variation, initial, onClose }: { variation: Variation; initial
   const used = new Set(lines.map((l) => l.ingredientId))
   const invalid = lines.some((l) => !l.ingredientId || !(Number(l.quantity) > 0)) || used.size !== lines.length
 
-  const update = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)))
+  const update = (i: number, patch: Partial<Line>) =>
+    setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)))
 
   return (
     <Modal
@@ -29,7 +33,10 @@ function Editor({ variation, initial, onClose }: { variation: Variation; initial
           disabled={invalid || save.isPending}
           onClick={() =>
             save
-              .mutateAsync({ variationId: variation.id, lines: lines.map((l) => ({ ingredientId: l.ingredientId, quantity: Number(l.quantity) })) })
+              .mutateAsync({
+                variationId: variation.id,
+                lines: lines.map((l) => ({ ingredientId: l.ingredientId, quantity: Number(l.quantity) })),
+              })
               .then(onClose, () => undefined)
           }
         >
@@ -37,10 +44,17 @@ function Editor({ variation, initial, onClose }: { variation: Variation; initial
         </button>
       }
     >
-      <p className="muted">Ingredients used for ONE unit sold, in each ingredient&apos;s own unit. Stock is deducted when an order is completed.</p>
+      <p className="muted">
+        Ingredients used for ONE unit sold, in each ingredient&apos;s own unit. Stock is deducted when an order is
+        completed.
+      </p>
       {ings.isLoading && <Spinner />}
       {ings.error && <ErrorBox error={ings.error} />}
-      {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+      {save.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(save.error)}
+        </div>
+      )}
       {lines.map((l, i) => (
         <div key={i} className="recipe-row">
           <label className="field">
@@ -56,9 +70,20 @@ function Editor({ variation, initial, onClose }: { variation: Variation; initial
           </label>
           <label className="field">
             <span className="field-label">Qty {unitOf(l.ingredientId) && `(${unitOf(l.ingredientId)})`}</span>
-            <input type="number" step="0.001" min="0" inputMode="decimal" value={l.quantity} onChange={(e) => update(i, { quantity: e.target.value })} />
+            <input
+              type="number"
+              step="0.001"
+              min="0"
+              inputMode="decimal"
+              value={l.quantity}
+              onChange={(e) => update(i, { quantity: e.target.value })}
+            />
           </label>
-          <button className="btn btn-icon btn-danger-ghost" onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))} aria-label="Remove line">
+          <button
+            className="btn btn-icon btn-danger-ghost"
+            onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))}
+            aria-label="Remove line"
+          >
             🗑
           </button>
         </div>

@@ -104,11 +104,18 @@ export function LogoEditor({
     setLocalError(null)
     const c = document.createElement('canvas')
     render(c, outSize)
-    c.toBlob((b) => {
-      if (!b) setLocalError('Could not create the image.')
-      else if (b.size > maxBytes) setLocalError(`The edited ${noun} is larger than ${Math.round(maxBytes / 1024 / 1024)} MB. Try a smaller or simpler image.`)
-      else onUse(b)
-    }, mime, quality)
+    c.toBlob(
+      (b) => {
+        if (!b) setLocalError('Could not create the image.')
+        else if (b.size > maxBytes)
+          setLocalError(
+            `The edited ${noun} is larger than ${Math.round(maxBytes / 1024 / 1024)} MB. Try a smaller or simpler image.`,
+          )
+        else onUse(b)
+      },
+      mime,
+      quality,
+    )
   }
 
   const shownError = loadError ?? localError ?? (error ? errorMessage(error) : null)
@@ -127,7 +134,11 @@ export function LogoEditor({
         </>
       }
     >
-      {shownError && <div className="alert alert-error" role="alert">{shownError}</div>}
+      {shownError && (
+        <div className="alert alert-error" role="alert">
+          {shownError}
+        </div>
+      )}
       {!img && !loadError && <p className="muted">Loading image…</p>}
       <div className="crop-wrap">
         <canvas
@@ -152,7 +163,12 @@ export function LogoEditor({
           onPointerCancel={() => (drag.current = null)}
           onKeyDown={(e) => {
             const step = 0.03
-            const m: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }
+            const m: Record<string, [number, number]> = {
+              ArrowLeft: [-step, 0],
+              ArrowRight: [step, 0],
+              ArrowUp: [0, -step],
+              ArrowDown: [0, step],
+            }
             if (m[e.key]) {
               e.preventDefault()
               move(...m[e.key])
@@ -176,17 +192,29 @@ export function LogoEditor({
         />
       </label>
       {allowTransparent && (
-      <fieldset className="opt-group">
-        <legend>Background</legend>
-        <div className="chips" role="radiogroup" aria-label="Background">
-          <button type="button" role="radio" aria-checked={!white} className={!white ? 'tab tab-on' : 'tab'} onClick={() => setWhite(false)}>
-            Transparent
-          </button>
-          <button type="button" role="radio" aria-checked={white} className={white ? 'tab tab-on' : 'tab'} onClick={() => setWhite(true)}>
-            White
-          </button>
-        </div>
-      </fieldset>
+        <fieldset className="opt-group">
+          <legend>Background</legend>
+          <div className="chips" role="radiogroup" aria-label="Background">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!white}
+              className={!white ? 'tab tab-on' : 'tab'}
+              onClick={() => setWhite(false)}
+            >
+              Transparent
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={white}
+              className={white ? 'tab tab-on' : 'tab'}
+              onClick={() => setWhite(true)}
+            >
+              White
+            </button>
+          </div>
+        </fieldset>
       )}
     </Modal>
   )

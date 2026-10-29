@@ -26,16 +26,16 @@ Dev logins (seeded by the backend, dev only): `admin@cafe.local` / `Admin#Dev123
 
 ## Screens
 
-| Route | Roles | What |
-|---|---|---|
-| `/login` | public | Sign in. If the account has several locations the API answers `400` with a list and the form shows a location picker |
-| `/pos` | all | Category tabs, item tiles, variation/modifier sheet (min/max enforced), cart sidebar (bottom sheet under 768px), cash payment with change, receipt + print. Prices shown are the active location's effective prices |
-| `/orders`, `/orders/:id/receipt` | all (cashiers see own orders) | History with status/date filters and pagination, receipt view/print, cancel open orders. Owners get a location filter |
-| `/admin/catalog` | Manager, Admin, Owner | Categories, items + variations, modifier lists, recipe editor, and a **Location prices** dialog per variation |
-| `/admin/inventory` | Manager, Admin, Owner | Stock dashboard (red/amber/green), new ingredient, restock, adjustment/waste, stock ledger |
-| `/admin/users` (nav label **Staff**) | Admin, Owner | Staff at the active location: create users, assign roles, remove from the location |
-| `/admin/locations` | Owner | All locations: create/edit, and the per-location staff roster |
-| `/admin/settings` | Admin, Owner | Active location's details and VAT rate |
+| Route                                | Roles                         | What                                                                                                                                                                                                                |
+| ------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login`                             | public                        | Sign in. If the account has several locations the API answers `400` with a list and the form shows a location picker                                                                                                |
+| `/pos`                               | all                           | Category tabs, item tiles, variation/modifier sheet (min/max enforced), cart sidebar (bottom sheet under 768px), cash payment with change, receipt + print. Prices shown are the active location's effective prices |
+| `/orders`, `/orders/:id/receipt`     | all (cashiers see own orders) | History with status/date filters and pagination, receipt view/print, cancel open orders. Owners get a location filter                                                                                               |
+| `/admin/catalog`                     | Manager, Admin, Owner         | Categories, items + variations, modifier lists, recipe editor, and a **Location prices** dialog per variation                                                                                                       |
+| `/admin/inventory`                   | Manager, Admin, Owner         | Stock dashboard (red/amber/green), new ingredient, restock, adjustment/waste, stock ledger                                                                                                                          |
+| `/admin/users` (nav label **Staff**) | Admin, Owner                  | Staff at the active location: create users, assign roles, remove from the location                                                                                                                                  |
+| `/admin/locations`                   | Owner                         | All locations: create/edit, and the per-location staff roster                                                                                                                                                       |
+| `/admin/settings`                    | Admin, Owner                  | Active location's details and VAT rate                                                                                                                                                                              |
 
 Owners pass every role check; the Locations screen is Owner only.
 

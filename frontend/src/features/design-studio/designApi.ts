@@ -28,7 +28,8 @@ export const useDesign = (kind: DesignKind) =>
 export function useSaveDesign(kind: DesignKind) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (doc: StudioDoc) => api<SavedDesign>(`/branding/designs/${kind}`, { method: 'PUT', body: { document: doc } }),
+    mutationFn: (doc: StudioDoc) =>
+      api<SavedDesign>(`/branding/designs/${kind}`, { method: 'PUT', body: { document: doc } }),
     onSuccess: (saved) => qc.setQueryData(designKey(kind), saved),
   })
 }
@@ -36,4 +37,5 @@ export function useSaveDesign(kind: DesignKind) {
 /** Serialized size in bytes (what the 8 MB server limit applies to). */
 export const docBytes = (doc: StudioDoc) => new Blob([JSON.stringify({ document: doc })]).size
 
-export const formatBytes = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`)
+export const formatBytes = (n: number) =>
+  n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`

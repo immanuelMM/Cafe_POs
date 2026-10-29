@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { cartCount, cartTotal, useCartStore } from './cartStore'
 
-const line = { itemName: 'Latte', variationId: 'v1', variationName: 'Small', basePrice: 100, modifiers: [], quantity: 1 }
+const line = {
+  itemName: 'Latte',
+  variationId: 'v1',
+  variationName: 'Small',
+  basePrice: 100,
+  modifiers: [],
+  quantity: 1,
+}
 
 describe('cartStore', () => {
   beforeEach(() => useCartStore.getState().clear())

@@ -16,7 +16,8 @@ export const useTimeClockStaff = () => {
 export function usePunch() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (v: { userId: string; pin: string }) => api<PunchResult>('/timeclock/punch', { method: 'POST', body: v }),
+    mutationFn: (v: { userId: string; pin: string }) =>
+      api<PunchResult>('/timeclock/punch', { method: 'POST', body: v }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['timeclock-staff'] })
       void qc.invalidateQueries({ queryKey: ['timeclock-entries'] })

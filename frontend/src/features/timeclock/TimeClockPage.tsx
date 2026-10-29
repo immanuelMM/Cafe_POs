@@ -56,7 +56,9 @@ export function TimeClockPage() {
     return (
       <section className="page narrow">
         <PageHeader title="Time clock" />
-        <p className="muted">The time clock works per location. Pick a location in the header (you are in the All locations view).</p>
+        <p className="muted">
+          The time clock works per location. Pick a location in the header (you are in the All locations view).
+        </p>
       </section>
     )
   }
@@ -110,7 +112,11 @@ export function TimeClockPage() {
           </button>
         )}
       </PageHeader>
-      {pinSaved && <div className="alert alert-ok" role="status">Your PIN was saved.</div>}
+      {pinSaved && (
+        <div className="alert alert-ok" role="status">
+          Your PIN was saved.
+        </div>
+      )}
       <p className="muted">Tap your name, then enter your PIN to clock in or out.</p>
       {staff.isLoading && <Spinner label="Loading staff…" />}
       {staff.error && <ErrorBox error={staff.error} onRetry={() => void staff.refetch()} />}

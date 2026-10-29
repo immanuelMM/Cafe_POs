@@ -5,7 +5,15 @@ import { createPortal } from 'react-dom'
  * Prints the exported banner image full-page at the preset's physical size. Rendered into document.body (outside #root)
  * and activated with body.print-studio, so receipt printing (#print-root) and the menu banner page are not affected.
  */
-export function PrintSheet({ url, size, onDone }: { url: string; size: { w: number; h: number; unit: 'in' | 'mm' }; onDone: () => void }) {
+export function PrintSheet({
+  url,
+  size,
+  onDone,
+}: {
+  url: string
+  size: { w: number; h: number; unit: 'in' | 'mm' }
+  onDone: () => void
+}) {
   useEffect(() => {
     let cancelled = false
     document.body.classList.add('print-studio')

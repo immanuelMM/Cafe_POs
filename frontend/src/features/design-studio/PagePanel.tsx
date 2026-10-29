@@ -24,7 +24,12 @@ export function PagePanel({ onTemplates }: { onTemplates: () => void }) {
   const switchTo = (type: Background['type']) => {
     const color = bg.type === 'solid' ? bg.color : bg.type === 'image' ? bg.color : (brand[0] ?? '#ffffff')
     if (type === 'solid') setBackground({ type: 'solid', color: bg.type === 'gradient' ? bg.stops[0] : color })
-    else if (type === 'gradient') setBackground({ type: 'gradient', stops: brand.length > 1 ? brand : [color, '#b4561f'], angle: palette.angle ?? 135 })
+    else if (type === 'gradient')
+      setBackground({
+        type: 'gradient',
+        stops: brand.length > 1 ? brand : [color, '#b4561f'],
+        angle: palette.angle ?? 135,
+      })
     else if (type === 'transparent') setBackground({ type: 'transparent' })
     else input.current?.click()
   }
@@ -75,11 +80,34 @@ export function PagePanel({ onTemplates }: { onTemplates: () => void }) {
         <Toggle label="Scale content to the new size" checked={scaleContent} onChange={setScaleContent} />
       </Section>
       <Section title="Background">
-        {error && <div className="alert alert-error" role="alert">{error}</div>}
+        {error && (
+          <div className="alert alert-error" role="alert">
+            {error}
+          </div>
+        )}
         <Seg label="Background type" value={bg.type} options={options} onChange={switchTo} />
-        <input ref={input} type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Background image file" onChange={(e) => void pickImage(e.target.files?.[0])} />
-        {bg.type === 'solid' && <ColorField label="Color" value={bg.color} onChange={(color) => setBackground({ type: 'solid', color }, 'bg')} />}
-        {bg.type === 'gradient' && <GradientEditor stops={bg.stops} angle={bg.angle} onChange={(stops, angle) => setBackground({ type: 'gradient', stops, angle }, 'bg')} />}
+        <input
+          ref={input}
+          type="file"
+          accept={IMAGE_ACCEPT}
+          className="sr-only"
+          aria-label="Background image file"
+          onChange={(e) => void pickImage(e.target.files?.[0])}
+        />
+        {bg.type === 'solid' && (
+          <ColorField
+            label="Color"
+            value={bg.color}
+            onChange={(color) => setBackground({ type: 'solid', color }, 'bg')}
+          />
+        )}
+        {bg.type === 'gradient' && (
+          <GradientEditor
+            stops={bg.stops}
+            angle={bg.angle}
+            onChange={(stops, angle) => setBackground({ type: 'gradient', stops, angle }, 'bg')}
+          />
+        )}
         {bg.type === 'image' && (
           <>
             <Seg
@@ -91,13 +119,19 @@ export function PagePanel({ onTemplates }: { onTemplates: () => void }) {
               ]}
               onChange={(fit) => setBackground({ ...bg, fit })}
             />
-            <ColorField label="Behind the image" value={bg.color} onChange={(color) => setBackground({ ...bg, color }, 'bg')} />
+            <ColorField
+              label="Behind the image"
+              value={bg.color}
+              onChange={(color) => setBackground({ ...bg, color }, 'bg')}
+            />
             <button type="button" className="btn btn-sm" onClick={() => input.current?.click()}>
               Choose another image
             </button>
           </>
         )}
-        {bg.type === 'transparent' && <p className="muted studio-note">The logo keeps a transparent background (PNG).</p>}
+        {bg.type === 'transparent' && (
+          <p className="muted studio-note">The logo keeps a transparent background (PNG).</p>
+        )}
       </Section>
       <Section title="Starter">
         <button type="button" className="btn btn-sm" onClick={onTemplates}>

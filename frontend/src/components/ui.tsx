@@ -23,7 +23,17 @@ export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => v
   )
 }
 
-export function Field({ label, error, children, hint }: { label: string; error?: string; hint?: string; children: ReactNode }) {
+export function Field({
+  label,
+  error,
+  children,
+  hint,
+}: {
+  label: string
+  error?: string
+  hint?: string
+  children: ReactNode
+}) {
   return (
     <label className="field">
       <span className="field-label">{label}</span>

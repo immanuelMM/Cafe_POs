@@ -48,7 +48,9 @@ export function InventoryPage() {
           <label className="field loc-filter">
             <span className="field-label">Location</span>
             <select value={locationId} onChange={(e) => setLocationId(e.target.value)}>
-              <option value="">{user?.location ? `Current (${user.location.name})` : 'All locations (catalog only)'}</option>
+              <option value="">
+                {user?.location ? `Current (${user.location.name})` : 'All locations (catalog only)'}
+              </option>
               {(locations.data ?? []).map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
@@ -59,10 +61,13 @@ export function InventoryPage() {
           </label>
         </div>
       )}
-      {catalogOnly && <p className="muted">Showing the ingredient catalog only. Pick a location above to see its stock levels.</p>}
+      {catalogOnly && (
+        <p className="muted">Showing the ingredient catalog only. Pick a location above to see its stock levels.</p>
+      )}
       {!catalogOnly && !canWrite && (
         <p className="muted">
-          Viewing {viewedName ?? 'another location'} read-only. Switch your active location in the header to restock or adjust stock there.
+          Viewing {viewedName ?? 'another location'} read-only. Switch your active location in the header to restock or
+          adjust stock there.
         </p>
       )}
 
@@ -78,7 +83,13 @@ export function InventoryPage() {
       </div>
 
       <div className="toolbar">
-        <input type="search" placeholder="Search ingredients…" aria-label="Search ingredients" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input
+          type="search"
+          placeholder="Search ingredients…"
+          aria-label="Search ingredients"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <label className="check">
           <input type="checkbox" checked={lowOnly} onChange={(e) => setLowOnly(e.target.checked)} /> Low stock only
         </label>
@@ -99,20 +110,32 @@ export function InventoryPage() {
               </div>
               <div className="stock-qty">
                 <strong>
-                  {i.quantityOnHand === null ? '�' : formatQty(i.quantityOnHand)} {i.unit}
+                  {i.quantityOnHand === null ? '�' : formatQty(i.quantityOnHand)} {i.unit}
                 </strong>
                 <small className="muted">
                   threshold {formatQty(i.lowStockThreshold)} {i.unit}
                 </small>
               </div>
               <div className="stock-actions">
-                <button className="btn btn-sm btn-primary" disabled={!canWrite} onClick={() => setDialog({ kind: 'restock', ing: i })}>
+                <button
+                  className="btn btn-sm btn-primary"
+                  disabled={!canWrite}
+                  onClick={() => setDialog({ kind: 'restock', ing: i })}
+                >
                   Restock
                 </button>
-                <button className="btn btn-sm" disabled={!canWrite} onClick={() => setDialog({ kind: 'adjust', ing: i })}>
+                <button
+                  className="btn btn-sm"
+                  disabled={!canWrite}
+                  onClick={() => setDialog({ kind: 'adjust', ing: i })}
+                >
                   Adjust / waste
                 </button>
-                <button className="btn btn-sm" disabled={catalogOnly} onClick={() => setDialog({ kind: 'history', ing: i })}>
+                <button
+                  className="btn btn-sm"
+                  disabled={catalogOnly}
+                  onClick={() => setDialog({ kind: 'history', ing: i })}
+                >
                   Ledger
                 </button>
                 <button className="btn btn-sm btn-ghost" onClick={() => setDialog({ kind: 'edit', ing: i })}>
@@ -128,7 +151,9 @@ export function InventoryPage() {
       {dialog?.kind === 'edit' && <IngredientForm ing={dialog.ing} onClose={close} />}
       {dialog?.kind === 'restock' && <RestockForm ing={dialog.ing} onClose={close} />}
       {dialog?.kind === 'adjust' && <AdjustForm ing={dialog.ing} onClose={close} />}
-      {dialog?.kind === 'history' && <MovementsModal ing={dialog.ing} locationId={viewedId} locationName={viewedName} onClose={close} />}
+      {dialog?.kind === 'history' && (
+        <MovementsModal ing={dialog.ing} locationId={viewedId} locationName={viewedName} onClose={close} />
+      )}
     </section>
   )
 }

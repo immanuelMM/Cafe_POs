@@ -17,7 +17,10 @@ const schema = z.object({
 type Values = z.infer<typeof schema>
 
 /** Shape of the `locations` extension on the 400 "Location required" login response. */
-interface LocChoice { id: string; name: string }
+interface LocChoice {
+  id: string
+  name: string
+}
 
 export function LoginPage() {
   const user = useAuthStore((s) => s.user)

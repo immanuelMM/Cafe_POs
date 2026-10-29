@@ -25,7 +25,13 @@ function LocationFormModal({ loc, onClose }: { loc: LocationDto | null; onClose:
   const qc = useQueryClient()
   const save = useMutation({
     mutationFn: (v: Values) => {
-      const base = { name: v.name, address: v.address || null, timeZone: v.timeZone, contactPhone: v.contactPhone || null, vatRatePercent: v.vatRatePercent }
+      const base = {
+        name: v.name,
+        address: v.address || null,
+        timeZone: v.timeZone,
+        contactPhone: v.contactPhone || null,
+        vatRatePercent: v.vatRatePercent,
+      }
       // Contract: on update an empty string clears the Stripe id (omitted = unchanged).
       return loc
         ? api<LocationDto>(`/locations/${loc.id}`, {
@@ -62,7 +68,11 @@ function LocationFormModal({ loc, onClose }: { loc: LocationDto | null; onClose:
   return (
     <Modal title={loc ? `Edit ${loc.name}` : 'New location'} onClose={onClose}>
       <form className="form" onSubmit={handleSubmit((v) => save.mutate(v))} noValidate>
-        {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+        {save.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(save.error)}
+          </div>
+        )}
         <Field label="Name" error={errors.name?.message}>
           <input {...register('name')} />
         </Field>
@@ -78,7 +88,12 @@ function LocationFormModal({ loc, onClose }: { loc: LocationDto | null; onClose:
           </Field>
         </div>
         <Field label="VAT rate (%)" error={errors.vatRatePercent?.message}>
-          <input type="number" step="0.01" inputMode="decimal" {...register('vatRatePercent', { valueAsNumber: true })} />
+          <input
+            type="number"
+            step="0.01"
+            inputMode="decimal"
+            {...register('vatRatePercent', { valueAsNumber: true })}
+          />
         </Field>
         <Field label="Stripe Terminal location id (optional)">
           <input {...register('stripeTerminalLocationId')} />
@@ -117,7 +132,9 @@ export function LocationsPage() {
           <li key={l.id} className="row-item">
             <div className="row-main">
               <strong>{l.name}</strong>
-              <small className="muted">{[l.address, l.contactPhone, l.timeZone, `VAT ${l.vatRatePercent}%`].filter(Boolean).join(' · ')}</small>
+              <small className="muted">
+                {[l.address, l.contactPhone, l.timeZone, `VAT ${l.vatRatePercent}%`].filter(Boolean).join(' · ')}
+              </small>
             </div>
             {!l.active && <span className="badge badge-canceled">Inactive</span>}
             <div className="row-actions">

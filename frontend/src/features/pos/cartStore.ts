@@ -48,7 +48,10 @@ export const cartTotal = (lines: CartLine[]) => round2(lines.reduce((s, l) => s 
 export const cartCount = (lines: CartLine[]) => lines.reduce((s, l) => s + l.quantity, 0)
 
 const lineKey = (l: Omit<CartLine, 'key' | 'quantity'>) =>
-  `${l.variationId}|${l.modifiers.map((m) => m.id).sort().join(',')}`
+  `${l.variationId}|${l.modifiers
+    .map((m) => m.id)
+    .sort()
+    .join(',')}`
 
 /** If an OPEN order was already created for the old cart contents, cancel it (best effort). */
 function abandon(c: Checkout | null) {
@@ -73,7 +76,10 @@ export const useCartStore = create<CartState>((set, get) => ({
   setQuantity: (key, q) => {
     abandon(get().checkout)
     set((s) => ({
-      lines: q <= 0 ? s.lines.filter((l) => l.key !== key) : s.lines.map((l) => (l.key === key ? { ...l, quantity: Math.min(MAX_QTY, q) } : l)),
+      lines:
+        q <= 0
+          ? s.lines.filter((l) => l.key !== key)
+          : s.lines.map((l) => (l.key === key ? { ...l, quantity: Math.min(MAX_QTY, q) } : l)),
       checkout: null,
     }))
   },

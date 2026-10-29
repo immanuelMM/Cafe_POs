@@ -32,7 +32,15 @@ const itemSchema = z.object({
 type ItemValues = z.infer<typeof itemSchema>
 
 /** Edit one existing variation (PUT/DELETE /variations/{id}) and open its recipe. */
-function VariationRow({ v, onRecipe, onOverrides }: { v: Variation; onRecipe: (v: Variation) => void; onOverrides: (v: Variation) => void }) {
+function VariationRow({
+  v,
+  onRecipe,
+  onOverrides,
+}: {
+  v: Variation
+  onRecipe: (v: Variation) => void
+  onOverrides: (v: Variation) => void
+}) {
   const save = useCatalogMutation(catalogCalls.saveVariation)
   const del = useCatalogMutation(catalogCalls.deleteVariation)
   const {
@@ -44,7 +52,10 @@ function VariationRow({ v, onRecipe, onOverrides }: { v: Variation; onRecipe: (v
     defaultValues: { name: v.name, sku: v.sku, price: v.price, active: v.active },
   })
   return (
-    <form className="var-row" onSubmit={handleSubmit((vals) => save.mutate({ id: v.id, itemId: v.itemId, body: vals }))}>
+    <form
+      className="var-row"
+      onSubmit={handleSubmit((vals) => save.mutate({ id: v.id, itemId: v.itemId, body: vals }))}
+    >
       <Field label="Name" error={errors.name?.message}>
         <input {...register('name')} />
       </Field>
@@ -76,7 +87,11 @@ function VariationRow({ v, onRecipe, onOverrides }: { v: Variation; onRecipe: (v
           Deactivate
         </button>
       </div>
-      {(save.error || del.error) && <div className="alert alert-error var-err" role="alert">{errorMessage(save.error ?? del.error)}</div>}
+      {(save.error || del.error) && (
+        <div className="alert alert-error var-err" role="alert">
+          {errorMessage(save.error ?? del.error)}
+        </div>
+      )}
     </form>
   )
 }
@@ -88,12 +103,18 @@ function NewVariation({ itemId }: { itemId: string }) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<z.infer<typeof variationSchema>>({ resolver: zodResolver(variationSchema), defaultValues: { name: '', sku: '', price: 0 } })
+  } = useForm<z.infer<typeof variationSchema>>({
+    resolver: zodResolver(variationSchema),
+    defaultValues: { name: '', sku: '', price: 0 },
+  })
   return (
     <form
       className="var-row var-new"
       onSubmit={handleSubmit(async (vals) => {
-        await save.mutateAsync({ itemId, body: vals }).then(() => reset(), () => undefined)
+        await save.mutateAsync({ itemId, body: vals }).then(
+          () => reset(),
+          () => undefined,
+        )
       })}
     >
       <Field label="New variation" error={errors.name?.message}>
@@ -110,7 +131,11 @@ function NewVariation({ itemId }: { itemId: string }) {
           + Add variation
         </button>
       </div>
-      {save.error && <div className="alert alert-error var-err" role="alert">{errorMessage(save.error)}</div>}
+      {save.error && (
+        <div className="alert alert-error var-err" role="alert">
+          {errorMessage(save.error)}
+        </div>
+      )}
     </form>
   )
 }
@@ -133,7 +158,10 @@ function ItemForm({ initial, onClose }: { initial: Item | null; onClose: () => v
     formState: { errors },
   } = useForm<ItemValues>({
     resolver: zodResolver(
-      itemSchema.refine((v) => itemId !== null || v.variations.length > 0, { path: ['variations'], message: 'Add at least one variation' }),
+      itemSchema.refine((v) => itemId !== null || v.variations.length > 0, {
+        path: ['variations'],
+        message: 'Add at least one variation',
+      }),
     ),
     defaultValues: {
       categoryId: item?.categoryId ?? '',
@@ -164,7 +192,11 @@ function ItemForm({ initial, onClose }: { initial: Item | null; onClose: () => v
     <>
       <Modal title={itemId ? 'Edit item' : 'New item'} onClose={onClose} wide>
         <form className="form" onSubmit={handleSubmit(submit)}>
-          {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+          {save.error && (
+            <div className="alert alert-error" role="alert">
+              {errorMessage(save.error)}
+            </div>
+          )}
           <div className="grid-2">
             <Field label="Name" error={errors.name?.message}>
               <input {...register('name')} />
@@ -218,10 +250,20 @@ function ItemForm({ initial, onClose }: { initial: Item | null; onClose: () => v
                     <input {...register(`variations.${i}.sku`)} />
                   </Field>
                   <Field label="Price (₱, VAT incl.)" error={errors.variations?.[i]?.price?.message}>
-                    <input type="number" step="0.01" inputMode="decimal" {...register(`variations.${i}.price`, { valueAsNumber: true })} />
+                    <input
+                      type="number"
+                      step="0.01"
+                      inputMode="decimal"
+                      {...register(`variations.${i}.price`, { valueAsNumber: true })}
+                    />
                   </Field>
                   {fields.length > 1 && (
-                    <button type="button" className="btn btn-icon btn-danger-ghost" onClick={() => remove(i)} aria-label="Remove variation">
+                    <button
+                      type="button"
+                      className="btn btn-icon btn-danger-ghost"
+                      onClick={() => remove(i)}
+                      aria-label="Remove variation"
+                    >
                       🗑
                     </button>
                   )}
@@ -247,7 +289,12 @@ function ItemForm({ initial, onClose }: { initial: Item | null; onClose: () => v
           <fieldset className="opt-group">
             <legend>Variations</legend>
             {item.variations.map((v) => (
-              <VariationRow key={`${v.id}-${v.name}-${v.sku}-${v.price}-${v.active}`} v={v} onRecipe={setRecipeFor} onOverrides={setOverridesFor} />
+              <VariationRow
+                key={`${v.id}-${v.name}-${v.sku}-${v.price}-${v.active}`}
+                v={v}
+                onRecipe={setRecipeFor}
+                onOverrides={setOverridesFor}
+              />
             ))}
             <NewVariation itemId={itemId} />
           </fieldset>
@@ -264,7 +311,11 @@ export function ItemsTab() {
   const [categoryId, setCategoryId] = useState('')
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Item | 'new' | null>(null)
-  const items = useItems({ categoryId: categoryId || undefined, search: search.trim() || undefined, includeInactive: true })
+  const items = useItems({
+    categoryId: categoryId || undefined,
+    search: search.trim() || undefined,
+    includeInactive: true,
+  })
   const del = useCatalogMutation(catalogCalls.deleteItem)
   const catName = (id: string) => cats.data?.find((c) => c.id === id)?.name ?? '—'
 
@@ -279,7 +330,13 @@ export function ItemsTab() {
             </option>
           ))}
         </select>
-        <input type="search" placeholder="Search…" aria-label="Search items" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input
+          type="search"
+          placeholder="Search…"
+          aria-label="Search items"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <button className="btn btn-primary" onClick={() => setEditing('new')}>
           + New item
         </button>
@@ -300,7 +357,9 @@ export function ItemsTab() {
                   .join(' · ')}
               </div>
             </div>
-            <span className={`badge ${it.active ? 'badge-completed' : 'badge-canceled'}`}>{it.active ? 'Active' : 'Inactive'}</span>
+            <span className={`badge ${it.active ? 'badge-completed' : 'badge-canceled'}`}>
+              {it.active ? 'Active' : 'Inactive'}
+            </span>
             <button className="btn btn-sm" onClick={() => setEditing(it)}>
               Edit
             </button>

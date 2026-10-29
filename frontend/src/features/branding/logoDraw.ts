@@ -50,14 +50,30 @@ export const ICONS: { id: IconId; label: string; path: string }[] = [
     label: 'Heart',
     path: 'M12 21s-8-5.300-8-11a4.500 4.500 0 0 1 8-2.800A4.500 4.500 0 0 1 20 10c0 5.700-8 11-8 11z',
   },
-  { id: 'star', label: 'Star', path: 'M12 2l3 6.500 7 .8-5.200 4.800 1.400 7L12 17.500 5.800 21.100l1.400-7L2 9.300l7-.8z' },
+  {
+    id: 'star',
+    label: 'Star',
+    path: 'M12 2l3 6.500 7 .8-5.200 4.800 1.400 7L12 17.500 5.800 21.100l1.400-7L2 9.300l7-.8z',
+  },
 ]
 
 export const FONTS: { id: FontId; label: string; stack: string; weight: string; style: string }[] = [
   { id: 'sans', label: 'Sans', stack: 'Helvetica, Arial, sans-serif', weight: '700', style: 'normal' },
   { id: 'serif', label: 'Serif', stack: 'Georgia, "Times New Roman", serif', weight: '700', style: 'normal' },
-  { id: 'rounded', label: 'Rounded', stack: '"Trebuchet MS", "Arial Rounded MT Bold", Verdana, sans-serif', weight: '700', style: 'normal' },
-  { id: 'script', label: 'Script', stack: '"Brush Script MT", "Segoe Script", "Comic Sans MS", cursive', weight: '400', style: 'italic' },
+  {
+    id: 'rounded',
+    label: 'Rounded',
+    stack: '"Trebuchet MS", "Arial Rounded MT Bold", Verdana, sans-serif',
+    weight: '700',
+    style: 'normal',
+  },
+  {
+    id: 'script',
+    label: 'Script',
+    stack: '"Brush Script MT", "Segoe Script", "Comic Sans MS", cursive',
+    weight: '400',
+    style: 'italic',
+  },
 ]
 
 export const SHAPES: { id: ShapeId; label: string }[] = [
@@ -203,5 +219,7 @@ export function renderLogoBlob(o: LogoSettings, size = 512, palette?: BrandPalet
   const ctx = c.getContext('2d')
   if (!ctx) return Promise.reject(new Error('Canvas is not supported in this browser.'))
   drawLogo(ctx, size, o, palette)
-  return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not create the image.'))), 'image/png'))
+  return new Promise((resolve, reject) =>
+    c.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not create the image.'))), 'image/png'),
+  )
 }

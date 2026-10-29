@@ -9,5 +9,9 @@ export interface StudioEnv {
   palette: BrandPalette
 }
 
-export const StudioEnvContext = createContext<StudioEnv>({ logoUrl: null, sections: [], palette: { primary: '#3b2417' } })
+export const StudioEnvContext = createContext<StudioEnv>({
+  logoUrl: null,
+  sections: [],
+  palette: { primary: '#3b2417' },
+})
 export const useStudioEnv = () => useContext(StudioEnvContext)

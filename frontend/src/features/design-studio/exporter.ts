@@ -27,12 +27,22 @@ export async function renderBlob(stage: Konva.Stage, doc: StudioDoc, opts: Rende
   stage.scale({ x: 1, y: 1 })
   stage.size({ width: doc.width, height: doc.height })
   try {
-    const blob = await stage.toBlob({ x: 0, y: 0, width: doc.width, height: doc.height, pixelRatio: opts.pixelRatio, mimeType: opts.mime ?? 'image/png', quality: opts.quality })
+    const blob = await stage.toBlob({
+      x: 0,
+      y: 0,
+      width: doc.width,
+      height: doc.height,
+      pixelRatio: opts.pixelRatio,
+      mimeType: opts.mime ?? 'image/png',
+      quality: opts.quality,
+    })
     if (!blob) throw new Error('The browser could not render the design.')
     return blob as Blob
   } catch (e) {
     if (e instanceof DOMException && e.name === 'SecurityError') {
-      throw new Error('An image on the canvas blocks export (cross-origin without CORS). Remove it or re-add it from your computer.')
+      throw new Error(
+        'An image on the canvas blocks export (cross-origin without CORS). Remove it or re-add it from your computer.',
+      )
     }
     throw e
   } finally {
@@ -54,9 +64,12 @@ export interface Exported {
 export async function exportLogo(stage: Konva.Stage, doc: StudioDoc): Promise<Exported> {
   for (const px of LOGO_EXPORT_SIZES) {
     const blob = await renderBlob(stage, doc, { pixelRatio: px / doc.width })
-    if (blob.size <= LOGO_MAX_BYTES) return { blob, mime: 'image/png', width: px, height: Math.round((doc.height * px) / doc.width) }
+    if (blob.size <= LOGO_MAX_BYTES)
+      return { blob, mime: 'image/png', width: px, height: Math.round((doc.height * px) / doc.width) }
   }
-  throw new Error('The logo is still larger than 1 MB at the smallest size. Simplify the design (fewer photos or gradients) and try again.')
+  throw new Error(
+    'The logo is still larger than 1 MB at the smallest size. Simplify the design (fewer photos or gradients) and try again.',
+  )
 }
 
 /** Print-resolution banner for PUT /branding/tarpaulin: PNG, falling back to JPEG 0.9 and lower resolutions to stay under 15 MB. */
@@ -77,7 +90,12 @@ export async function exportBanner(stage: Konva.Stage, doc: StudioDoc): Promise<
 export async function exportDownload(stage: Konva.Stage, doc: StudioDoc): Promise<Exported> {
   const pixelRatio = maxPrintRatio(doc)
   const blob = await renderBlob(stage, doc, { pixelRatio })
-  return { blob, mime: 'image/png', width: Math.round(doc.width * pixelRatio), height: Math.round(doc.height * pixelRatio) }
+  return {
+    blob,
+    mime: 'image/png',
+    width: Math.round(doc.width * pixelRatio),
+    height: Math.round(doc.height * pixelRatio),
+  }
 }
 
 /** Moderate-resolution PNG used for the print sheet (the printer rarely needs more than ~150 dpi at banner size). */

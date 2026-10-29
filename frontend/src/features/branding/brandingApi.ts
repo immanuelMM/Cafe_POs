@@ -23,13 +23,28 @@ export const DEFAULT_GRADIENT_ANGLE = 135
 /** The colour/gradient part of the branding as a palette (null while unloaded or if the primary colour is invalid). */
 export const toPalette = (b: BrandingDto | undefined): BrandPalette | null =>
   b && HEX_RE.test(b.primaryColor)
-    ? { primary: b.primaryColor, secondary: b.secondaryColor, tertiary: b.tertiaryColor, gradient: b.gradient, angle: b.gradientAngle }
+    ? {
+        primary: b.primaryColor,
+        secondary: b.secondaryColor,
+        tertiary: b.tertiaryColor,
+        gradient: b.gradient,
+        angle: b.gradientAngle,
+      }
     : null
 
 /** Palette for the current branding, falling back to the default brand colour while loading. */
 export const useBrandPalette = (): BrandPalette => toPalette(useBranding().data) ?? { primary: DEFAULT_BRAND_COLOR }
 
-const BRAND_VARS = ['--brand', '--brand-2', '--on-brand', '--brand-secondary', '--brand-tertiary', '--brand-bg', '--brand-highlight', '--login-bg']
+const BRAND_VARS = [
+  '--brand',
+  '--brand-2',
+  '--on-brand',
+  '--brand-secondary',
+  '--brand-tertiary',
+  '--brand-bg',
+  '--brand-highlight',
+  '--login-bg',
+]
 
 /** API origin (API_BASE without the trailing /api/v1); branding asset URLs are relative to it. */
 export const API_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '')

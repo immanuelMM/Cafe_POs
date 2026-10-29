@@ -3,7 +3,11 @@ export type AssignableRole = 'Cashier' | 'Manager' | 'Admin'
 /** `Owner` is a user flag; it is the session role for Owners (and role of every entry in an Owner's `locations`). */
 export type Role = AssignableRole | 'Owner'
 
-export interface UserLocation { locationId: string; locationName: string; role: Role }
+export interface UserLocation {
+  locationId: string
+  locationName: string
+  role: Role
+}
 export interface User {
   id: string
   email: string
@@ -14,9 +18,19 @@ export interface User {
   location: { id: string; name: string } | null
   locations: UserLocation[]
 }
-export interface AuthResponse { accessToken: string; expiresAt: string; user: User }
+export interface AuthResponse {
+  accessToken: string
+  expiresAt: string
+  user: User
+}
 
-export interface Paged<T> { data: T[]; page: number; pageSize: number; totalCount: number; totalPages: number }
+export interface Paged<T> {
+  data: T[]
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}
 
 export interface LocationDto {
   id: string
@@ -37,7 +51,13 @@ export interface UserDto {
   isOwner: boolean
   locations: { locationId: string; locationName: string; role: AssignableRole }[]
 }
-export interface StaffMember { userId: string; email: string; displayName: string; role: AssignableRole; active: boolean }
+export interface StaffMember {
+  userId: string
+  email: string
+  displayName: string
+  role: AssignableRole
+  active: boolean
+}
 
 export interface LocationOverride {
   variationId: string
@@ -49,8 +69,21 @@ export interface LocationOverride {
   effectivePrice: number
 }
 
-export interface Category { id: string; name: string; sortOrder: number; active: boolean }
-export interface Variation { id: string; itemId: string; name: string; sku: string; price: number; active: boolean; effectivePrice?: number }
+export interface Category {
+  id: string
+  name: string
+  sortOrder: number
+  active: boolean
+}
+export interface Variation {
+  id: string
+  itemId: string
+  name: string
+  sku: string
+  price: number
+  active: boolean
+  effectivePrice?: number
+}
 export interface Item {
   id: string
   categoryId: string
@@ -62,7 +95,12 @@ export interface Item {
   modifierListIds: string[]
   imageUrl: string | null
 }
-export interface Modifier { id: string; name: string; priceDelta: number; active: boolean }
+export interface Modifier {
+  id: string
+  name: string
+  priceDelta: number
+  active: boolean
+}
 export interface ModifierList {
   id: string
   name: string
@@ -180,4 +218,7 @@ export interface TimeEntry {
   /** worked hours (2dp); null while the shift is open */
   hours: number | null
 }
-export interface PunchResult { action: 'In' | 'Out'; entry: TimeEntry }
+export interface PunchResult {
+  action: 'In' | 'Out'
+  entry: TimeEntry
+}

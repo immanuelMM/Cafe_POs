@@ -18,14 +18,25 @@ export default function DesignStudioPage() {
 
   const switchKind = (next: DesignKind) => {
     if (next === kind) return
-    if (useStudio.getState().dirty && !window.confirm('You have unsaved changes (a local draft is kept in this browser). Switch anyway?')) return
+    if (
+      useStudio.getState().dirty &&
+      !window.confirm('You have unsaved changes (a local draft is kept in this browser). Switch anyway?')
+    )
+      return
     setParams({ kind: next }, { replace: true })
   }
 
   const tabs = (
     <div className="tabs studio-kinds" role="tablist" aria-label="Design type">
       {KINDS.map((k) => (
-        <button key={k.kind} type="button" role="tab" aria-selected={kind === k.kind} className={kind === k.kind ? 'tab tab-on' : 'tab'} onClick={() => switchKind(k.kind)}>
+        <button
+          key={k.kind}
+          type="button"
+          role="tab"
+          aria-selected={kind === k.kind}
+          className={kind === k.kind ? 'tab tab-on' : 'tab'}
+          onClick={() => switchKind(k.kind)}
+        >
           {k.label}
         </button>
       ))}

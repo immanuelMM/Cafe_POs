@@ -29,7 +29,8 @@ export interface Palette {
 /** Readable text colour on the given page background. */
 export function inkFor(bg: Background): string {
   if (bg.type === 'solid') return onColor(bg.color)
-  if (bg.type === 'gradient') return onBrand({ primary: bg.stops[0], secondary: bg.stops[1], tertiary: bg.stops[2], gradient: true })
+  if (bg.type === 'gradient')
+    return onBrand({ primary: bg.stops[0], secondary: bg.stops[1], tertiary: bg.stops[2], gradient: true })
   if (bg.type === 'image') return onColor(bg.color)
   return '#1f1410'
 }
@@ -71,7 +72,13 @@ const ICON_NAMES: Record<IconKind, string> = {
   steam: 'Steam swirls',
 }
 
-export function makeShape(shape: ShapeKind, doc: StudioDoc, pal: Palette, at?: { x: number; y: number }, icon?: IconKind): ShapeElement {
+export function makeShape(
+  shape: ShapeKind,
+  doc: StudioDoc,
+  pal: Palette,
+  at?: { x: number; y: number },
+  icon?: IconKind,
+): ShapeElement {
   const u = Math.min(doc.width, doc.height)
   const cx = at?.x ?? doc.width / 2
   const cy = at?.y ?? doc.height / 2
@@ -109,7 +116,13 @@ export function makeShape(shape: ShapeKind, doc: StudioDoc, pal: Palette, at?: {
 
 export type TextPreset = 'heading' | 'subheading' | 'body'
 
-export function makeText(preset: TextPreset, doc: StudioDoc, pal: Palette, at?: { x: number; y: number }, text?: string): TextElement {
+export function makeText(
+  preset: TextPreset,
+  doc: StudioDoc,
+  pal: Palette,
+  at?: { x: number; y: number },
+  text?: string,
+): TextElement {
   const u = Math.min(doc.width, doc.height)
   const cx = at?.x ?? doc.width / 2
   const cy = at?.y ?? doc.height / 2
@@ -140,7 +153,13 @@ export function makeText(preset: TextPreset, doc: StudioDoc, pal: Palette, at?: 
   }
 }
 
-export function makeImage(src: ImageElement['src'], nat: { w: number; h: number }, doc: StudioDoc, name = 'Image', at?: { x: number; y: number }): ImageElement {
+export function makeImage(
+  src: ImageElement['src'],
+  nat: { w: number; h: number },
+  doc: StudioDoc,
+  name = 'Image',
+  at?: { x: number; y: number },
+): ImageElement {
   const cx = at?.x ?? doc.width / 2
   const cy = at?.y ?? doc.height / 2
   const max = Math.min(doc.width, doc.height) * 0.5
@@ -196,11 +215,15 @@ const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object
 
 /** Validates a document from the API / local draft. Returns null when it cannot be used. */
 export function parseDoc(raw: unknown, kind: DesignKind): StudioDoc | null {
-  if (!isObj(raw) || raw.kind !== kind || !isNum(raw.width) || !isNum(raw.height) || !Array.isArray(raw.elements)) return null
+  if (!isObj(raw) || raw.kind !== kind || !isNum(raw.width) || !isNum(raw.height) || !Array.isArray(raw.elements))
+    return null
   // Future migrations hook in here (switch on raw.version). Only version 1 exists today.
   if (raw.version !== DOC_VERSION) return null
   if (raw.width < 16 || raw.height < 16 || raw.width > 12000 || raw.height > 12000) return null
-  const bg = isObj(raw.background) && typeof raw.background.type === 'string' ? (raw.background as unknown as Background) : { type: 'transparent' as const }
+  const bg =
+    isObj(raw.background) && typeof raw.background.type === 'string'
+      ? (raw.background as unknown as Background)
+      : { type: 'transparent' as const }
   const elements = (raw.elements as unknown[]).filter(
     (e): e is StudioElement =>
       isObj(e) &&

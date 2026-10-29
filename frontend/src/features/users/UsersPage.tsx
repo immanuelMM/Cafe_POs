@@ -59,7 +59,14 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
     formState: { errors },
   } = useForm<CreateValues>({
     resolver: zodResolver(createSchema),
-    defaultValues: { email: '', displayName: '', password: '', isOwner: false, locationId: locations.length === 1 ? locations[0].id : '', role: 'Cashier' },
+    defaultValues: {
+      email: '',
+      displayName: '',
+      password: '',
+      isOwner: false,
+      locationId: locations.length === 1 ? locations[0].id : '',
+      role: 'Cashier',
+    },
   })
   const isOwnerFlag = watch('isOwner')
   return (
@@ -77,7 +84,11 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
           }),
         )}
       >
-        {create.error && <div className="alert alert-error" role="alert">{errorMessage(create.error)}</div>}
+        {create.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(create.error)}
+          </div>
+        )}
         <Field label="Display name" error={errors.displayName?.message}>
           <input autoComplete="off" {...register('displayName')} />
         </Field>
@@ -121,7 +132,11 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-const editSchema = z.object({ displayName: z.string().trim().min(1, 'Name is required'), active: z.boolean(), isOwner: z.boolean() })
+const editSchema = z.object({
+  displayName: z.string().trim().min(1, 'Name is required'),
+  active: z.boolean(),
+  isOwner: z.boolean(),
+})
 type EditValues = z.infer<typeof editSchema>
 
 function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
@@ -130,7 +145,10 @@ function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
   const [saved, setSaved] = useState(false)
   const save = useMutation({
     mutationFn: (v: EditValues) =>
-      userCalls.update({ id: u.id, body: { displayName: v.displayName, ...(owner ? { active: v.active, isOwner: v.isOwner } : {}) } }),
+      userCalls.update({
+        id: u.id,
+        body: { displayName: v.displayName, ...(owner ? { active: v.active, isOwner: v.isOwner } : {}) },
+      }),
     onSuccess: invalidate,
   })
   const {
@@ -138,7 +156,10 @@ function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
     handleSubmit,
     reset,
     formState: { errors, isDirty },
-  } = useForm<EditValues>({ resolver: zodResolver(editSchema), defaultValues: { displayName: u.displayName, active: u.active, isOwner: u.isOwner } })
+  } = useForm<EditValues>({
+    resolver: zodResolver(editSchema),
+    defaultValues: { displayName: u.displayName, active: u.active, isOwner: u.isOwner },
+  })
   return (
     <form
       className="form"
@@ -153,8 +174,16 @@ function EditDetails({ u, isSelf }: { u: UserDto; isSelf: boolean }) {
         })
       })}
     >
-      {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
-      {saved && <div className="alert alert-ok" role="status">Saved.</div>}
+      {save.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(save.error)}
+        </div>
+      )}
+      {saved && (
+        <div className="alert alert-ok" role="status">
+          Saved.
+        </div>
+      )}
       <Field label="Email">
         <input value={u.email} readOnly disabled />
       </Field>
@@ -192,7 +221,11 @@ function Assignments({ u }: { u: UserDto }) {
 
   return (
     <div className="form">
-      {error && <div className="alert alert-error" role="alert">{errorMessage(error)}</div>}
+      {error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(error)}
+        </div>
+      )}
       {u.locations.length === 0 && <p className="muted">Not assigned to any location, so this user cannot sign in.</p>}
       <ul className="row-list">
         {u.locations.map((a) => (
@@ -205,7 +238,9 @@ function Assignments({ u }: { u: UserDto }) {
               className="role-select"
               value={a.role}
               disabled={assign.isPending}
-              onChange={(e) => assign.mutate({ id: u.id, locationId: a.locationId, role: e.target.value as AssignableRole })}
+              onChange={(e) =>
+                assign.mutate({ id: u.id, locationId: a.locationId, role: e.target.value as AssignableRole })
+              }
             >
               {ROLES.map((r) => (
                 <option key={r}>{r}</option>
@@ -214,7 +249,10 @@ function Assignments({ u }: { u: UserDto }) {
             <button
               className="btn btn-sm btn-danger-ghost"
               disabled={unassign.isPending}
-              onClick={() => window.confirm(`Remove ${u.displayName} from ${a.locationName}?`) && unassign.mutate({ id: u.id, locationId: a.locationId })}
+              onClick={() =>
+                window.confirm(`Remove ${u.displayName} from ${a.locationName}?`) &&
+                unassign.mutate({ id: u.id, locationId: a.locationId })
+              }
             >
               Remove
             </button>
@@ -282,8 +320,16 @@ function ClockPin({ u }: { u: UserDto }) {
         )
       }}
     >
-      {error && <div className="alert alert-error" role="alert">{errorMessage(error)}</div>}
-      {msg && <div className="alert alert-ok" role="status">{msg}</div>}
+      {error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(error)}
+        </div>
+      )}
+      {msg && (
+        <div className="alert alert-ok" role="status">
+          {msg}
+        </div>
+      )}
       <Field label="Clock PIN" hint="4 to 6 digits. Staff use it on the time clock kiosk.">
         <input
           type="password"
@@ -323,7 +369,11 @@ function EditUserModal({ id, onClose }: { id: string; onClose: () => void }) {
       {q.error && <ErrorBox error={q.error} onRetry={() => void q.refetch()} />}
       {q.data && (
         <>
-          <EditDetails key={`${q.data.id}-${q.data.displayName}-${q.data.active}-${q.data.isOwner}`} u={q.data} isSelf={q.data.id === meId} />
+          <EditDetails
+            key={`${q.data.id}-${q.data.displayName}-${q.data.active}-${q.data.isOwner}`}
+            u={q.data}
+            isSelf={q.data.id === meId}
+          />
           <h3 className="section-title">Locations and roles</h3>
           <Assignments u={q.data} />
           <h3 className="section-title">Time clock PIN</h3>
@@ -363,7 +413,11 @@ function AddExistingModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Add existing staff by email" onClose={onClose}>
       <form className="form" noValidate onSubmit={handleSubmit((v) => add.mutate(v))}>
-        {add.error && <div className="alert alert-error" role="alert">{errorMessage(add.error)}</div>}
+        {add.error && (
+          <div className="alert alert-error" role="alert">
+            {errorMessage(add.error)}
+          </div>
+        )}
         <Field label="User email (exact)" error={errors.email?.message} hint="The person must already have an account.">
           <input type="email" autoComplete="off" inputMode="email" {...register('email')} />
         </Field>

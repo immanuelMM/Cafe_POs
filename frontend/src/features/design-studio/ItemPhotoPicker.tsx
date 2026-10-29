@@ -12,7 +12,9 @@ export function ItemPhotoPicker({ onPick, onClose }: { onPick: (item: Item) => v
     <Modal title="Insert an item photo" onClose={onClose} wide>
       {items.isLoading && <Spinner label="Loading items…" />}
       {items.error && <ErrorBox error={items.error} onRetry={() => void items.refetch()} />}
-      {items.data && withPhoto.length === 0 && <p className="muted">No menu items have a photo yet. Add one in Catalog.</p>}
+      {items.data && withPhoto.length === 0 && (
+        <p className="muted">No menu items have a photo yet. Add one in Catalog.</p>
+      )}
       <ul className="studio-photo-grid">
         {withPhoto.map((i) => (
           <li key={i.id}>

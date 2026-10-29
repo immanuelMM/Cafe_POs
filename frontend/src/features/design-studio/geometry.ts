@@ -181,7 +181,11 @@ export function fillProps(fill: Fill | null, w: number, h: number): Record<strin
 
 /** CSS gradient string for previews in the panels. */
 export const cssFill = (fill: Fill | null) =>
-  !fill ? 'transparent' : fill.type === 'solid' ? fill.color : `linear-gradient(${fill.angle}deg, ${fill.stops.join(', ')})`
+  !fill
+    ? 'transparent'
+    : fill.type === 'solid'
+      ? fill.color
+      : `linear-gradient(${fill.angle}deg, ${fill.stops.join(', ')})`
 
 export function hexToRgba(hex: string, alpha: number) {
   const m = /^#([0-9a-f]{6})$/i.exec(hex)
@@ -196,7 +200,7 @@ export function hexToRgba(hex: string, alpha: number) {
  */
 export function arcPathData(width: number, curve: number, textLen: number) {
   const sag = (Math.abs(curve) / 100) * (width / 2)
-  const r = (width * width / 4 + sag * sag) / (2 * Math.max(sag, 1))
+  const r = ((width * width) / 4 + sag * sag) / (2 * Math.max(sag, 1))
   const phi = Math.min(textLen / r, Math.PI * 1.98)
   const large = phi > Math.PI ? 1 : 0
   const cx = width / 2

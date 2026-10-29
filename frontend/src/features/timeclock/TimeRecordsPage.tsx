@@ -89,9 +89,7 @@ function RecordsView({ tz }: { tz: string | undefined }) {
             </Field>
           </>
         ) : (
-          <p className="muted range-label">
-            {fromDate === toDate ? fromDate : `${fromDate} to ${toDate}`}
-          </p>
+          <p className="muted range-label">{fromDate === toDate ? fromDate : `${fromDate} to ${toDate}`}</p>
         )}
         {manager && (
           <Field label="Staff">
@@ -106,7 +104,11 @@ function RecordsView({ tz }: { tz: string | undefined }) {
           </Field>
         )}
       </div>
-      {!validRange && <div className="alert alert-error" role="alert">Choose a valid date range (From must not be after To).</div>}
+      {!validRange && (
+        <div className="alert alert-error" role="alert">
+          Choose a valid date range (From must not be after To).
+        </div>
+      )}
       {validRange && q.isLoading && <Spinner label="Loading records…" />}
       {q.error && <ErrorBox error={q.error} onRetry={() => void q.refetch()} />}
 
@@ -145,7 +147,9 @@ function RecordsView({ tz }: { tz: string | undefined }) {
                     <th scope="col">Name</th>
                     <th scope="col">In</th>
                     <th scope="col">Out</th>
-                    <th scope="col" className="num">Hours</th>
+                    <th scope="col" className="num">
+                      Hours
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -154,7 +158,9 @@ function RecordsView({ tz }: { tz: string | undefined }) {
                       <td>{formatDate(e.clockInAt, tz)}</td>
                       <td>{e.displayName}</td>
                       <td>{formatTime(e.clockInAt, tz)}</td>
-                      <td>{e.clockOutAt ? formatTime(e.clockOutAt, tz) : <span className="badge badge-open">Open</span>}</td>
+                      <td>
+                        {e.clockOutAt ? formatTime(e.clockOutAt, tz) : <span className="badge badge-open">Open</span>}
+                      </td>
                       <td className="num">{e.hours === null ? '—' : e.hours.toFixed(2)}</td>
                     </tr>
                   ))}
@@ -179,7 +185,9 @@ export function TimeRecordsPage() {
         </Link>
       </PageHeader>
       {!hasLocation ? (
-        <p className="muted">Time records are per location. Pick a location in the header (you are in the All locations view).</p>
+        <p className="muted">
+          Time records are per location. Pick a location in the header (you are in the All locations view).
+        </p>
       ) : loc.isLoading ? (
         <Spinner />
       ) : (

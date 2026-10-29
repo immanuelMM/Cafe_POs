@@ -36,7 +36,14 @@ export function OrdersPage() {
     queryKey: ['orders', { status, from, to, page, locationId }],
     queryFn: () =>
       api<Paged<Order>>('/orders', {
-        query: { status, from: from ? dayStart(from) : undefined, to: to ? dayEnd(to) : undefined, locationId: owner ? locationId : undefined, page, pageSize: PAGE_SIZE },
+        query: {
+          status,
+          from: from ? dayStart(from) : undefined,
+          to: to ? dayEnd(to) : undefined,
+          locationId: owner ? locationId : undefined,
+          page,
+          pageSize: PAGE_SIZE,
+        },
       }),
     placeholderData: (prev) => prev,
   })
@@ -46,10 +53,12 @@ export function OrdersPage() {
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['orders'] }),
   })
 
-  const reset = <T,>(set: (v: T) => void) => (v: T) => {
-    set(v)
-    setPage(1)
-  }
+  const reset =
+    <T,>(set: (v: T) => void) =>
+    (v: T) => {
+      set(v)
+      setPage(1)
+    }
 
   return (
     <section className="page">
@@ -111,7 +120,9 @@ export function OrdersPage() {
           <li key={o.id} className="order-card">
             <details>
               <summary>
-                <span className="order-no">{o.orderNumber != null ? `#${String(o.orderNumber).padStart(5, '0')}` : 'Open'}</span>
+                <span className="order-no">
+                  {o.orderNumber != null ? `#${String(o.orderNumber).padStart(5, '0')}` : 'Open'}
+                </span>
                 <span className="muted order-when">{formatDateTime(o.completedAt ?? o.createdAt, tz)}</span>
                 <span className="muted order-cashier">
                   {o.cashierName}
@@ -125,7 +136,9 @@ export function OrdersPage() {
                   {o.items.map((l) => (
                     <li key={l.id}>
                       {l.quantity} × {l.itemName} ({l.variationName})
-                      {l.modifiers.length > 0 && <span className="muted"> + {l.modifiers.map((m) => m.name).join(', ')}</span>}
+                      {l.modifiers.length > 0 && (
+                        <span className="muted"> + {l.modifiers.map((m) => m.name).join(', ')}</span>
+                      )}
                       <span className="grow" />
                       {formatMoney(l.lineTotal)}
                     </li>
@@ -133,7 +146,8 @@ export function OrdersPage() {
                 </ul>
                 <p className="muted">
                   VAT ({o.vatRatePercent}%) included: {formatMoney(o.vatAmount)}
-                  {o.payments[0] && ` · ${o.payments[0].method} tendered ${formatMoney(o.payments[0].amountTendered)}, change ${formatMoney(o.payments[0].changeGiven)}`}
+                  {o.payments[0] &&
+                    ` · ${o.payments[0].method} tendered ${formatMoney(o.payments[0].amountTendered)}, change ${formatMoney(o.payments[0].changeGiven)}`}
                 </p>
                 <div className="row-actions">
                   {o.status === 'Completed' && (
@@ -142,12 +156,19 @@ export function OrdersPage() {
                     </Link>
                   )}
                   {o.status === 'Open' && (
-                    <button className="btn" disabled={cancel.isPending || !user?.location} title={user?.location ? undefined : 'Pick a location in the header to cancel orders'} onClick={() => cancel.mutate(o.id)}>
+                    <button
+                      className="btn"
+                      disabled={cancel.isPending || !user?.location}
+                      title={user?.location ? undefined : 'Pick a location in the header to cancel orders'}
+                      onClick={() => cancel.mutate(o.id)}
+                    >
                       Cancel order
                     </button>
                   )}
                 </div>
-                {cancel.isError && cancel.variables === o.id && <p className="field-error">{errorMessage(cancel.error)}</p>}
+                {cancel.isError && cancel.variables === o.id && (
+                  <p className="field-error">{errorMessage(cancel.error)}</p>
+                )}
               </div>
             </details>
           </li>

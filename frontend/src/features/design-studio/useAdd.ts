@@ -12,10 +12,7 @@ export const DRAG_MIME = 'application/x-studio-add'
 
 /** What the Add panel can create (also the drag-and-drop payload, serialized as JSON). */
 export type AddPayload =
-  | { t: 'text'; preset: TextPreset }
-  | { t: 'shape'; shape: ShapeKind; icon?: IconKind }
-  | { t: 'menu' }
-  | { t: 'logo' }
+  { t: 'text'; preset: TextPreset } | { t: 'shape'; shape: ShapeKind; icon?: IconKind } | { t: 'menu' } | { t: 'logo' }
 
 /** Creates elements (centered, or at a drop point) and puts them on the canvas. */
 export function useAddActions({ palette, logoUrl }: StudioEnv) {
@@ -26,13 +23,16 @@ export function useAddActions({ palette, logoUrl }: StudioEnv) {
     return { brand: palette.primary, ink: inkFor(doc.background) }
   }, [palette.primary])
 
-  const addImage = useCallback(async (src: ImageSrc, name: string, at?: { x: number; y: number }) => {
-    const url = resolveSrc(src, logoUrl)
-    if (!url) throw new Error('That image is not available.')
-    const img = await loadImage(url)
-    const st = useStudio.getState()
-    st.add(makeImage(src, { w: img.naturalWidth, h: img.naturalHeight }, st.doc, name, at))
-  }, [logoUrl])
+  const addImage = useCallback(
+    async (src: ImageSrc, name: string, at?: { x: number; y: number }) => {
+      const url = resolveSrc(src, logoUrl)
+      if (!url) throw new Error('That image is not available.')
+      const img = await loadImage(url)
+      const st = useStudio.getState()
+      st.add(makeImage(src, { w: img.naturalWidth, h: img.naturalHeight }, st.doc, name, at))
+    },
+    [logoUrl],
+  )
 
   const addPayload = useCallback(
     (p: AddPayload, at?: { x: number; y: number }) => {
@@ -50,22 +50,19 @@ export function useAddActions({ palette, logoUrl }: StudioEnv) {
     [colors, palette.primary, logoUrl, addImage],
   )
 
-  const addFiles = useCallback(
-    async (files: File[], at?: { x: number; y: number }) => {
-      setError(null)
-      const imgs = files.filter((f) => f.type.startsWith('image/'))
-      for (const f of imgs) {
-        try {
-          const e = await fileToEmbedded(f)
-          const st = useStudio.getState()
-          st.add(makeImage(e.src, { w: e.width, h: e.height }, st.doc, f.name.replace(/\.[^.]+$/, '') || 'Image', at))
-        } catch (err) {
-          setError(errorMessage(err))
-        }
+  const addFiles = useCallback(async (files: File[], at?: { x: number; y: number }) => {
+    setError(null)
+    const imgs = files.filter((f) => f.type.startsWith('image/'))
+    for (const f of imgs) {
+      try {
+        const e = await fileToEmbedded(f)
+        const st = useStudio.getState()
+        st.add(makeImage(e.src, { w: e.width, h: e.height }, st.doc, f.name.replace(/\.[^.]+$/, '') || 'Image', at))
+      } catch (err) {
+        setError(errorMessage(err))
       }
-    },
-    [],
-  )
+    }
+  }, [])
 
   const addItemPhoto = useCallback(
     (item: Item) => {

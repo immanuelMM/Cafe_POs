@@ -52,7 +52,11 @@ export interface ImageState {
 }
 
 export function useStudioImage(url: string | null): ImageState {
-  const [state, setState] = useState<{ url: string | null; image: HTMLImageElement | null; failed: boolean }>({ url: null, image: null, failed: false })
+  const [state, setState] = useState<{ url: string | null; image: HTMLImageElement | null; failed: boolean }>({
+    url: null,
+    image: null,
+    failed: false,
+  })
   useEffect(() => {
     if (!url) return
     let live = true

@@ -2,7 +2,14 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import type Konva from 'konva'
 import { ErrorBox, Spinner } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
-import { DEFAULT_BRAND_NAME, assetUrl, toPalette, useBranding, useUploadLogo, useUploadTarpaulin } from '../branding/brandingApi'
+import {
+  DEFAULT_BRAND_NAME,
+  assetUrl,
+  toPalette,
+  useBranding,
+  useUploadLogo,
+  useUploadTarpaulin,
+} from '../branding/brandingApi'
 import { buildSections } from '../branding/menuSections'
 import { useCategories, useItems } from '../catalog/catalogApi'
 import { useCurrentLocation } from '../locations/locationsApi'
@@ -43,7 +50,12 @@ const useIsWide = () => {
 }
 
 /** Physical print size of the page: the preset's, or a 75 dpi equivalent for custom sizes. */
-const printSize = (doc: StudioDoc) => findPreset(doc.presetId)?.print ?? { w: Math.round((doc.width / 75) * 10) / 10, h: Math.round((doc.height / 75) * 10) / 10, unit: 'in' as const }
+const printSize = (doc: StudioDoc) =>
+  findPreset(doc.presetId)?.print ?? {
+    w: Math.round((doc.width / 75) * 10) / 10,
+    h: Math.round((doc.height / 75) * 10) / 10,
+    unit: 'in' as const,
+  }
 
 interface Props {
   kind: DesignKind
@@ -75,10 +87,17 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
     const draft = readDraft(kind)
     const parsed = saved ? parseDoc(saved.document, kind) : null
     const draftNewer = !!draft && (!saved || draft.savedAt > Date.parse(saved.updatedAt))
-    return { doc: parsed ?? blankDoc(kind), isNew: !parsed, unreadable: !!saved && !parsed, draft: draftNewer ? draft : null }
+    return {
+      doc: parsed ?? blankDoc(kind),
+      isNew: !parsed,
+      unreadable: !!saved && !parsed,
+      draft: draftNewer ? draft : null,
+    }
   })
   const [ready, setReady] = useState(false)
-  const [modal, setModal] = useState<'draft' | 'templates' | 'photo' | null>(boot.draft ? 'draft' : boot.isNew ? 'templates' : null)
+  const [modal, setModal] = useState<'draft' | 'templates' | 'photo' | null>(
+    boot.draft ? 'draft' : boot.isNew ? 'templates' : null,
+  )
   useLayoutEffect(() => {
     useStudio.getState().load(boot.doc)
     setReady(true)
@@ -125,8 +144,16 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
   const save = useCallback(async () => {
     const st = useStudio.getState()
     const size = docBytes(st.doc)
-    if (size > MAX_DESIGN_BYTES) return setStatus({ type: 'error', text: `This design is ${formatBytes(size)}; the limit is 8 MB. Remove or replace large images, then save again.` })
-    if (size > WARN_DESIGN_BYTES && !window.confirm(`This design is ${formatBytes(size)} and the limit is 8 MB. Save anyway?`)) return
+    if (size > MAX_DESIGN_BYTES)
+      return setStatus({
+        type: 'error',
+        text: `This design is ${formatBytes(size)}; the limit is 8 MB. Remove or replace large images, then save again.`,
+      })
+    if (
+      size > WARN_DESIGN_BYTES &&
+      !window.confirm(`This design is ${formatBytes(size)} and the limit is 8 MB. Save anyway?`)
+    )
+      return
     setBusy('save')
     setStatus(null)
     try {
@@ -158,7 +185,10 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
       } else {
         const ex = await exportBanner(stage, doc)
         await uploadTarp.mutateAsync(ex.blob)
-        setStatus({ type: 'ok', text: `Tarpaulin updated (${ex.width} x ${ex.height} ${ex.mime === 'image/png' ? 'PNG' : 'JPEG'}, ${formatBytes(ex.blob.size)}).` })
+        setStatus({
+          type: 'ok',
+          text: `Tarpaulin updated (${ex.width} x ${ex.height} ${ex.mime === 'image/png' ? 'PNG' : 'JPEG'}, ${formatBytes(ex.blob.size)}).`,
+        })
       }
     } catch (e) {
       setStatus({ type: 'error', text: errorMessage(e) })
@@ -242,7 +272,10 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
           name: i.name,
           description: i.description?.trim() || null,
           path: i.imageUrl,
-          prices: i.variations.map((v) => ({ label: i.variations.length > 1 ? v.name : '', price: formatMoney(v.effectivePrice ?? v.price) })),
+          prices: i.variations.map((v) => ({
+            label: i.variations.length > 1 ? v.name : '',
+            price: formatMoney(v.effectivePrice ?? v.price),
+          })),
         })),
       })),
     [cats.data, items.data],
@@ -255,7 +288,14 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
   if (!ready) return <Spinner label="Opening the studio…" />
 
   const addPanel = (
-    <AddPanel kind={kind} hasLogo={!!logoUrl} onAdd={wide ? add.addPayload : addAndClose} onFiles={(f) => void add.addFiles(f)} onPickItem={() => setModal('photo')} error={add.error} />
+    <AddPanel
+      kind={kind}
+      hasLogo={!!logoUrl}
+      onAdd={wide ? add.addPayload : addAndClose}
+      onFiles={(f) => void add.addFiles(f)}
+      onPickItem={() => setModal('photo')}
+      error={add.error}
+    />
   )
   const props = <PropertiesPanel onTemplates={() => setModal('templates')} />
 
@@ -265,18 +305,43 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
         <div className="studio-bar" role="toolbar" aria-label="Design studio">
           {tabs}
           <div className="studio-group">
-            <button type="button" className="btn btn-sm" disabled={!canUndo} onClick={() => useStudio.getState().undo()} aria-label="Undo" title="Undo (Ctrl+Z)">
+            <button
+              type="button"
+              className="btn btn-sm"
+              disabled={!canUndo}
+              onClick={() => useStudio.getState().undo()}
+              aria-label="Undo"
+              title="Undo (Ctrl+Z)"
+            >
               Undo
             </button>
-            <button type="button" className="btn btn-sm" disabled={!canRedo} onClick={() => useStudio.getState().redo()} aria-label="Redo" title="Redo (Ctrl+Shift+Z)">
+            <button
+              type="button"
+              className="btn btn-sm"
+              disabled={!canRedo}
+              onClick={() => useStudio.getState().redo()}
+              aria-label="Redo"
+              title="Redo (Ctrl+Shift+Z)"
+            >
               Redo
             </button>
-            <button type="button" className="btn btn-sm" aria-pressed={multiMode} onClick={() => setMultiMode((m) => !m)} title="Tap elements to add them to the selection">
+            <button
+              type="button"
+              className="btn btn-sm"
+              aria-pressed={multiMode}
+              onClick={() => setMultiMode((m) => !m)}
+              title="Tap elements to add them to the selection"
+            >
               Multi-select
             </button>
           </div>
           <div className="studio-group" role="group" aria-label="Zoom">
-            <button type="button" className="btn btn-sm btn-icon" onClick={() => zoomBy(1 / 1.25)} aria-label="Zoom out">
+            <button
+              type="button"
+              className="btn btn-sm btn-icon"
+              onClick={() => zoomBy(1 / 1.25)}
+              aria-label="Zoom out"
+            >
               −
             </button>
             <output className="studio-zoom" aria-live="polite">
@@ -293,7 +358,10 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
             </button>
           </div>
           <div className="studio-group studio-group-end">
-            <span className={`studio-size${tooBig ? ' studio-size-bad' : ''}`} title="Saved design size (server limit 8 MB)">
+            <span
+              className={`studio-size${tooBig ? ' studio-size-bad' : ''}`}
+              title="Saved design size (server limit 8 MB)"
+            >
               {formatBytes(bytes)} / 8 MB
             </span>
             <button type="button" className="btn btn-sm" onClick={() => setModal('templates')}>
@@ -310,7 +378,12 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
             <button type="button" className="btn btn-sm" disabled={!!busy} onClick={() => void publish()}>
               {busy === 'publish' ? 'Publishing…' : kind === 'logo' ? 'Use as my logo' : 'Use as my tarpaulin'}
             </button>
-            <button type="button" className="btn btn-sm btn-primary" disabled={!!busy || (!dirty && everSaved)} onClick={() => void save()}>
+            <button
+              type="button"
+              className="btn btn-sm btn-primary"
+              disabled={!!busy || (!dirty && everSaved)}
+              onClick={() => void save()}
+            >
               {busy === 'save' ? 'Saving…' : !dirty && everSaved ? 'Saved' : 'Save design'}
             </button>
           </div>
@@ -318,26 +391,57 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
 
         <div className="studio-notices">
           {status && (
-            <div className={`alert ${status.type === 'ok' ? 'alert-ok' : 'alert-error'}`} role={status.type === 'ok' ? 'status' : 'alert'}>
+            <div
+              className={`alert ${status.type === 'ok' ? 'alert-ok' : 'alert-error'}`}
+              role={status.type === 'ok' ? 'status' : 'alert'}
+            >
               <span>{status.text}</span>
               <button type="button" className="btn btn-sm btn-ghost" onClick={() => setStatus(null)}>
                 Dismiss
               </button>
             </div>
           )}
-          {boot.unreadable && <div className="alert alert-error" role="alert">The saved design could not be read, so a blank page was opened. Saving will replace it.</div>}
-          {dirty && !draftOk && <div className="alert alert-error" role="alert">Your browser could not keep a local draft (storage is full). Save the design to keep your work.</div>}
-          {(cats.error || items.error) && <ErrorBox error={cats.error ?? items.error} onRetry={() => { void cats.refetch(); void items.refetch() }} />}
+          {boot.unreadable && (
+            <div className="alert alert-error" role="alert">
+              The saved design could not be read, so a blank page was opened. Saving will replace it.
+            </div>
+          )}
+          {dirty && !draftOk && (
+            <div className="alert alert-error" role="alert">
+              Your browser could not keep a local draft (storage is full). Save the design to keep your work.
+            </div>
+          )}
+          {(cats.error || items.error) && (
+            <ErrorBox
+              error={cats.error ?? items.error}
+              onRetry={() => {
+                void cats.refetch()
+                void items.refetch()
+              }}
+            />
+          )}
         </div>
 
         <div className="studio-body">
           {wide && (
             <aside className="studio-left" aria-label="Add and layers">
               <div className="tabs studio-tabs" role="tablist">
-                <button type="button" role="tab" aria-selected={leftTab === 'add'} className={leftTab === 'add' ? 'tab tab-on' : 'tab'} onClick={() => setLeftTab('add')}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={leftTab === 'add'}
+                  className={leftTab === 'add' ? 'tab tab-on' : 'tab'}
+                  onClick={() => setLeftTab('add')}
+                >
                   Add
                 </button>
-                <button type="button" role="tab" aria-selected={leftTab === 'layers'} className={leftTab === 'layers' ? 'tab tab-on' : 'tab'} onClick={() => setLeftTab('layers')}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={leftTab === 'layers'}
+                  className={leftTab === 'layers' ? 'tab tab-on' : 'tab'}
+                  onClick={() => setLeftTab('layers')}
+                >
                   Layers
                 </button>
               </div>
@@ -361,19 +465,33 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
         {!wide && (
           <>
             {sheet && (
-              <div className="studio-sheet" role="dialog" aria-label={sheet === 'add' ? 'Add' : sheet === 'layers' ? 'Layers' : 'Properties'}>
+              <div
+                className="studio-sheet"
+                role="dialog"
+                aria-label={sheet === 'add' ? 'Add' : sheet === 'layers' ? 'Layers' : 'Properties'}
+              >
                 <div className="studio-sheet-head">
-                  <strong>{sheet === 'add' ? 'Add' : sheet === 'layers' ? 'Layers' : selectedCount ? 'Properties' : 'Page'}</strong>
+                  <strong>
+                    {sheet === 'add' ? 'Add' : sheet === 'layers' ? 'Layers' : selectedCount ? 'Properties' : 'Page'}
+                  </strong>
                   <button type="button" className="btn btn-sm btn-ghost" onClick={() => setSheet(null)}>
                     Close
                   </button>
                 </div>
-                <div className="studio-panel-body">{sheet === 'add' ? addPanel : sheet === 'layers' ? <LayersPanel /> : props}</div>
+                <div className="studio-panel-body">
+                  {sheet === 'add' ? addPanel : sheet === 'layers' ? <LayersPanel /> : props}
+                </div>
               </div>
             )}
             <nav className="studio-bottom" aria-label="Panels">
               {(['add', 'layers', 'props'] as Sheet[]).map((s) => (
-                <button key={s} type="button" className={`btn btn-sm${sheet === s ? ' btn-primary' : ''}`} aria-pressed={sheet === s} onClick={() => setSheet(sheet === s ? null : s)}>
+                <button
+                  key={s}
+                  type="button"
+                  className={`btn btn-sm${sheet === s ? ' btn-primary' : ''}`}
+                  aria-pressed={sheet === s}
+                  onClick={() => setSheet(sheet === s ? null : s)}
+                >
                   {s === 'add' ? 'Add' : s === 'layers' ? 'Layers' : selectedCount ? 'Edit' : 'Page'}
                 </button>
               ))}
@@ -410,7 +528,10 @@ export function StudioEditor({ kind, saved, tabs }: Props) {
               </>
             }
           >
-            <p>This browser has changes from {new Date(boot.draft.savedAt).toLocaleString()} that were never saved{saved ? ', newer than the saved design' : ''}.</p>
+            <p>
+              This browser has changes from {new Date(boot.draft.savedAt).toLocaleString()} that were never saved
+              {saved ? ', newer than the saved design' : ''}.
+            </p>
           </Modal>
         )}
         {modal === 'templates' && (

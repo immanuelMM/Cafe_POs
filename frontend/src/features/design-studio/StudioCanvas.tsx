@@ -31,28 +31,38 @@ function BackgroundNode({ bg, width, height }: { bg: Background; width: number; 
   const { image } = useStudioImage(bg.type === 'image' ? resolveSrc(bg.src, logoUrl) : null)
   if (bg.type === 'transparent') return null
   if (bg.type === 'solid') return <Rect width={width} height={height} fill={bg.color} />
-  if (bg.type === 'gradient') return <Rect width={width} height={height} {...fillProps({ type: 'gradient', stops: bg.stops, angle: bg.angle }, width, height)} />
+  if (bg.type === 'gradient')
+    return (
+      <Rect
+        width={width}
+        height={height}
+        {...fillProps({ type: 'gradient', stops: bg.stops, angle: bg.angle }, width, height)}
+      />
+    )
   return (
     <>
       <Rect width={width} height={height} fill={bg.color} />
       {image &&
-        (bg.fit === 'cover' ? (
-          (() => {
-            const k = Math.max(width / image.naturalWidth, height / image.naturalHeight)
-            const sw = width / k
-            const sh = height / k
-            return (
-              <KImage image={image} width={width} height={height} crop={{ x: (image.naturalWidth - sw) / 2, y: (image.naturalHeight - sh) / 2, width: sw, height: sh }} />
-            )
-          })()
-        ) : (
-          (() => {
-            const k = Math.min(width / image.naturalWidth, height / image.naturalHeight)
-            const w = image.naturalWidth * k
-            const h = image.naturalHeight * k
-            return <KImage image={image} x={(width - w) / 2} y={(height - h) / 2} width={w} height={h} />
-          })()
-        ))}
+        (bg.fit === 'cover'
+          ? (() => {
+              const k = Math.max(width / image.naturalWidth, height / image.naturalHeight)
+              const sw = width / k
+              const sh = height / k
+              return (
+                <KImage
+                  image={image}
+                  width={width}
+                  height={height}
+                  crop={{ x: (image.naturalWidth - sw) / 2, y: (image.naturalHeight - sh) / 2, width: sw, height: sh }}
+                />
+              )
+            })()
+          : (() => {
+              const k = Math.min(width / image.naturalWidth, height / image.naturalHeight)
+              const w = image.naturalWidth * k
+              const h = image.naturalHeight * k
+              return <KImage image={image} x={(width - w) / 2} y={(height - h) / 2} width={w} height={h} />
+            })())}
     </>
   )
 }
@@ -74,7 +84,11 @@ export function StudioCanvas({ scale, multiMode, stageRef, onDropPayload }: Prop
   const multiRef = useRef(multiMode)
   multiRef.current = multiMode
   const anchorRef = useRef<string | null>(null)
-  const dragRef = useRef<{ ids: string[]; start: Map<string, { x: number; y: number }>; origin: { x: number; y: number } } | null>(null)
+  const dragRef = useRef<{
+    ids: string[]
+    start: Map<string, { x: number; y: number }>
+    origin: { x: number; y: number }
+  } | null>(null)
   const [guides, setGuides] = useState<Guide[]>([])
   const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
   const marqueeStart = useRef<{ x: number; y: number; additive: boolean } | null>(null)
@@ -99,7 +113,8 @@ export function StudioCanvas({ scale, multiMode, stageRef, onDropPayload }: Prop
     if (selectedEls.length === 1) {
       const e = selectedEls[0]
       if (e.kind === 'shape' && (e.shape === 'line' || e.shape === 'arrow')) return ['middle-left', 'middle-right']
-      if (e.kind === 'text') return ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'middle-left', 'middle-right']
+      if (e.kind === 'text')
+        return ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'middle-left', 'middle-right']
     }
     return undefined
   }, [selectedEls])
@@ -116,7 +131,9 @@ export function StudioCanvas({ scale, multiMode, stageRef, onDropPayload }: Prop
       },
       onDragStart: (id) => {
         const st = useStudio.getState()
-        const ids = (st.selected.includes(id) ? st.selected : [id]).filter((i) => st.doc.elements.find((e) => e.id === i && !e.locked))
+        const ids = (st.selected.includes(id) ? st.selected : [id]).filter((i) =>
+          st.doc.elements.find((e) => e.id === i && !e.locked),
+        )
         const start = new Map<string, { x: number; y: number }>()
         for (const i of ids) {
           const n = stageRef.current?.findOne<Konva.Node>(`#${i}`)
@@ -143,8 +160,12 @@ export function StudioCanvas({ scale, multiMode, stageRef, onDropPayload }: Prop
         const mineY = [r.y, r.y + r.height / 2, r.y + r.height]
         let bx: { d: number; at: number } | null = null
         let by: { d: number; at: number } | null = null
-        for (const m of mineX) for (const t of xs) if (Math.abs(t - m) < T && (!bx || Math.abs(t - m) < Math.abs(bx.d))) bx = { d: t - m, at: t }
-        for (const m of mineY) for (const t of ys) if (Math.abs(t - m) < T && (!by || Math.abs(t - m) < Math.abs(by.d))) by = { d: t - m, at: t }
+        for (const m of mineX)
+          for (const t of xs)
+            if (Math.abs(t - m) < T && (!bx || Math.abs(t - m) < Math.abs(bx.d))) bx = { d: t - m, at: t }
+        for (const m of mineY)
+          for (const t of ys)
+            if (Math.abs(t - m) < T && (!by || Math.abs(t - m) < Math.abs(by.d))) by = { d: t - m, at: t }
         if (bx) node.x(node.x() + bx.d)
         if (by) node.y(node.y() + by.d)
         const gs: Guide[] = []
@@ -194,7 +215,11 @@ export function StudioCanvas({ scale, multiMode, stageRef, onDropPayload }: Prop
       if (!el) continue
       const sx = Math.abs(node.scaleX())
       const sy = Math.abs(node.scaleY())
-      const patch: Record<string, unknown> = { x: Math.round(node.x() * 10) / 10, y: Math.round(node.y() * 10) / 10, rotation: Math.round(node.rotation() * 10) / 10 }
+      const patch: Record<string, unknown> = {
+        x: Math.round(node.x() * 10) / 10,
+        y: Math.round(node.y() * 10) / 10,
+        rotation: Math.round(node.rotation() * 10) / 10,
+      }
       if (el.kind === 'text') {
         patch.width = Math.max(20, Math.round(el.width * sx))
         if (!side && Math.abs(sy - 1) > 0.001) patch.fontSize = Math.max(4, Math.round(el.fontSize * sy * 10) / 10)
@@ -296,10 +321,26 @@ export function StudioCanvas({ scale, multiMode, stageRef, onDropPayload }: Prop
         </Layer>
         <Layer name="studio-ui">
           {guides.map((g, i) => (
-            <Line key={i} points={g.points} stroke="#e0457b" strokeWidth={1.5 * uiScale} dash={[6 * uiScale, 4 * uiScale]} listening={false} />
+            <Line
+              key={i}
+              points={g.points}
+              stroke="#e0457b"
+              strokeWidth={1.5 * uiScale}
+              dash={[6 * uiScale, 4 * uiScale]}
+              listening={false}
+            />
           ))}
           {marquee && (
-            <Rect x={marquee.x} y={marquee.y} width={marquee.w} height={marquee.h} fill="rgba(180,86,31,0.12)" stroke="#b4561f" strokeWidth={1.5 * uiScale} listening={false} />
+            <Rect
+              x={marquee.x}
+              y={marquee.y}
+              width={marquee.w}
+              height={marquee.h}
+              fill="rgba(180,86,31,0.12)"
+              stroke="#b4561f"
+              strokeWidth={1.5 * uiScale}
+              listening={false}
+            />
           )}
           <Transformer
             ref={trRef}

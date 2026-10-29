@@ -10,23 +10,45 @@ import { saveOverride, useCatalogMutation, useLocationOverrides } from './catalo
 
 const numOrNull = (s: string) => (s.trim() === '' ? null : Number(s))
 
-function OverrideRow({ variation, locationId, locationName, current }: { variation: Variation; locationId: string; locationName: string; current?: LocationOverride }) {
+function OverrideRow({
+  variation,
+  locationId,
+  locationName,
+  current,
+}: {
+  variation: Variation
+  locationId: string
+  locationName: string
+  current?: LocationOverride
+}) {
   const [price, setPrice] = useState(current?.priceOverride?.toString() ?? '')
-  const [track, setTrack] = useState(current?.trackInventoryOverride == null ? '' : String(current.trackInventoryOverride))
+  const [track, setTrack] = useState(
+    current?.trackInventoryOverride == null ? '' : String(current.trackInventoryOverride),
+  )
   const [threshold, setThreshold] = useState(current?.lowStockThresholdOverride?.toString() ?? '')
   const save = useCatalogMutation(saveOverride, ['location-overrides'])
 
   const priceN = numOrNull(price)
   const thrN = numOrNull(threshold)
-  const invalid = (priceN !== null && (Number.isNaN(priceN) || priceN < 0)) || (thrN !== null && (Number.isNaN(thrN) || thrN < 0))
-  const body = { priceOverride: priceN, trackInventoryOverride: track === '' ? null : track === 'true', lowStockThresholdOverride: thrN }
-  const isEmpty = body.priceOverride === null && body.trackInventoryOverride === null && body.lowStockThresholdOverride === null
+  const invalid =
+    (priceN !== null && (Number.isNaN(priceN) || priceN < 0)) || (thrN !== null && (Number.isNaN(thrN) || thrN < 0))
+  const body = {
+    priceOverride: priceN,
+    trackInventoryOverride: track === '' ? null : track === 'true',
+    lowStockThresholdOverride: thrN,
+  }
+  const isEmpty =
+    body.priceOverride === null && body.trackInventoryOverride === null && body.lowStockThresholdOverride === null
 
   const clear = () => {
     setPrice('')
     setTrack('')
     setThreshold('')
-    save.mutate({ variationId: variation.id, locationId, body: { priceOverride: null, trackInventoryOverride: null, lowStockThresholdOverride: null } })
+    save.mutate({
+      variationId: variation.id,
+      locationId,
+      body: { priceOverride: null, trackInventoryOverride: null, lowStockThresholdOverride: null },
+    })
   }
 
   return (
@@ -34,7 +56,15 @@ function OverrideRow({ variation, locationId, locationName, current }: { variati
       <legend>{locationName}</legend>
       <label className="field">
         <span className="field-label">Price (₱, VAT incl.)</span>
-        <input type="number" step="0.01" min="0" inputMode="decimal" placeholder={`Default ${formatMoney(variation.price)}`} value={price} onChange={(e) => setPrice(e.target.value)} />
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          inputMode="decimal"
+          placeholder={`Default ${formatMoney(variation.price)}`}
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
       </label>
       <label className="field">
         <span className="field-label">Track inventory</span>
@@ -46,11 +76,23 @@ function OverrideRow({ variation, locationId, locationName, current }: { variati
       </label>
       <label className="field">
         <span className="field-label">Low stock threshold</span>
-        <input type="number" step="0.001" min="0" inputMode="decimal" placeholder="Default" value={threshold} onChange={(e) => setThreshold(e.target.value)} />
+        <input
+          type="number"
+          step="0.001"
+          min="0"
+          inputMode="decimal"
+          placeholder="Default"
+          value={threshold}
+          onChange={(e) => setThreshold(e.target.value)}
+        />
         <span className="field-hint">Stored only, not enforced yet.</span>
       </label>
       <div className="var-actions">
-        <button className="btn btn-sm btn-primary" disabled={invalid || save.isPending || (isEmpty && !current)} onClick={() => save.mutate({ variationId: variation.id, locationId, body })}>
+        <button
+          className="btn btn-sm btn-primary"
+          disabled={invalid || save.isPending || (isEmpty && !current)}
+          onClick={() => save.mutate({ variationId: variation.id, locationId, body })}
+        >
           {isEmpty && current ? 'Remove override' : 'Save'}
         </button>
         {current && !isEmpty && (
@@ -64,7 +106,11 @@ function OverrideRow({ variation, locationId, locationName, current }: { variati
           </span>
         )}
       </div>
-      {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
+      {save.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(save.error)}
+        </div>
+      )}
     </fieldset>
   )
 }
@@ -86,10 +132,15 @@ export function OverridesEditor({ variation, onClose }: { variation: Variation; 
 
   return (
     <Modal title={`Location prices: ${variation.name}`} onClose={onClose} wide>
-      <p className="muted">Global price {formatMoney(variation.price)}. Leave a field empty to use the default. Saving with everything empty removes the override.</p>
+      <p className="muted">
+        Global price {formatMoney(variation.price)}. Leave a field empty to use the default. Saving with everything
+        empty removes the override.
+      </p>
       {loading && <Spinner />}
       {q.error && <ErrorBox error={q.error} onRetry={() => void q.refetch()} />}
-      {!loading && rows.length === 0 && <p className="muted">No location to configure. Pick a location in the header first.</p>}
+      {!loading && rows.length === 0 && (
+        <p className="muted">No location to configure. Pick a location in the header first.</p>
+      )}
       {!loading &&
         !q.error &&
         rows.map((l) => {

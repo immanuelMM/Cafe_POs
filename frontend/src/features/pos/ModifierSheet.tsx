@@ -42,9 +42,13 @@ export function ModifierSheet({ item, lists, onAdd, onClose }: Props) {
   )
 
   const chosen = lists.flatMap((l) =>
-    l.modifiers.filter((m) => m.active && (selected[l.id] ?? []).includes(m.id)).map((m) => ({ id: m.id, name: m.name, priceDelta: m.priceDelta })),
+    l.modifiers
+      .filter((m) => m.active && (selected[l.id] ?? []).includes(m.id))
+      .map((m) => ({ id: m.id, name: m.name, priceDelta: m.priceDelta })),
   )
-  const unit = round2((variation ? (variation.effectivePrice ?? variation.price) : 0) + chosen.reduce((s, m) => s + m.priceDelta, 0))
+  const unit = round2(
+    (variation ? (variation.effectivePrice ?? variation.price) : 0) + chosen.reduce((s, m) => s + m.priceDelta, 0),
+  )
 
   const submit = () => {
     if (!variation || problems.length) return
@@ -65,15 +69,30 @@ export function ModifierSheet({ item, lists, onAdd, onClose }: Props) {
       footer={
         <>
           <div className="stepper" role="group" aria-label="Quantity">
-            <button type="button" className="btn btn-icon" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">
+            <button
+              type="button"
+              className="btn btn-icon"
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              aria-label="Decrease quantity"
+            >
               −
             </button>
             <output aria-live="polite">{qty}</output>
-            <button type="button" className="btn btn-icon" onClick={() => setQty((q) => Math.min(MAX_QTY, q + 1))} aria-label="Increase quantity">
+            <button
+              type="button"
+              className="btn btn-icon"
+              onClick={() => setQty((q) => Math.min(MAX_QTY, q + 1))}
+              aria-label="Increase quantity"
+            >
               +
             </button>
           </div>
-          <button type="button" className="btn btn-primary btn-grow" disabled={!variation || problems.length > 0} onClick={submit}>
+          <button
+            type="button"
+            className="btn btn-primary btn-grow"
+            disabled={!variation || problems.length > 0}
+            onClick={submit}
+          >
             Add · {formatMoney(unit * qty)}
           </button>
         </>
@@ -87,7 +106,12 @@ export function ModifierSheet({ item, lists, onAdd, onClose }: Props) {
         <div className="chips">
           {variations.map((v) => (
             <label key={v.id} className={`chip${v.id === variationId ? ' chip-on' : ''}`}>
-              <input type="radio" name="variation" checked={v.id === variationId} onChange={() => setVariationId(v.id)} />
+              <input
+                type="radio"
+                name="variation"
+                checked={v.id === variationId}
+                onChange={() => setVariationId(v.id)}
+              />
               <span>{v.name}</span>
               <small>{formatMoney(v.effectivePrice ?? v.price)}</small>
             </label>

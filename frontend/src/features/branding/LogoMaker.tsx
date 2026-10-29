@@ -2,7 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { Field } from '../../components/ui'
 import { errorMessage } from '../../lib/api'
 import { brandBackground, paletteStops, type BrandPalette } from '../../lib/color'
-import { FONTS, ICONS, LAYOUTS, SHAPES, drawLogo, loadLogoSettings, renderLogoBlob, saveLogoSettings, type LogoSettings } from './logoDraw'
+import {
+  FONTS,
+  ICONS,
+  LAYOUTS,
+  SHAPES,
+  drawLogo,
+  loadLogoSettings,
+  renderLogoBlob,
+  saveLogoSettings,
+  type LogoSettings,
+} from './logoDraw'
 
 const MAX_LOGO_BYTES = 1024 * 1024
 
@@ -134,7 +144,13 @@ export function LogoMaker({ palette, busy, error, onUse }: Props) {
             </select>
           </Field>
           <label className="check">
-            <input type="checkbox" checked={s.ring} disabled={s.shape === 'none'} onChange={(e) => set('ring', e.target.checked)} /> Border ring
+            <input
+              type="checkbox"
+              checked={s.ring}
+              disabled={s.shape === 'none'}
+              onChange={(e) => set('ring', e.target.checked)}
+            />{' '}
+            Border ring
           </label>
         </div>
         <fieldset className="opt-group">
@@ -154,7 +170,9 @@ export function LogoMaker({ palette, busy, error, onUse }: Props) {
               </button>
             ))}
           </div>
-          {!canGradient && <small className="muted">Add a second brand colour in the Brand card to use a gradient.</small>}
+          {!canGradient && (
+            <small className="muted">Add a second brand colour in the Brand card to use a gradient.</small>
+          )}
         </fieldset>
         <div className="color-row">
           <ColorField label="Text and icon" value={s.textColor} onChange={(v) => set('textColor', v)} />
@@ -164,7 +182,11 @@ export function LogoMaker({ palette, busy, error, onUse }: Props) {
             Use brand colour
           </button>
         </div>
-        {shownError && <div className="alert alert-error" role="alert">{shownError}</div>}
+        {shownError && (
+          <div className="alert alert-error" role="alert">
+            {shownError}
+          </div>
+        )}
         <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void use()}>
           {busy ? 'Uploading…' : 'Use this logo'}
         </button>

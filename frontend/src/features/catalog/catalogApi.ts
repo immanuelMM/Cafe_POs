@@ -8,7 +8,13 @@ export const useCategories = (includeInactive = false) =>
     queryFn: () => api<Category[]>('/categories', { query: { includeInactive } }),
   })
 
-export const useItems = (params: { categoryId?: string; search?: string; page?: number; pageSize?: number; includeInactive?: boolean }) =>
+export const useItems = (params: {
+  categoryId?: string
+  search?: string
+  page?: number
+  pageSize?: number
+  includeInactive?: boolean
+}) =>
   useQuery({
     queryKey: ['items', params],
     queryFn: () => api<Paged<Item>>('/items', { query: { pageSize: 100, ...params } }),
@@ -33,7 +39,8 @@ export function useCatalogMutation<TVars, TRes = unknown>(fn: (v: TVars) => Prom
   return useMutation({
     mutationFn: fn,
     onSuccess: () => {
-      for (const k of ['categories', 'items', 'modifier-lists', ...extraKeys]) void qc.invalidateQueries({ queryKey: [k] })
+      for (const k of ['categories', 'items', 'modifier-lists', ...extraKeys])
+        void qc.invalidateQueries({ queryKey: [k] })
     },
   })
 }
@@ -52,10 +59,22 @@ export const useLocationOverrides = (variationId: string) =>
 
 /** PUT with all three fields null removes the override (204, no body). */
 export const saveOverride = (v: { variationId: string; locationId: string; body: OverrideInput }) =>
-  api<LocationOverride | undefined>(`/variations/${v.variationId}/location-overrides/${v.locationId}`, { method: 'PUT', body: v.body })
+  api<LocationOverride | undefined>(`/variations/${v.variationId}/location-overrides/${v.locationId}`, {
+    method: 'PUT',
+    body: v.body,
+  })
 
-export interface CategoryInput { name: string; sortOrder: number; active: boolean }
-export interface VariationInput { name: string; sku: string; price: number; active?: boolean }
+export interface CategoryInput {
+  name: string
+  sortOrder: number
+  active: boolean
+}
+export interface VariationInput {
+  name: string
+  sku: string
+  price: number
+  active?: boolean
+}
 export interface ItemInput {
   categoryId: string
   name: string
@@ -80,7 +99,9 @@ export const catalogCalls = {
       : api<Category>('/categories', { method: 'POST', body: v.body }),
   deleteCategory: (id: string) => api<void>(`/categories/${id}`, { method: 'DELETE' }),
   saveItem: (v: { id?: string; body: ItemInput }) =>
-    v.id ? api<Item>(`/items/${v.id}`, { method: 'PUT', body: v.body }) : api<Item>('/items', { method: 'POST', body: v.body }),
+    v.id
+      ? api<Item>(`/items/${v.id}`, { method: 'PUT', body: v.body })
+      : api<Item>('/items', { method: 'POST', body: v.body }),
   uploadItemImage: (v: { id: string; file: Blob }) => {
     const fd = new FormData()
     fd.append('file', v.file, 'photo.jpg')

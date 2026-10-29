@@ -78,7 +78,8 @@ function BrandPreview({ name, palette, logo }: { name: string; palette: BrandPal
     <div role="img" aria-label="Header and button preview" className="form">
       <div className="brand-preview" style={{ background: bg, color: ink }}>
         <span className="brand">
-          {logo ? <img className="brand-logo" src={logo} alt="" /> : <span aria-hidden="true">☕</span>} <span>{name || 'Brand name'}</span>
+          {logo ? <img className="brand-logo" src={logo} alt="" /> : <span aria-hidden="true">☕</span>}{' '}
+          <span>{name || 'Brand name'}</span>
         </span>
         <span className="brand-preview-pill" style={{ background: ink, color: valid ? palette.primary : undefined }}>
           POS
@@ -113,15 +114,37 @@ function ColorSlot({
     <div className="field">
       <div className="color-slot" role="group" aria-label={`${label} colour`}>
         <span className="color-slot-name">{label}</span>
-        <input type="color" className="color-input" aria-label={`Pick ${label.toLowerCase()} colour`} value={HEX_RE.test(value) ? value : '#000000'} onChange={(e) => onChange(e.target.value)} />
-        <input className="hex-input" aria-label={`${label} hex colour`} maxLength={7} spellCheck={false} value={value} onChange={(e) => onChange(e.target.value)} />
+        <input
+          type="color"
+          className="color-input"
+          aria-label={`Pick ${label.toLowerCase()} colour`}
+          value={HEX_RE.test(value) ? value : '#000000'}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <input
+          className="hex-input"
+          aria-label={`${label} hex colour`}
+          maxLength={7}
+          spellCheck={false}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
         {onRemove && (
-          <button type="button" className="btn btn-ghost btn-icon" aria-label={`Remove ${label.toLowerCase()} colour`} onClick={onRemove}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-icon"
+            aria-label={`Remove ${label.toLowerCase()} colour`}
+            onClick={onRemove}
+          >
             ×
           </button>
         )}
       </div>
-      {error && <span className="field-error" role="alert">{error}</span>}
+      {error && (
+        <span className="field-error" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   )
 }
@@ -137,7 +160,14 @@ function BrandForm({ brand }: { brand: BrandingDto }) {
     watch,
     formState: { errors, isDirty },
   } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: valuesOf(brand) })
-  const [name, primary, secondary, tertiary, gradient, angle] = watch(['brandName', 'primaryColor', 'secondaryColor', 'tertiaryColor', 'gradient', 'gradientAngle'])
+  const [name, primary, secondary, tertiary, gradient, angle] = watch([
+    'brandName',
+    'primaryColor',
+    'secondaryColor',
+    'tertiaryColor',
+    'gradient',
+    'gradientAngle',
+  ])
   const opts = { shouldDirty: true, shouldValidate: true }
   const setColor = (k: ColorKey, v: string) => setValue(k, v, opts)
   const count = 1 + (secondary !== null ? 1 : 0) + (tertiary !== null ? 1 : 0)
@@ -148,7 +178,8 @@ function BrandForm({ brand }: { brand: BrandingDto }) {
     if (tertiary === null) setValue('gradient', false, opts)
   }
   const removeThird = () => setValue('tertiaryColor', null, opts)
-  const addColor = () => (secondary === null ? setValue('secondaryColor', NEW_SECONDARY, opts) : setValue('tertiaryColor', NEW_TERTIARY, opts))
+  const addColor = () =>
+    secondary === null ? setValue('secondaryColor', NEW_SECONDARY, opts) : setValue('tertiaryColor', NEW_TERTIARY, opts)
   const applyPalette = (cs: string[]) => {
     setValue('primaryColor', cs[0], opts)
     setValue('secondaryColor', cs[1] ?? null, opts)
@@ -188,9 +219,21 @@ function BrandForm({ brand }: { brand: BrandingDto }) {
         )
       })}
     >
-      {save.error && <div className="alert alert-error" role="alert">{errorMessage(save.error)}</div>}
-      {saved && <div className="alert alert-ok" role="status">Saved.</div>}
-      <Field label="Brand name" error={errors.brandName?.message} hint="Shown in the header and on the login screen at every location.">
+      {save.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(save.error)}
+        </div>
+      )}
+      {saved && (
+        <div className="alert alert-ok" role="status">
+          Saved.
+        </div>
+      )}
+      <Field
+        label="Brand name"
+        error={errors.brandName?.message}
+        hint="Shown in the header and on the login screen at every location."
+      >
         <input {...register('brandName')} />
       </Field>
       <Field label="Tagline" error={errors.tagline?.message} hint="Optional. Printed on the menu banner.">
@@ -199,12 +242,29 @@ function BrandForm({ brand }: { brand: BrandingDto }) {
 
       <fieldset className="opt-group colors">
         <legend>Brand colours</legend>
-        <ColorSlot label="Primary" value={primary} error={errors.primaryColor?.message} onChange={(v) => setColor('primaryColor', v)} />
+        <ColorSlot
+          label="Primary"
+          value={primary}
+          error={errors.primaryColor?.message}
+          onChange={(v) => setColor('primaryColor', v)}
+        />
         {secondary !== null && (
-          <ColorSlot label="Secondary" value={secondary} error={errors.secondaryColor?.message} onChange={(v) => setColor('secondaryColor', v)} onRemove={removeSecond} />
+          <ColorSlot
+            label="Secondary"
+            value={secondary}
+            error={errors.secondaryColor?.message}
+            onChange={(v) => setColor('secondaryColor', v)}
+            onRemove={removeSecond}
+          />
         )}
         {tertiary !== null && (
-          <ColorSlot label="Tertiary" value={tertiary} error={errors.tertiaryColor?.message} onChange={(v) => setColor('tertiaryColor', v)} onRemove={removeThird} />
+          <ColorSlot
+            label="Tertiary"
+            value={tertiary}
+            error={errors.tertiaryColor?.message}
+            onChange={(v) => setColor('tertiaryColor', v)}
+            onRemove={removeThird}
+          />
         )}
         {count < 3 && (
           <button type="button" className="btn btn-sm" style={{ alignSelf: 'flex-start' }} onClick={addColor}>
@@ -241,7 +301,13 @@ function BrandForm({ brand }: { brand: BrandingDto }) {
       <fieldset className="opt-group">
         <legend>Gradient</legend>
         <label className="check">
-          <input type="checkbox" role="switch" checked={gradient && hasSecond} disabled={!hasSecond} onChange={(e) => setValue('gradient', e.target.checked, opts)} />
+          <input
+            type="checkbox"
+            role="switch"
+            checked={gradient && hasSecond}
+            disabled={!hasSecond}
+            onChange={(e) => setValue('gradient', e.target.checked, opts)}
+          />
           Use a gradient across your colours
         </label>
         {!hasSecond && <small className="muted">Add a second color to use a gradient</small>}
@@ -306,30 +372,80 @@ function LogoSection({ brand }: { brand: BrandingDto }) {
     <div className="card form">
       <h2>Logo</h2>
       <div className="logo-current">
-        {logo ? <img src={logo} alt="Current logo" className="logo-thumb" /> : <span className="logo-thumb logo-thumb-empty" aria-hidden="true">☕</span>}
-        <p className="muted">{logo ? 'Shown in the header, login screen, favicon and menu banner.' : 'No logo yet. The coffee cup is used until you add one.'}</p>
+        {logo ? (
+          <img src={logo} alt="Current logo" className="logo-thumb" />
+        ) : (
+          <span className="logo-thumb logo-thumb-empty" aria-hidden="true">
+            ☕
+          </span>
+        )}
+        <p className="muted">
+          {logo
+            ? 'Shown in the header, login screen, favicon and menu banner.'
+            : 'No logo yet. The coffee cup is used until you add one.'}
+        </p>
       </div>
       <div className="tabs" role="tablist" aria-label="Logo source">
-        <button type="button" role="tab" aria-selected={tab === 'upload'} className={tab === 'upload' ? 'tab tab-on' : 'tab'} onClick={() => setTab('upload')}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'upload'}
+          className={tab === 'upload' ? 'tab tab-on' : 'tab'}
+          onClick={() => setTab('upload')}
+        >
           Upload image
         </button>
-        <button type="button" role="tab" aria-selected={tab === 'create'} className={tab === 'create' ? 'tab tab-on' : 'tab'} onClick={() => setTab('create')}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'create'}
+          className={tab === 'create' ? 'tab tab-on' : 'tab'}
+          onClick={() => setTab('create')}
+        >
           Create logo
         </button>
       </div>
-      {remove.error && <div className="alert alert-error" role="alert">{errorMessage(remove.error)}</div>}
+      {remove.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(remove.error)}
+        </div>
+      )}
       {tab === 'upload' ? (
         <>
-          {fileError && <div className="alert alert-error" role="alert">{fileError}</div>}
-          {!file && upload.error && <div className="alert alert-error" role="alert">{errorMessage(upload.error)}</div>}
-          {upload.isSuccess && !file && <div className="alert alert-ok" role="status">Logo updated.</div>}
-          <input ref={input} type="file" accept={LOGO_TYPES.join(',')} className="sr-only" id="logo-file" onChange={(e) => pick(e.target.files?.[0])} />
+          {fileError && (
+            <div className="alert alert-error" role="alert">
+              {fileError}
+            </div>
+          )}
+          {!file && upload.error && (
+            <div className="alert alert-error" role="alert">
+              {errorMessage(upload.error)}
+            </div>
+          )}
+          {upload.isSuccess && !file && (
+            <div className="alert alert-ok" role="status">
+              Logo updated.
+            </div>
+          )}
+          <input
+            ref={input}
+            type="file"
+            accept={LOGO_TYPES.join(',')}
+            className="sr-only"
+            id="logo-file"
+            onChange={(e) => pick(e.target.files?.[0])}
+          />
           <div className="row-actions">
             <label htmlFor="logo-file" className="btn btn-primary">
               {logo ? 'Replace logo' : 'Upload logo'}
             </label>
             {logo && (
-              <button type="button" className="btn btn-danger-ghost" disabled={remove.isPending} onClick={() => window.confirm('Remove the logo?') && remove.mutate()}>
+              <button
+                type="button"
+                className="btn btn-danger-ghost"
+                disabled={remove.isPending}
+                onClick={() => window.confirm('Remove the logo?') && remove.mutate()}
+              >
                 Remove
               </button>
             )}
@@ -341,19 +457,36 @@ function LogoSection({ brand }: { brand: BrandingDto }) {
         </>
       ) : (
         <>
-          {upload.isSuccess && <div className="alert alert-ok" role="status">Logo updated.</div>}
+          {upload.isSuccess && (
+            <div className="alert alert-ok" role="status">
+              Logo updated.
+            </div>
+          )}
           <LogoMaker palette={palette} busy={upload.isPending} error={upload.error} onUse={(b) => upload.mutate(b)} />
           <Link className="btn" to="/admin/design-studio?kind=logo" style={{ alignSelf: 'flex-start' }}>
             Design your own logo
           </Link>
           {logo && (
-            <button type="button" className="btn btn-danger-ghost" disabled={remove.isPending} onClick={() => window.confirm('Remove the logo?') && remove.mutate()}>
+            <button
+              type="button"
+              className="btn btn-danger-ghost"
+              disabled={remove.isPending}
+              onClick={() => window.confirm('Remove the logo?') && remove.mutate()}
+            >
               Remove current logo
             </button>
           )}
         </>
       )}
-      {file && <LogoEditor file={file} busy={upload.isPending} error={upload.error} onUse={send} onClose={() => setFile(null)} />}
+      {file && (
+        <LogoEditor
+          file={file}
+          busy={upload.isPending}
+          error={upload.error}
+          onUse={send}
+          onClose={() => setFile(null)}
+        />
+      )}
     </div>
   )
 }
@@ -380,24 +513,50 @@ function TarpaulinSection({ brand }: { brand: BrandingDto }) {
     <div className="card form">
       <h2>Tarpaulin (menu banner)</h2>
       <p className="muted">Upload your own design, or print the banner generated from your menu.</p>
-      {fileError && <div className="alert alert-error" role="alert">{fileError}</div>}
-      {upload.error && <div className="alert alert-error" role="alert">{errorMessage(upload.error)}</div>}
-      {remove.error && <div className="alert alert-error" role="alert">{errorMessage(remove.error)}</div>}
+      {fileError && (
+        <div className="alert alert-error" role="alert">
+          {fileError}
+        </div>
+      )}
+      {upload.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(upload.error)}
+        </div>
+      )}
+      {remove.error && (
+        <div className="alert alert-error" role="alert">
+          {errorMessage(remove.error)}
+        </div>
+      )}
       {url &&
         (isPdf ? (
           <p>
-            <a href={url} target="_blank" rel="noreferrer">Open uploaded PDF design</a>
+            <a href={url} target="_blank" rel="noreferrer">
+              Open uploaded PDF design
+            </a>
           </p>
         ) : (
           <img src={url} alt="Uploaded tarpaulin design" className="tarp-preview" />
         ))}
-      <input ref={input} type="file" accept={TARP_TYPES.join(',')} className="sr-only" id="tarp-file" onChange={(e) => pick(e.target.files?.[0])} />
+      <input
+        ref={input}
+        type="file"
+        accept={TARP_TYPES.join(',')}
+        className="sr-only"
+        id="tarp-file"
+        onChange={(e) => pick(e.target.files?.[0])}
+      />
       <div className="row-actions">
         <label htmlFor="tarp-file" className="btn btn-primary" aria-disabled={upload.isPending}>
           {upload.isPending ? 'Uploading…' : url ? 'Replace design' : 'Upload design'}
         </label>
         {url && (
-          <button type="button" className="btn btn-danger-ghost" disabled={remove.isPending} onClick={() => window.confirm('Remove the uploaded design?') && remove.mutate()}>
+          <button
+            type="button"
+            className="btn btn-danger-ghost"
+            disabled={remove.isPending}
+            onClick={() => window.confirm('Remove the uploaded design?') && remove.mutate()}
+          >
             Remove
           </button>
         )}

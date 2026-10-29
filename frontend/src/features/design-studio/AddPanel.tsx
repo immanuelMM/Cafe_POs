@@ -19,7 +19,13 @@ const poly = (n: number) =>
 
 function ShapeThumb({ shape }: { shape: ShapeKind }) {
   const fill = 'currentColor'
-  const stroke = { stroke: 'currentColor', strokeWidth: 7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' }
+  const stroke = {
+    stroke: 'currentColor',
+    strokeWidth: 7,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    fill: 'none',
+  }
   let body: ReactNode
   switch (shape) {
     case 'rect':
@@ -68,13 +74,30 @@ function ShapeThumb({ shape }: { shape: ShapeKind }) {
   )
 }
 
-function Tile({ label, payload, onAdd, children }: { label: string; payload: AddPayload; onAdd: (p: AddPayload) => void; children: ReactNode }) {
+function Tile({
+  label,
+  payload,
+  onAdd,
+  children,
+}: {
+  label: string
+  payload: AddPayload
+  onAdd: (p: AddPayload) => void
+  children: ReactNode
+}) {
   const onDragStart = (e: DragEvent<HTMLButtonElement>) => {
     e.dataTransfer.setData(DRAG_MIME, JSON.stringify(payload))
     e.dataTransfer.effectAllowed = 'copy'
   }
   return (
-    <button type="button" className="studio-tile" draggable onDragStart={onDragStart} onClick={() => onAdd(payload)} title={`${label} (click or drag onto the canvas)`}>
+    <button
+      type="button"
+      className="studio-tile"
+      draggable
+      onDragStart={onDragStart}
+      onClick={() => onAdd(payload)}
+      title={`${label} (click or drag onto the canvas)`}
+    >
       {children}
       <span>{label}</span>
     </button>
@@ -95,7 +118,11 @@ export function AddPanel({ kind, hasLogo, onAdd, onFiles, onPickItem, error }: P
   const input = useRef<HTMLInputElement>(null)
   return (
     <>
-      {error && <div className="alert alert-error" role="alert">{error}</div>}
+      {error && (
+        <div className="alert alert-error" role="alert">
+          {error}
+        </div>
+      )}
       <Section title="Text">
         <div className="studio-tiles">
           <Tile label="Heading" payload={{ t: 'text', preset: 'heading' }} onAdd={onAdd}>
@@ -130,26 +157,50 @@ export function AddPanel({ kind, hasLogo, onAdd, onFiles, onPickItem, error }: P
         </div>
       </Section>
       <Section title="Images">
-        <input ref={input} type="file" accept={IMAGE_ACCEPT} multiple className="sr-only" aria-label="Upload images" onChange={(e) => { onFiles(Array.from(e.target.files ?? [])); e.target.value = '' }} />
+        <input
+          ref={input}
+          type="file"
+          accept={IMAGE_ACCEPT}
+          multiple
+          className="sr-only"
+          aria-label="Upload images"
+          onChange={(e) => {
+            onFiles(Array.from(e.target.files ?? []))
+            e.target.value = ''
+          }}
+        />
         <div className="studio-actions">
           <button type="button" className="btn btn-sm" onClick={() => input.current?.click()}>
             Upload image
           </button>
-          <button type="button" className="btn btn-sm" disabled={!hasLogo} title={hasLogo ? '' : 'Upload a logo first'} onClick={() => onAdd({ t: 'logo' })}>
+          <button
+            type="button"
+            className="btn btn-sm"
+            disabled={!hasLogo}
+            title={hasLogo ? '' : 'Upload a logo first'}
+            onClick={() => onAdd({ t: 'logo' })}
+          >
             Insert my logo
           </button>
           <button type="button" className="btn btn-sm" onClick={onPickItem}>
             Item photo
           </button>
         </div>
-        <small className="muted">Uploads are downscaled to 2000 px and saved inside the design. You can also drop image files onto the canvas.</small>
+        <small className="muted">
+          Uploads are downscaled to 2000 px and saved inside the design. You can also drop image files onto the canvas.
+        </small>
       </Section>
       {kind === 'banner' && (
         <Section title="Menu">
           <div className="studio-tiles">
             <Tile label="Menu block" payload={{ t: 'menu' }} onAdd={onAdd}>
               <svg viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
-                <path d="M12 14h76M12 30h50M12 46h76M12 62h50M12 78h76" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
+                <path
+                  d="M12 14h76M12 30h50M12 46h76M12 62h50M12 78h76"
+                  stroke="currentColor"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                />
               </svg>
             </Tile>
           </div>

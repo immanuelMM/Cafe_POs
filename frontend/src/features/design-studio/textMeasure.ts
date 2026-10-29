@@ -7,7 +7,8 @@ export interface TextStyle {
 
 let ctx: CanvasRenderingContext2D | null | undefined
 const context = () => {
-  if (ctx === undefined) ctx = typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d')
+  if (ctx === undefined)
+    ctx = typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d')
   return ctx
 }
 

@@ -26,7 +26,16 @@ interface Props {
 }
 
 const shadowProps = (s: Shadow | null) =>
-  s ? { shadowColor: s.color, shadowBlur: s.blur, shadowOffsetX: s.offsetX, shadowOffsetY: s.offsetY, shadowOpacity: s.opacity, shadowEnabled: true } : {}
+  s
+    ? {
+        shadowColor: s.color,
+        shadowBlur: s.blur,
+        shadowOffsetX: s.offsetX,
+        shadowOffsetY: s.offsetY,
+        shadowOpacity: s.opacity,
+        shadowEnabled: true,
+      }
+    : {}
 
 function useCommon(el: StudioElement, editingId: string | null, h: NodeHandlers) {
   return {
@@ -231,7 +240,8 @@ function ImageNode({ el, editingId, handlers }: Props & { el: ImageElement }) {
 
 function MenuPhoto({ path, x, y, size }: { path: string; x: number; y: number; size: number }) {
   const { image } = useStudioImage(assetUrl(path))
-  if (!image) return <Rect x={x} y={y} width={size} height={size} fill="#e8dfd2" cornerRadius={size * 0.08} listening={false} />
+  if (!image)
+    return <Rect x={x} y={y} width={size} height={size} fill="#e8dfd2" cornerRadius={size * 0.08} listening={false} />
   const k = Math.max(size / image.naturalWidth, size / image.naturalHeight)
   const sw = size / k
   const sh = size / k
@@ -267,7 +277,8 @@ function MenuNode({ el, editingId, handlers }: Props & { el: MenuElement }) {
         }}
       />
       {layout.draws.map((d, i) => {
-        if (d.t === 'rule') return <Rect key={i} x={d.x} y={d.y} width={d.w} height={d.h} fill={d.color} listening={false} />
+        if (d.t === 'rule')
+          return <Rect key={i} x={d.x} y={d.y} width={d.w} height={d.h} fill={d.color} listening={false} />
         if (d.t === 'photo') return <MenuPhoto key={i} path={d.path} x={d.x} y={d.y} size={d.size} />
         return (
           <Text

@@ -12,7 +12,8 @@ export function LayersPanel() {
   const [renaming, setRenaming] = useState<string | null>(null)
   const rows = [...elements].reverse()
 
-  if (!elements.length) return <p className="muted studio-note">No layers yet. Add text, shapes or images from the Add tab.</p>
+  if (!elements.length)
+    return <p className="muted studio-note">No layers yet. Add text, shapes or images from the Add tab.</p>
 
   return (
     <>
@@ -25,7 +26,13 @@ export function LayersPanel() {
             ['back', 'To back'],
           ] as const
         ).map(([mode, label]) => (
-          <button key={mode} type="button" className="btn btn-sm" disabled={!selected.length} onClick={() => order(selected, mode)}>
+          <button
+            key={mode}
+            type="button"
+            className="btn btn-sm"
+            disabled={!selected.length}
+            onClick={() => order(selected, mode)}
+          >
             {label}
           </button>
         ))}
@@ -34,7 +41,10 @@ export function LayersPanel() {
         {rows.map((e) => {
           const on = selected.includes(e.id)
           return (
-            <li key={e.id} className={`studio-layer${on ? ' studio-layer-on' : ''}${e.hidden ? ' studio-layer-off' : ''}`}>
+            <li
+              key={e.id}
+              className={`studio-layer${on ? ' studio-layer-on' : ''}${e.hidden ? ' studio-layer-off' : ''}`}
+            >
               {renaming === e.id ? (
                 <input
                   autoFocus
@@ -64,19 +74,51 @@ export function LayersPanel() {
                   <small className="muted">{kindLabel(e)}</small>
                 </button>
               )}
-              <button type="button" className="btn btn-ghost btn-icon studio-mini" title="Bring forward" aria-label={`Bring ${e.name} forward`} onClick={() => order([e.id], 'forward')}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon studio-mini"
+                title="Bring forward"
+                aria-label={`Bring ${e.name} forward`}
+                onClick={() => order([e.id], 'forward')}
+              >
                 ▲
               </button>
-              <button type="button" className="btn btn-ghost btn-icon studio-mini" title="Send backward" aria-label={`Send ${e.name} backward`} onClick={() => order([e.id], 'backward')}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon studio-mini"
+                title="Send backward"
+                aria-label={`Send ${e.name} backward`}
+                onClick={() => order([e.id], 'backward')}
+              >
                 ▼
               </button>
-              <button type="button" className="btn btn-ghost btn-icon studio-mini" title={e.hidden ? 'Show' : 'Hide'} aria-label={`${e.hidden ? 'Show' : 'Hide'} ${e.name}`} aria-pressed={e.hidden} onClick={() => update([e.id], { hidden: !e.hidden })}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon studio-mini"
+                title={e.hidden ? 'Show' : 'Hide'}
+                aria-label={`${e.hidden ? 'Show' : 'Hide'} ${e.name}`}
+                aria-pressed={e.hidden}
+                onClick={() => update([e.id], { hidden: !e.hidden })}
+              >
                 {e.hidden ? '○' : '◉'}
               </button>
-              <button type="button" className="btn btn-ghost btn-icon studio-mini" title={e.locked ? 'Unlock' : 'Lock'} aria-label={`${e.locked ? 'Unlock' : 'Lock'} ${e.name}`} aria-pressed={e.locked} onClick={() => update([e.id], { locked: !e.locked })}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon studio-mini"
+                title={e.locked ? 'Unlock' : 'Lock'}
+                aria-label={`${e.locked ? 'Unlock' : 'Lock'} ${e.name}`}
+                aria-pressed={e.locked}
+                onClick={() => update([e.id], { locked: !e.locked })}
+              >
                 {e.locked ? '▣' : '□'}
               </button>
-              <button type="button" className="btn btn-ghost btn-icon studio-mini" title="Delete" aria-label={`Delete ${e.name}`} onClick={() => remove([e.id])}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon studio-mini"
+                title="Delete"
+                aria-label={`Delete ${e.name}`}
+                onClick={() => remove([e.id])}
+              >
                 ✕
               </button>
             </li>

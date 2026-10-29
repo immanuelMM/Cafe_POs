@@ -3,7 +3,17 @@ import { onColor } from '../../lib/color'
 import type { TextElement } from './types'
 
 /** Inline text editing: a textarea laid over the canvas node (double-click / double-tap a text element). */
-export function TextEditor({ el, scale, onCommit, onCancel }: { el: TextElement; scale: number; onCommit: (text: string) => void; onCancel: () => void }) {
+export function TextEditor({
+  el,
+  scale,
+  onCommit,
+  onCancel,
+}: {
+  el: TextElement
+  scale: number
+  onCommit: (text: string) => void
+  onCancel: () => void
+}) {
   const ref = useRef<HTMLTextAreaElement>(null)
   const [value, setValue] = useState(el.text)
   const done = useRef(false)

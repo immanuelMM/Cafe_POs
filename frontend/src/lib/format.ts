@@ -19,5 +19,11 @@ export function formatTime(iso: string | null | undefined, timeZone?: string) {
 
 export function formatDate(iso: string | null | undefined, timeZone?: string) {
   if (!iso) return ''
-  return new Intl.DateTimeFormat('en-PH', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone }).format(new Date(iso))
+  return new Intl.DateTimeFormat('en-PH', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone,
+  }).format(new Date(iso))
 }

@@ -13,7 +13,8 @@ export const useIngredients = (locationId?: string, enabled = true) =>
 export const useMovements = (id: string | undefined, page: number, locationId?: string) =>
   useQuery({
     queryKey: ['movements', id, page, { locationId: locationId ?? null }],
-    queryFn: () => api<Paged<StockMovement>>(`/ingredients/${id}/movements`, { query: { locationId, page, pageSize: 15 } }),
+    queryFn: () =>
+      api<Paged<StockMovement>>(`/ingredients/${id}/movements`, { query: { locationId, page, pageSize: 15 } }),
     enabled: !!id,
     placeholderData: (prev) => prev,
   })
@@ -29,10 +30,18 @@ export function stockStatus(i: Ingredient): StockStatus {
   return 'ok'
 }
 
-export const STATUS_LABEL: Record<StockStatus, string> = { out: 'Out of stock', low: 'Low stock', warn: 'Running low', ok: 'In stock' }
+export const STATUS_LABEL: Record<StockStatus, string> = {
+  out: 'Out of stock',
+  low: 'Low stock',
+  warn: 'Running low',
+  ok: 'In stock',
+}
 
 export const calls = {
-  saveIngredient: (v: { id?: string; body: { name: string; unit: string; lowStockThreshold: number; active?: boolean; initialQuantity?: number } }) =>
+  saveIngredient: (v: {
+    id?: string
+    body: { name: string; unit: string; lowStockThreshold: number; active?: boolean; initialQuantity?: number }
+  }) =>
     v.id
       ? api<Ingredient>(`/ingredients/${v.id}`, { method: 'PUT', body: v.body })
       : api<Ingredient>('/ingredients', { method: 'POST', body: v.body }),

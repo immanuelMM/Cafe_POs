@@ -6,7 +6,14 @@ const toRgb = (hex: string): [number, number, number] => [
   parseInt(hex.slice(3, 5), 16),
   parseInt(hex.slice(5, 7), 16),
 ]
-const toHex = (c: number[]) => `#${c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('')}`
+const toHex = (c: number[]) =>
+  `#${c
+    .map((v) =>
+      Math.max(0, Math.min(255, Math.round(v)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`
 
 /** Mix with black by `amount` (0..1): the darker hover shade. */
 export const darken = (hex: string, amount = 0.2) => toHex(toRgb(hex).map((v) => v * (1 - amount)))
