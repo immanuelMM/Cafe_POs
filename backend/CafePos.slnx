@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CafePos.Api/CafePos.Api.csproj" />
+    <Project Path="src/CafePos.Application/CafePos.Application.csproj" />
+    <Project Path="src/CafePos.Domain/CafePos.Domain.csproj" />
+    <Project Path="src/CafePos.Infrastructure/CafePos.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CafePos.Api.Tests/CafePos.Api.Tests.csproj" />
+  </Folder>
+</Solution>
